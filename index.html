@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ERP ACR Estruch</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --blue:#00387C;--blue-mid:#1a54a0;--blue-light:#e8f0fb;--blue-dim:#d0e0f5;
+  --green:#1a8c42;--green-bg:#d4edda;--green-txt:#155724;
+  --yellow:#c79500;--yellow-bg:#fff3cd;--yellow-txt:#856404;
+  --amber:#c96a10;--amber-bg:#ffe5d0;--amber-txt:#7c3d0f;
+  --red:#c0392b;--red-bg:#f8d7da;--red-txt:#721c24;
+  --bg:#f0f4f8;--white:#fff;--border:#dee2e6;--border-light:#eaeef2;
+  --text:#212529;--muted:#6c757d;
+  --sidebar:220px;--topbar:58px;--r:6px;
+  --shadow:0 1px 4px rgba(0,0,0,.1),0 4px 12px rgba(0,0,0,.06);
+}
+body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;font-size:14px;background:var(--bg);color:var(--text);height:100vh;overflow:hidden}
+#app{display:flex;height:100vh}
+#sidebar{width:var(--sidebar);background:var(--blue);display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto}
+#logo-area{padding:18px 16px 16px;border-bottom:1px solid rgba(255,255,255,.15);cursor:pointer}
+.logo-main{font-size:19px;font-weight:800;color:#fff;letter-spacing:-.4px;line-height:1.1}
+.logo-main .sep{color:rgba(255,255,255,.5);font-weight:300;margin:0 1px}
+.logo-sub{font-size:10.5px;color:rgba(255,255,255,.6);margin-top:3px;letter-spacing:.3px;font-style:italic}
+#nav{padding:10px 0;flex:1}
+.nav-section{padding:10px 14px 3px;font-size:10px;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:1.2px;font-weight:600}
+.nav-item{display:flex;align-items:center;gap:9px;padding:9px 16px;color:rgba(255,255,255,.78);cursor:pointer;border-left:3px solid transparent;transition:all .15s;font-size:13px;user-select:none}
+.nav-item:hover{background:rgba(255,255,255,.1);color:#fff}
+.nav-item.active{background:rgba(255,255,255,.16);color:#fff;border-left-color:#fff;font-weight:600}
+.nav-item .ico{font-size:15px;width:19px;text-align:center;flex-shrink:0}
+.nav-sub{padding:6px 16px 6px 44px;color:rgba(255,255,255,.6);cursor:pointer;font-size:12px;transition:all .15s;border-left:3px solid transparent;user-select:none}
+.nav-sub:hover{color:#fff;background:rgba(255,255,255,.07)}
+.nav-footer{padding:12px 14px;border-top:1px solid rgba(255,255,255,.12);font-size:11px;color:rgba(255,255,255,.4)}
+#main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+#topbar{height:var(--topbar);background:var(--white);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 22px;gap:12px;flex-shrink:0;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+#topbar h1{font-size:17px;font-weight:700;color:var(--blue);flex:1}
+#topbar .data{font-size:13px;color:var(--muted)}
+#content{flex:1;overflow-y:auto;padding:20px 24px}
+/* Welcome */
+.welcome{background:linear-gradient(135deg,var(--blue) 0%,var(--blue-mid) 100%);border-radius:10px;padding:24px 28px;color:#fff;margin-bottom:20px;display:flex;align-items:center;gap:20px}
+.welcome-logo{font-size:32px;font-weight:800;letter-spacing:-.5px;line-height:1}
+.welcome-logo .sep{color:rgba(255,255,255,.45);font-weight:300}
+.welcome-logo .sub{font-size:13px;font-weight:400;color:rgba(255,255,255,.65);margin-top:4px;letter-spacing:.3px;font-style:italic}
+.welcome-text{flex:1}
+.welcome-text h2{font-size:20px;font-weight:700;margin-bottom:4px}
+.welcome-text p{font-size:13px;color:rgba(255,255,255,.75)}
+.welcome-refresh{margin-left:auto}
+/* KPI grid */
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}
+.kpi{background:var(--white);border-radius:var(--r);box-shadow:var(--shadow);padding:16px 18px;border-left:4px solid var(--blue);cursor:pointer;transition:transform .15s,box-shadow .15s;text-decoration:none;display:block}
+.kpi:hover{transform:translateY(-2px);box-shadow:0 4px 16px rgba(0,0,0,.12)}
+.kpi.g{border-left-color:var(--green)}.kpi.y{border-left-color:var(--yellow)}
+.kpi.a{border-left-color:var(--amber)}.kpi.r{border-left-color:var(--red)}
+.kpi-label{font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;font-weight:600;margin-bottom:6px}
+.kpi-val{font-size:26px;font-weight:800;color:var(--text);line-height:1;margin-bottom:4px}
+.kpi-sub{font-size:11px;color:var(--muted)}
+.kpi-icon{float:right;font-size:24px;opacity:.15;margin-top:-4px}
+/* Sections */
+.dash-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+.card{background:var(--white);border-radius:var(--r);box-shadow:var(--shadow)}
+.card-hdr{padding:14px 18px;border-bottom:1px solid var(--border-light);display:flex;align-items:center;gap:8px}
+.card-hdr h3{font-size:14px;font-weight:700;color:var(--text);flex:1}
+.card-hdr a{font-size:12px;color:var(--blue);text-decoration:none;font-weight:600}
+.card-hdr a:hover{text-decoration:underline}
+.card-body{padding:0}
+/* Alert list */
+.alert-item{display:flex;align-items:center;gap:12px;padding:11px 18px;border-bottom:1px solid var(--border-light);font-size:13px;cursor:pointer;transition:background .12s}
+.alert-item:hover{background:var(--blue-light)}
+.alert-item:last-child{border-bottom:none}
+.alert-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.dot-r{background:var(--red)}.dot-a{background:var(--amber)}.dot-y{background:var(--yellow)}.dot-g{background:var(--green)}
+.alert-main{flex:1}
+.alert-nom{font-weight:600}
+.alert-sub{font-size:11px;color:var(--muted);margin-top:1px}
+.alert-amt{font-weight:700;font-size:13px;text-align:right;white-space:nowrap}
+/* Module shortcuts */
+.modules-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
+.mod-card{background:var(--white);border-radius:var(--r);box-shadow:var(--shadow);padding:18px 16px;text-align:center;cursor:pointer;transition:all .15s;text-decoration:none;display:block;border-top:3px solid transparent}
+.mod-card:hover{transform:translateY(-2px);box-shadow:0 4px 16px rgba(0,0,0,.12);border-top-color:var(--blue)}
+.mod-card .ico{font-size:28px;margin-bottom:8px}
+.mod-card .nom{font-size:13px;font-weight:700;color:var(--text)}
+.mod-card .cnt{font-size:11px;color:var(--muted);margin-top:3px}
+/* Empty alert */
+.no-alerts{text-align:center;padding:28px;color:var(--muted);font-size:13px}
+#toast{position:fixed;bottom:22px;right:22px;z-index:999;display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.toast{padding:11px 18px;border-radius:var(--r);font-size:13px;font-weight:600;color:#fff;box-shadow:0 4px 16px rgba(0,0,0,.25);animation:tin .3s ease;pointer-events:auto}
+.toast.ok{background:var(--green)}.toast.err{background:var(--red)}.toast.inf{background:var(--blue)}
+@keyframes tin{from{transform:translateX(110%);opacity:0}to{transform:translateX(0);opacity:1}}
+.spin{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:rot .6s linear infinite}
+@keyframes rot{to{transform:rotate(360deg)}}
+::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:rgba(0,0,0,.2);border-radius:3px}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 15px;border-radius:var(--r);border:none;cursor:pointer;font-size:13px;font-weight:500;transition:all .15s;white-space:nowrap}
+.btn-light{background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.3)}.btn-light:hover{background:rgba(255,255,255,.3)}
+.btn-sm{padding:5px 10px;font-size:12px}
+</style>
+</head>
+<body>
+<div id="app">
+
+<nav id="sidebar">
+  <div id="logo-area" onclick="location.href='index.html'">
+    <div class="logo-main">ACR<span class="sep">|</span>Estruch</div>
+    <div class="logo-sub">export &amp; consulting</div>
+  </div>
+  <div id="nav">
+    <div class="nav-item active" onclick="location.href='index.html'"><span class="ico">🏠</span> Dashboard</div>
+    <div class="nav-section">Mòduls</div>
+    <div class="nav-item" onclick="location.href='erp-facturacio.html'"><span class="ico">🧾</span> Facturació</div>
+    <div class="nav-sub" onclick="location.href='erp-facturacio.html'">Factures emeses</div>
+    <div class="nav-sub" onclick="location.href='erp-factures-rebudes.html'">Factures rebudes</div>
+    <div class="nav-item" onclick="location.href='erp-clients.html'"><span class="ico">👥</span> Clients</div>
+    <div class="nav-item" onclick="location.href='erp-proveidors.html'"><span class="ico">🏭</span> Proveïdors</div>
+    <div class="nav-item" onclick="location.href='erp-projectes.html'"><span class="ico">📋</span> Projectes</div>
+    <div class="nav-section" style="margin-top:10px">Comptabilitat</div>
+    <div class="nav-item" onclick="location.href='erp-major.html'"><span class="ico">📒</span> Major</div>
+    <div class="nav-item" onclick="location.href='erp-assentaments.html'"><span class="ico">✏️</span> Assentaments</div>
+    <div class="nav-item" onclick="location.href='erp-pla-comptes.html'"><span class="ico">🗂️</span> Pla de comptes</div>
+  </div>
+  <div class="nav-footer">ACR Estruch ERP v1.0</div>
+</nav>
+
+<main id="main">
+  <header id="topbar">
+    <h1>Dashboard</h1>
+    <span class="data" id="data-avui"></span>
+    <button class="btn btn-sm btn-secondary" onclick="init()" style="border-color:var(--border)">↻ Actualitzar</button>
+  </header>
+  <div id="content">
+
+    <!-- Welcome -->
+    <div class="welcome">
+      <div class="welcome-logo">
+        ACR<span class="sep">|</span>Estruch
+        <div class="sub">export &amp; consulting</div>
+      </div>
+      <div class="welcome-text">
+        <h2>Benvingut al teu ERP</h2>
+        <p id="welcome-sub">Carregant resum...</p>
+      </div>
+      <button class="btn btn-light btn-sm" onclick="init()">↻ Actualitzar tot</button>
+    </div>
+
+    <!-- KPIs -->
+    <div class="kpi-grid">
+      <a class="kpi r" href="erp-facturacio.html">
+        <div class="kpi-icon">⚠️</div>
+        <div class="kpi-label">Factures vençudes</div>
+        <div class="kpi-val" id="k-venc">—</div>
+        <div class="kpi-sub" id="k-venc-e">—</div>
+      </a>
+      <a class="kpi y" href="erp-facturacio.html">
+        <div class="kpi-icon">🕐</div>
+        <div class="kpi-label">Pendent de cobrar</div>
+        <div class="kpi-val" id="k-pend">—</div>
+        <div class="kpi-sub" id="k-pend-e">—</div>
+      </a>
+      <a class="kpi a" href="erp-factures-rebudes.html">
+        <div class="kpi-icon">📤</div>
+        <div class="kpi-label">Pendent de pagar</div>
+        <div class="kpi-val" id="k-pagar">—</div>
+        <div class="kpi-sub" id="k-pagar-e">—</div>
+      </a>
+      <a class="kpi g" href="erp-projectes.html">
+        <div class="kpi-icon">📋</div>
+        <div class="kpi-label">Projectes actius</div>
+        <div class="kpi-val" id="k-proj">—</div>
+        <div class="kpi-sub" id="k-proj-e">—</div>
+      </a>
+    </div>
+
+    <!-- Alertes + Factures rebudes pendents -->
+    <div class="dash-row">
+      <!-- Alertes factures emeses -->
+      <div class="card">
+        <div class="card-hdr">
+          <span>⚠️</span>
+          <h3>Factures emeses — alertes</h3>
+          <a href="erp-facturacio.html">Veure totes →</a>
+        </div>
+        <div class="card-body" id="alertes-emeses">
+          <div class="no-alerts">Carregant...</div>
+        </div>
+      </div>
+
+      <!-- Factures rebudes properes -->
+      <div class="card">
+        <div class="card-hdr">
+          <span>📥</span>
+          <h3>Pagaments propers (30 dies)</h3>
+          <a href="erp-factures-rebudes.html">Veure totes →</a>
+        </div>
+        <div class="card-body" id="alertes-rebudes">
+          <div class="no-alerts">Carregant...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Accés ràpid mòduls -->
+    <div class="card" style="margin-bottom:16px">
+      <div class="card-hdr"><span>⚡</span><h3>Accés ràpid</h3></div>
+      <div style="padding:16px">
+        <div class="modules-grid">
+          <a class="mod-card" href="erp-facturacio.html">
+            <div class="ico">🧾</div>
+            <div class="nom">Factures emeses</div>
+            <div class="cnt" id="m-fra">— factures</div>
+          </a>
+          <a class="mod-card" href="erp-factures-rebudes.html">
+            <div class="ico">📥</div>
+            <div class="nom">Factures rebudes</div>
+            <div class="cnt" id="m-reb">— factures</div>
+          </a>
+          <a class="mod-card" href="erp-clients.html">
+            <div class="ico">👥</div>
+            <div class="nom">Clients</div>
+            <div class="cnt" id="m-cli">— clients</div>
+          </a>
+          <a class="mod-card" href="erp-proveidors.html">
+            <div class="ico">🏭</div>
+            <div class="nom">Proveïdors</div>
+            <div class="cnt" id="m-prov">— proveïdors</div>
+          </a>
+          <a class="mod-card" href="erp-projectes.html">
+            <div class="ico">📋</div>
+            <div class="nom">Projectes</div>
+            <div class="cnt" id="m-proj">— projectes</div>
+          </a>
+          <a class="mod-card" href="erp-major.html">
+            <div class="ico">📒</div>
+            <div class="nom">Major</div>
+            <div class="cnt">Llibre major</div>
+          </a>
+          <a class="mod-card" href="erp-assentaments.html">
+            <div class="ico">✏️</div>
+            <div class="nom">Assentaments</div>
+            <div class="cnt" id="m-ass">— assentaments</div>
+          </a>
+          <a class="mod-card" href="erp-pla-comptes.html">
+            <div class="ico">🗂️</div>
+            <div class="nom">Pla de comptes</div>
+            <div class="cnt" id="m-pla">— comptes</div>
+          </a>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</main>
+</div>
+<div id="toast"></div>
+
+<script>
+const SB_URL='https://ftuaeaghnnlusigqtoqv.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ0dWFlYWdobm5sdXNpZ3F0b3F2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAxNjI0MjIsImV4cCI6MjA5NTczODQyMn0.9n1gWnq_QfrLIWU7sIBReXgQAGA-NPFOpsdDp-jbDW8';
+const HDR={'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY};
+async function sbGet(t,q=''){const r=await fetch(`${SB_URL}/rest/v1/${t}?${q}`,{headers:HDR});if(!r.ok)throw new Error(await r.text());return r.json()}
+
+const fe=(n,d=2)=>(n||0).toLocaleString('ca-ES',{minimumFractionDigits:d,maximumFractionDigits:d});
+const fd=d=>d?new Date(d+'T00:00:00').toLocaleDateString('ca-ES',{day:'2-digit',month:'2-digit',year:'numeric'}):'—';
+
+function getEstatFra(inv){
+  if(inv.estat==='COBRAT')return'COBRAT';
+  const today=new Date();today.setHours(0,0,0,0);
+  if(!inv.data_venciment)return'PENDENT';
+  const v=new Date(inv.data_venciment+'T00:00:00');
+  if(v<today)return'VENCUDA';
+  if((v-today)/864e5<=7)return'PROXIM';
+  return'PENDENT';
+}
+
+async function init(){
+  // Data
+  const now=new Date();
+  document.getElementById('data-avui').textContent=now.toLocaleDateString('ca-ES',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+
+  try{
+    const [fra,reb,cli,prov,pj,ass,pla]=await Promise.all([
+      sbGet('factures','select=no_factura,data_venciment,estat,total_factura,import_cobrat,clients(rao_social)&order=data_venciment'),
+      sbGet('factures_rebudes','select=no_factura,data_termini,estat,total_factura,import_pagat,proveidors(nom)&order=data_termini'),
+      sbGet('clients','select=id',),
+      sbGet('proveidors','select=id'),
+      sbGet('projectes','select=id,estat,import'),
+      sbGet('assentaments','select=id'),
+      sbGet('pla_comptes','select=id'),
+    ]);
+
+    const today=new Date();today.setHours(0,0,0,0);
+    const in30=new Date(today);in30.setDate(in30.getDate()+30);
+
+    // KPIs factures emeses
+    let venc=0,vendE=0,pend=0,pendE=0;
+    fra.forEach(f=>{
+      const e=getEstatFra(f);
+      const pendent=(f.total_factura||0)-(f.import_cobrat||0);
+      if(e==='VENCUDA'){venc++;vendE+=pendent;}
+      else if(e==='PENDENT'||e==='PROXIM'){pend++;pendE+=pendent;}
+    });
+    document.getElementById('k-venc').textContent=venc;
+    document.getElementById('k-venc-e').textContent=venc>0?fe(vendE)+' € pendent':'Tot cobrat ✓';
+    document.getElementById('k-pend').textContent=pend;
+    document.getElementById('k-pend-e').textContent=fe(pendE)+' €';
+
+    // KPIs factures rebudes
+    let pagar=0,pagarE=0;
+    reb.forEach(f=>{
+      if(f.estat!=='PAGAT'){pagar++;pagarE+=(f.total_factura||0)-(f.import_pagat||0);}
+    });
+    document.getElementById('k-pagar').textContent=pagar;
+    document.getElementById('k-pagar-e').textContent=fe(pagarE)+' €';
+
+    // KPIs projectes
+    const projActius=pj.filter(p=>p.estat==='ACTIU');
+    const projVal=projActius.reduce((s,p)=>s+(p.import||0),0);
+    document.getElementById('k-proj').textContent=projActius.length;
+    document.getElementById('k-proj-e').textContent=fe(projVal)+' € valor total';
+
+    // Counts mòduls
+    document.getElementById('m-fra').textContent=fra.length+' factures';
+    document.getElementById('m-reb').textContent=reb.length+' factures';
+    document.getElementById('m-cli').textContent=cli.length+' clients';
+    document.getElementById('m-prov').textContent=prov.length+' proveïdors';
+    document.getElementById('m-proj').textContent=pj.length+' projectes';
+    document.getElementById('m-ass').textContent=ass.length+' assentaments';
+    document.getElementById('m-pla').textContent=pla.length+' comptes';
+
+    // Welcome sub
+    document.getElementById('welcome-sub').textContent=
+      `${venc>0?venc+' factura'+( venc>1?'s':'')+' vençuda'+( venc>1?'s':'')+' · ':''}`+
+      `${projActius.length} projecte${projActius.length!==1?'s':''} actiu${projActius.length!==1?'s':''} · `+
+      `${cli.length} client${cli.length!==1?'s':''}`;
+
+    // Alertes emeses
+    const alertes=fra.filter(f=>getEstatFra(f)==='VENCUDA'||getEstatFra(f)==='PROXIM')
+      .sort((a,b)=>(a.data_venciment||'').localeCompare(b.data_venciment||''))
+      .slice(0,6);
+    const elAl=document.getElementById('alertes-emeses');
+    if(alertes.length===0){
+      elAl.innerHTML='<div class="no-alerts">✓ Cap factura vençuda ni pròxima a vèncer</div>';
+    } else {
+      elAl.innerHTML=alertes.map(f=>{
+        const e=getEstatFra(f);
+        const pendent=(f.total_factura||0)-(f.import_cobrat||0);
+        const dot=e==='VENCUDA'?'dot-r':'dot-a';
+        const lbl=e==='VENCUDA'?'Vençuda':'Venç aviat';
+        return `<div class="alert-item" onclick="location.href='erp-facturacio.html'">
+          <div class="alert-dot ${dot}"></div>
+          <div class="alert-main">
+            <div class="alert-nom">${f.clients?.rao_social||'—'} — Fra. ${f.no_factura}</div>
+            <div class="alert-sub">${lbl} · ${fd(f.data_venciment)}</div>
+          </div>
+          <div class="alert-amt" style="color:${e==='VENCUDA'?'var(--red)':'var(--amber)'}">${fe(pendent)} €</div>
+        </div>`;
+      }).join('');
+    }
+
+    // Factures rebudes properes
+    const rebProp=reb.filter(f=>{
+      if(f.estat==='PAGAT')return false;
+      if(!f.data_termini)return true;
+      const t=new Date(f.data_termini+'T00:00:00');
+      return t<=in30;
+    }).sort((a,b)=>(a.data_termini||'zzz').localeCompare(b.data_termini||'zzz')).slice(0,6);
+
+    const elReb=document.getElementById('alertes-rebudes');
+    if(rebProp.length===0){
+      elReb.innerHTML='<div class="no-alerts">✓ Cap pagament pendent en els propers 30 dies</div>';
+    } else {
+      elReb.innerHTML=rebProp.map(f=>{
+        const pendent=(f.total_factura||0)-(f.import_pagat||0);
+        const venc=f.data_termini&&new Date(f.data_termini+'T00:00:00')<today;
+        const dot=venc?'dot-r':'dot-y';
+        return `<div class="alert-item" onclick="location.href='erp-factures-rebudes.html'">
+          <div class="alert-dot ${dot}"></div>
+          <div class="alert-main">
+            <div class="alert-nom">${f.proveidors?.nom||'—'} — ${f.no_factura}</div>
+            <div class="alert-sub">${venc?'Vençuda':'Termini'} · ${fd(f.data_termini)}</div>
+          </div>
+          <div class="alert-amt" style="color:${venc?'var(--red)':'var(--amber)'}">${fe(pendent)} €</div>
+        </div>`;
+      }).join('');
+    }
+
+  }catch(e){
+    toast('Error carregant dades: '+e.message,'err');
+    console.error(e);
+  }
+}
+
+function toast(msg,type='inf'){const el=document.createElement('div');el.className=`toast ${type}`;el.textContent=msg;document.getElementById('toast').appendChild(el);setTimeout(()=>el.remove(),4000);}
+
+init();
+</script>
+</body>
+</html>

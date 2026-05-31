@@ -222,7 +222,7 @@ input[type=number]{-moz-appearance:textfield}
         <table class="main-tbl">
           <thead>
             <tr>
-              <th>Codi</th>
+              <th>ID Client</th>
               <th>Raó Social</th>
               <th>Sinònim</th>
               <th>NIF / VAT</th>
@@ -273,7 +273,7 @@ input[type=number]{-moz-appearance:textfield}
           <input type="text" id="m-sin" placeholder="CLICK">
         </div>
         <div class="fg">
-          <label>Codi intern</label>
+          <label>ID Client</label>
           <input type="text" id="m-codi" placeholder="CLI190226CI8">
         </div>
         <div class="fg">
@@ -427,7 +427,7 @@ async function init(){
 
 async function loadClients(){
   try{
-    allClients = await sbGet('clients','select=*&order=rao_social');
+    allClients = await sbGet('clients','select=*&order=codi.desc.nullslast');
     renderStats();
     renderTable(allClients);
     populatePaisFilter();

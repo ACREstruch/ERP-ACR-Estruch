@@ -1,0 +1,889 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ERP ACR Estruch — Factures rebudes</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --blue:#00387C;--blue-mid:#1a54a0;--blue-light:#e8f0fb;--blue-dim:#d0e0f5;
+  --green:#1a8c42;--green-bg:#d4edda;--green-txt:#155724;
+  --yellow:#c79500;--yellow-bg:#fff3cd;--yellow-txt:#856404;
+  --amber:#c96a10;--amber-bg:#ffe5d0;--amber-txt:#7c3d0f;
+  --red:#c0392b;--red-bg:#f8d7da;--red-txt:#721c24;
+  --grey:#6c757d;--grey-bg:#e9ecef;--grey-txt:#495057;
+  --bg:#f0f4f8;--white:#fff;--border:#dee2e6;--border-light:#eaeef2;
+  --text:#212529;--muted:#6c757d;
+  --sidebar:220px;--topbar:58px;--r:6px;
+  --shadow:0 1px 4px rgba(0,0,0,.1),0 4px 12px rgba(0,0,0,.06);
+}
+body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;font-size:14px;background:var(--bg);color:var(--text);height:100vh;overflow:hidden}
+#app{display:flex;height:100vh}
+#sidebar{width:var(--sidebar);background:var(--blue);display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto}
+#logo-area{padding:18px 16px 16px;border-bottom:1px solid rgba(255,255,255,.15);cursor:pointer}
+.logo-main{font-size:19px;font-weight:800;color:#fff;letter-spacing:-.4px;line-height:1.1}
+.logo-main .sep{color:rgba(255,255,255,.5);font-weight:300;margin:0 1px}
+.logo-sub{font-size:10.5px;color:rgba(255,255,255,.6);margin-top:3px;letter-spacing:.3px;font-style:italic}
+#nav{padding:10px 0;flex:1}
+.nav-section{padding:10px 14px 3px;font-size:10px;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:1.2px;font-weight:600}
+.nav-item{display:flex;align-items:center;gap:9px;padding:9px 16px;color:rgba(255,255,255,.78);cursor:pointer;border-left:3px solid transparent;transition:all .15s;font-size:13px;user-select:none}
+.nav-item:hover{background:rgba(255,255,255,.1);color:#fff}
+.nav-item.active{background:rgba(255,255,255,.16);color:#fff;border-left-color:#fff;font-weight:600}
+.nav-item .ico{font-size:15px;width:19px;text-align:center;flex-shrink:0}
+.nav-sub{padding:6px 16px 6px 44px;color:rgba(255,255,255,.6);cursor:pointer;font-size:12px;transition:all .15s;border-left:3px solid transparent;user-select:none}
+.nav-sub:hover{color:#fff;background:rgba(255,255,255,.07)}
+.nav-sub.active{color:#fff;font-weight:600;border-left-color:rgba(255,255,255,.4)}
+.nav-footer{padding:12px 14px;border-top:1px solid rgba(255,255,255,.12);font-size:11px;color:rgba(255,255,255,.4)}
+#main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+#topbar{height:var(--topbar);background:var(--white);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 22px;gap:12px;flex-shrink:0;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+#topbar h1{font-size:17px;font-weight:700;color:var(--blue);flex:1}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 15px;border-radius:var(--r);border:none;cursor:pointer;font-size:13px;font-weight:500;transition:all .15s;white-space:nowrap}
+.btn-primary{background:var(--blue);color:#fff}.btn-primary:hover{background:var(--blue-mid)}
+.btn-secondary{background:#fff;color:var(--blue);border:1.5px solid var(--blue)}.btn-secondary:hover{background:var(--blue-light)}
+.btn-danger{background:var(--red-bg);color:var(--red-txt);border:1px solid #f5c6cb}.btn-danger:hover{background:#f5c6cb}
+.btn-green{background:var(--green-bg);color:var(--green-txt);border:1px solid #c3e6cb}.btn-green:hover{background:#c3e6cb}
+.btn-sm{padding:5px 10px;font-size:12px}.btn-xs{padding:3px 8px;font-size:11px}
+.btn:disabled{opacity:.5;cursor:default}
+#content{flex:1;overflow-y:auto;padding:18px 22px}
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:16px}
+.stat{background:var(--white);border-radius:var(--r);box-shadow:var(--shadow);padding:14px 18px;border-top:3px solid var(--blue);position:relative;overflow:hidden}
+.stat.g{border-top-color:var(--green)}.stat.y{border-top-color:var(--yellow)}
+.stat.a{border-top-color:var(--amber)}.stat.r{border-top-color:var(--red)}
+.stat-label{font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;font-weight:600;margin-bottom:5px}
+.stat-value{font-size:24px;font-weight:800;color:var(--text);line-height:1}
+.stat-sub{font-size:11px;color:var(--muted);margin-top:4px}
+.stat-icon{position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:28px;opacity:.12}
+.filter-wrap{background:var(--white);border-radius:var(--r);box-shadow:var(--shadow);padding:12px 18px;margin-bottom:14px}
+.filter-bar{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.filter-bar input,.filter-bar select{padding:6px 10px;border:1.5px solid var(--border);border-radius:var(--r);font-size:13px;background:#fff;color:var(--text);transition:border-color .15s}
+.filter-bar input:focus,.filter-bar select:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(0,56,124,.08)}
+.card{background:var(--white);border-radius:var(--r);box-shadow:var(--shadow);margin-bottom:16px}
+.tbl-wrap{overflow-x:auto}
+table.main-tbl{width:100%;border-collapse:collapse;font-size:13px}
+.main-tbl th{padding:9px 14px;text-align:left;font-size:10.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;border-bottom:2px solid var(--border);white-space:nowrap;background:#fafbfc}
+.main-tbl td{padding:11px 14px;border-bottom:1px solid var(--border-light);vertical-align:middle}
+.main-tbl tbody tr:hover td{background:var(--blue-light);cursor:pointer}
+.main-tbl tbody tr:last-child td{border-bottom:none}
+.no-fra{font-weight:700;color:var(--blue)}
+td.amt{text-align:right;font-variant-numeric:tabular-nums;font-weight:500}
+th.amt{text-align:right}
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.2px;white-space:nowrap}
+.badge::before{content:'';width:6px;height:6px;border-radius:50%;background:currentColor;opacity:.7}
+.bg{background:var(--green-bg);color:var(--green-txt)}
+.by{background:var(--yellow-bg);color:var(--yellow-txt)}
+.ba{background:var(--amber-bg);color:var(--amber-txt)}
+.br{background:var(--red-bg);color:var(--red-txt)}
+.bp{background:#e8d5f5;color:#6a1b9a}
+.bx{background:var(--grey-bg);color:var(--grey-txt)}
+.empty{text-align:center;padding:50px 20px;color:var(--muted)}
+.empty .eico{font-size:42px;margin-bottom:12px;opacity:.5}
+.empty p{margin-bottom:14px;font-size:14px}
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:100;align-items:flex-start;justify-content:center;padding:30px 16px;overflow-y:auto}
+.overlay.open{display:flex}
+.modal{background:#fff;border-radius:8px;box-shadow:0 20px 60px rgba(0,0,0,.3);width:100%;max-width:860px;display:flex;flex-direction:column;margin:auto}
+.modal-hdr{padding:14px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;flex-shrink:0}
+.modal-hdr h3{font-size:16px;font-weight:700;color:var(--blue);flex:1}
+.modal-close{background:none;border:none;font-size:22px;cursor:pointer;color:var(--muted);line-height:1;padding:0 4px}
+.modal-close:hover{color:var(--text)}
+.modal-body{flex:1;overflow-y:auto;max-height:calc(90vh - 130px)}
+.modal-ftr{padding:12px 22px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px;flex-shrink:0}
+.tabs{display:flex;background:#f8f9fa;border-bottom:2px solid var(--border);padding:0 22px;gap:2px;flex-shrink:0}
+.tab{padding:11px 15px;border:none;background:none;cursor:pointer;font-size:13px;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-2px;font-weight:500;transition:all .15s;white-space:nowrap}
+.tab:hover{color:var(--blue)}.tab.on{color:var(--blue);border-bottom-color:var(--blue);font-weight:700}
+.tab-panel{display:none;padding:20px 22px}.tab-panel.on{display:block}
+.fg{display:flex;flex-direction:column;gap:4px}
+.fg label{font-size:10.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px}
+.fg input,.fg select,.fg textarea{padding:7px 10px;border:1.5px solid var(--border);border-radius:var(--r);font-size:13px;background:#fff;color:var(--text);transition:border-color .15s;font-family:inherit}
+.fg input:focus,.fg select:focus,.fg textarea:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(0,56,124,.08)}
+.fg input[readonly]{background:#f8f9fa;color:var(--muted)}.fg input.bv{font-weight:700;color:var(--blue);background:#f0f4f8}
+.fg textarea{resize:vertical;min-height:60px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+.grid4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:14px}
+.full{grid-column:1/-1}
+.sec{grid-column:1/-1;font-size:11px;font-weight:800;color:var(--blue);text-transform:uppercase;letter-spacing:.8px;padding:4px 0 2px;border-bottom:1.5px solid var(--blue-dim);margin-bottom:2px}
+/* Pagaments tab */
+.pag-list{border:1.5px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:14px}
+.pag-hdr{display:grid;grid-template-columns:120px 1fr 100px 100px 80px 36px;gap:8px;padding:8px 12px;background:#f8f9fa;border-bottom:1.5px solid var(--border);font-size:10.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px}
+.pag-row{display:grid;grid-template-columns:120px 1fr 100px 100px 80px 36px;gap:8px;padding:8px 12px;border-bottom:1px solid var(--border-light);align-items:center;font-size:13px}
+.pag-row:last-child{border-bottom:none}
+.pag-row:hover{background:var(--blue-light)}
+.pag-empty{padding:20px;text-align:center;color:var(--muted);font-size:13px}
+.add-pag-row{display:grid;grid-template-columns:120px 1fr 100px 100px 80px 36px;gap:8px;padding:10px 12px;background:var(--blue-light);border-top:2px solid var(--blue-dim);align-items:center}
+.add-pag-row input,.add-pag-row select{padding:5px 8px;border:1.5px solid var(--border);border-radius:4px;font-size:12px;width:100%;font-family:inherit}
+.add-pag-row input:focus,.add-pag-row select:focus{outline:none;border-color:var(--blue)}
+/* Assentament */
+.ass-tbl{width:100%;border-collapse:collapse;font-size:13px}
+.ass-tbl th{padding:8px 10px;font-size:10.5px;color:var(--muted);text-transform:uppercase;font-weight:700;border-bottom:2px solid var(--border);background:#f8f9fa}
+.ass-tbl td{padding:8px 10px;border-bottom:1px solid var(--border-light)}
+.ass-tbl .compte{font-weight:700;color:var(--blue);font-size:12px}
+.ass-tbl .rgt{text-align:right;font-variant-numeric:tabular-nums;font-weight:600}
+.totals-box{background:#f8f9fa;border:1.5px solid var(--border);border-radius:var(--r);padding:12px 16px;margin-top:12px;max-width:320px;margin-left:auto}
+.tot-row{display:flex;align-items:center;gap:8px;padding:3px 0;font-size:13px}
+.tot-row .tl{flex:1;color:var(--muted)}
+.pct-inp{width:48px;border:1.5px solid var(--border);border-radius:4px;padding:3px 5px;font-size:12px;text-align:right;background:#fff}
+.pct-inp:focus{outline:none;border-color:var(--blue)}
+.tot-row .tv{text-align:right;min-width:90px;font-variant-numeric:tabular-nums}
+.tot-total{border-top:2px solid var(--border);margin-top:4px;padding-top:8px;font-size:15px;font-weight:800;color:var(--blue)}
+#toast{position:fixed;bottom:22px;right:22px;z-index:999;display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.toast{padding:11px 18px;border-radius:var(--r);font-size:13px;font-weight:600;color:#fff;box-shadow:0 4px 16px rgba(0,0,0,.25);animation:tin .3s ease;pointer-events:auto}
+.toast.ok{background:var(--green)}.toast.err{background:var(--red)}.toast.inf{background:var(--blue)}
+@keyframes tin{from{transform:translateX(110%);opacity:0}to{transform:translateX(0);opacity:1}}
+.spin{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:rot .6s linear infinite}
+@keyframes rot{to{transform:rotate(360deg)}}
+input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+input[type=number]{-moz-appearance:textfield}
+::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:rgba(0,0,0,.2);border-radius:3px}
+</style>
+</head>
+<body>
+<div id="app">
+
+<nav id="sidebar">
+  <div id="logo-area" onclick="location.href='erp-facturacio.html'">
+    <div class="logo-main">ACR<span class="sep">|</span>Estruch</div>
+    <div class="logo-sub">export &amp; consulting</div>
+  </div>
+  <div id="nav">
+    <div class="nav-section">Mòduls</div>
+    <div class="nav-item active" onclick="location.href='erp-facturacio.html'">
+      <span class="ico">🧾</span> Facturació
+    </div>
+    <div class="nav-sub" onclick="location.href='erp-facturacio.html'">Factures emeses</div>
+    <div class="nav-sub active">Factures rebudes</div>
+    <div class="nav-item" onclick="location.href='erp-clients.html'">
+      <span class="ico">👥</span> Clients
+    </div>
+    <div class="nav-item" onclick="location.href='erp-proveidors.html'">
+      <span class="ico">🏭</span> Proveïdors
+    </div>
+    <div class="nav-item" onclick="toast('Pròximament','inf')">
+      <span class="ico">📋</span> Projectes
+    </div>
+    <div class="nav-section" style="margin-top:10px">Comptabilitat</div>
+    <div class="nav-item" onclick="toast('Pròximament','inf')"><span class="ico">📒</span> Major</div>
+    <div class="nav-item" onclick="toast('Pròximament','inf')"><span class="ico">✏️</span> Assentaments</div>
+    <div class="nav-item" onclick="toast('Pròximament','inf')"><span class="ico">🗂️</span> Pla de comptes</div>
+  </div>
+  <div class="nav-footer">ACR Estruch ERP v1.0</div>
+</nav>
+
+<main id="main">
+  <header id="topbar">
+    <h1>Factures rebudes</h1>
+    <button class="btn btn-secondary btn-sm" onclick="refreshData()">↻ Actualitzar</button>
+    <button class="btn btn-primary" onclick="openModal(null)">+ Nova factura rebuda</button>
+  </header>
+  <div id="content">
+
+    <div class="stats-row">
+      <div class="stat g">
+        <div class="stat-label">Pagades</div>
+        <div class="stat-value" id="s-pag">—</div>
+        <div class="stat-sub" id="s-pag-e">—</div>
+        <div class="stat-icon">✅</div>
+      </div>
+      <div class="stat y">
+        <div class="stat-label">Pendents</div>
+        <div class="stat-value" id="s-pen">—</div>
+        <div class="stat-sub" id="s-pen-e">—</div>
+        <div class="stat-icon">🕐</div>
+      </div>
+      <div class="stat a">
+        <div class="stat-label">Venç en &lt;7 dies</div>
+        <div class="stat-value" id="s-prx">—</div>
+        <div class="stat-sub" id="s-prx-e">—</div>
+        <div class="stat-icon">⏰</div>
+      </div>
+      <div class="stat r">
+        <div class="stat-label">Vençudes</div>
+        <div class="stat-value" id="s-ven">—</div>
+        <div class="stat-sub" id="s-ven-e">—</div>
+        <div class="stat-icon">⚠️</div>
+      </div>
+    </div>
+
+    <div class="filter-wrap">
+      <div class="filter-bar">
+        <input type="text" id="f-cerca" placeholder="🔍  Cerca factura, proveïdor..." oninput="applyFilters()" style="min-width:220px">
+        <select id="f-estat" onchange="applyFilters()">
+          <option value="">Tots els estats</option>
+          <option value="PAGAT">Pagat</option>
+          <option value="PENDENT">Pendent</option>
+          <option value="PARCIALMENT">Parcialment pagat</option>
+          <option value="VENCUDA">Vençuda</option>
+        </select>
+        <input type="date" id="f-de" onchange="applyFilters()" title="Des de">
+        <input type="date" id="f-fins" onchange="applyFilters()" title="Fins a">
+        <button class="btn btn-secondary btn-sm" onclick="clearFilters()">✕ Netejar</button>
+        <span id="f-count" style="margin-left:auto;font-size:12px;color:var(--muted)"></span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="tbl-wrap">
+        <table class="main-tbl">
+          <thead>
+            <tr>
+              <th>Nº Fra. interna</th>
+              <th>Nº Fra. proveïdor</th>
+              <th>Data Fra.</th>
+              <th>Termini</th>
+              <th>Proveïdor</th>
+              <th>Concepte</th>
+              <th class="amt">Base imp.</th>
+              <th class="amt">Total</th>
+              <th class="amt">Pagat</th>
+              <th>Estat</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="tbl-body">
+            <tr><td colspan="11"><div class="empty"><div class="eico">🔄</div><p>Carregant...</p></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</main>
+</div>
+
+<!-- MODAL -->
+<div class="overlay" id="overlay" onclick="if(event.target===this)closeModal()">
+<div class="modal">
+  <div class="modal-hdr">
+    <h3 id="m-title">Nova factura rebuda</h3>
+    <span id="m-badge"></span>
+    <button class="modal-close" onclick="closeModal()">✕</button>
+  </div>
+  <div class="tabs">
+    <button class="tab on" data-tab="tp-fra">Factura</button>
+    <button class="tab" data-tab="tp-pag">Pagaments</button>
+    <button class="tab" data-tab="tp-cpt">Comptabilitat</button>
+    <button class="tab" data-tab="tp-not">Notes</button>
+  </div>
+  <div class="modal-body">
+
+    <!-- TAB FACTURA -->
+    <div class="tab-panel on" id="tp-fra">
+      <div class="grid3">
+        <div class="sec">Identificació</div>
+        <div class="fg">
+          <label>Nº Fra. interna *</label>
+          <input type="text" id="m-no" placeholder="FR-2026-001">
+        </div>
+        <div class="fg">
+          <label>Nº Fra. proveïdor</label>
+          <input type="text" id="m-no-prov" placeholder="Núm. factura del proveïdor">
+        </div>
+        <div class="fg">
+          <label>Estat</label>
+          <select id="m-estat" onchange="updateBadge()">
+            <option value="PENDENT">Pendent</option>
+            <option value="PARCIALMENT">Parcialment pagat</option>
+            <option value="PAGAT">Pagat</option>
+            <option value="VENCUDA">Vençuda</option>
+          </select>
+        </div>
+
+        <div class="sec">Proveïdor i dates</div>
+        <div class="fg full">
+          <label>Proveïdor</label>
+          <select id="m-prov">
+            <option value="">— Selecciona proveïdor —</option>
+          </select>
+        </div>
+        <div class="fg">
+          <label>Data factura *</label>
+          <input type="date" id="m-data">
+        </div>
+        <div class="fg">
+          <label>Data entrada</label>
+          <input type="date" id="m-entrada">
+        </div>
+        <div class="fg">
+          <label>Data termini pagament</label>
+          <input type="date" id="m-termini">
+        </div>
+
+        <div class="sec">Imports</div>
+        <div class="fg full">
+          <label>Concepte</label>
+          <input type="text" id="m-concepte" placeholder="Descripció del servei o producte...">
+        </div>
+        <div class="fg">
+          <label>Base Imposable</label>
+          <input type="number" id="m-bi" step="0.01" value="0" onchange="recalc()">
+        </div>
+        <div class="fg">
+          <label>% IVA suportat</label>
+          <input type="number" id="m-iva" step="0.1" value="21" min="0" max="100" onchange="recalc()">
+        </div>
+        <div class="fg">
+          <label>Divisa</label>
+          <select id="m-div">
+            <option value="EUR">EUR</option>
+            <option value="USD">USD</option>
+            <option value="GBP">GBP</option>
+            <option value="MXN">MXN</option>
+          </select>
+        </div>
+        <div class="fg">
+          <label>TC (si no EUR)</label>
+          <input type="number" id="m-tc" step="0.00001" value="1">
+        </div>
+      </div>
+
+      <div class="totals-box">
+        <div class="tot-row">
+          <span class="tl">Base Imposable</span>
+          <span class="tv" id="t-bi">0,00 EUR</span>
+        </div>
+        <div class="tot-row">
+          <span class="tl">IVA suportat</span>
+          <input class="pct-inp" type="number" id="t-iva-pct" value="21" min="0" max="100" step="0.1" onchange="syncIva()"> %
+          <span class="tv" id="t-iva">0,00 EUR</span>
+        </div>
+        <div class="tot-row tot-total">
+          <span class="tl">Total Factura</span>
+          <span class="tv" id="t-tot">0,00 EUR</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB PAGAMENTS -->
+    <div class="tab-panel" id="tp-pag">
+      <div style="margin-bottom:12px;display:flex;align-items:center;gap:10px">
+        <span style="font-size:13px;color:var(--muted)">Registre de pagaments efectuats a aquest proveïdor per aquesta factura</span>
+        <span id="pag-resum" style="margin-left:auto;font-size:13px;font-weight:700;color:var(--blue)"></span>
+      </div>
+
+      <div class="pag-list">
+        <div class="pag-hdr">
+          <div>Data</div>
+          <div>Forma pag.</div>
+          <div style="text-align:right">Import</div>
+          <div>Banc</div>
+          <div style="text-align:right">Desp. banc.</div>
+          <div></div>
+        </div>
+        <div id="pag-body">
+          <div class="pag-empty">Cap pagament registrat</div>
+        </div>
+        <!-- Nova fila pagament -->
+        <div class="add-pag-row" id="add-pag-row">
+          <input type="date" id="np-data">
+          <select id="np-fpag">
+            <option>Transferència</option>
+            <option>Rebut domiciliat</option>
+            <option>Efectiu</option>
+            <option>Xec</option>
+          </select>
+          <input type="number" id="np-import" step="0.01" placeholder="0,00" style="text-align:right">
+          <input type="text" id="np-banc" placeholder="Banc">
+          <input type="number" id="np-desp" step="0.01" value="0" style="text-align:right">
+          <button class="btn btn-green btn-xs" onclick="addPagament()" title="Afegir pagament">+</button>
+        </div>
+      </div>
+
+      <div class="totals-box" style="max-width:280px">
+        <div class="tot-row">
+          <span class="tl">Total factura</span>
+          <span class="tv" id="pp-total">—</span>
+        </div>
+        <div class="tot-row">
+          <span class="tl">Total pagat</span>
+          <span class="tv" style="color:var(--green);font-weight:700" id="pp-pagat">—</span>
+        </div>
+        <div class="tot-row tot-total">
+          <span class="tl">Pendent</span>
+          <span class="tv" id="pp-pendent">—</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB COMPTABILITAT -->
+    <div class="tab-panel" id="tp-cpt">
+      <div class="grid3">
+        <div class="sec">Comptes PGC</div>
+        <div class="fg">
+          <label>Compte proveïdor (400x)</label>
+          <input type="text" id="m-cte-prov" value="400">
+        </div>
+        <div class="fg">
+          <label>Compte despeses (600x)</label>
+          <input type="text" id="m-cte-desp" value="600">
+        </div>
+        <div class="fg">
+          <label>IVA suportat (472)</label>
+          <input type="text" id="m-cte-iva" value="472">
+        </div>
+        <div class="fg">
+          <label>Assentat</label>
+          <select id="m-assentat">
+            <option value="false">No</option>
+            <option value="true">Sí</option>
+          </select>
+        </div>
+      </div>
+      <div style="margin-top:22px">
+        <div class="sec" style="border:none;margin-bottom:10px">Assentament comptable (previsió)</div>
+        <table class="ass-tbl">
+          <thead>
+            <tr>
+              <th style="width:100px">Compte</th>
+              <th>Concepte</th>
+              <th class="rgt" style="width:120px">Deure</th>
+              <th class="rgt" style="width:120px">Haver</th>
+            </tr>
+          </thead>
+          <tbody id="ass-body"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- TAB NOTES -->
+    <div class="tab-panel" id="tp-not">
+      <div class="grid2">
+        <div class="fg full">
+          <label>Notes</label>
+          <textarea id="m-notes" rows="6"></textarea>
+        </div>
+      </div>
+    </div>
+
+  </div>
+  <div class="modal-ftr">
+    <button class="btn btn-secondary" onclick="closeModal()">Cancel·lar</button>
+    <button class="btn btn-primary" id="btn-save" onclick="saveFactura()">💾 Guardar</button>
+  </div>
+</div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+const SB_URL = 'https://ftuaeaghnnlusigqtoqv.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ0dWFlYWdobm5sdXNpZ3F0b3F2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAxNjI0MjIsImV4cCI6MjA5NTczODQyMn0.9n1gWnq_QfrLIWU7sIBReXgQAGA-NPFOpsdDp-jbDW8';
+const HDR = {'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Prefer':'return=representation'};
+
+async function sbGet(t,q=''){const r=await fetch(`${SB_URL}/rest/v1/${t}?${q}`,{headers:HDR});if(!r.ok)throw new Error(await r.text());return r.json()}
+async function sbPost(t,d){const r=await fetch(`${SB_URL}/rest/v1/${t}`,{method:'POST',headers:HDR,body:JSON.stringify(d)});if(!r.ok)throw new Error(await r.text());return r.json()}
+async function sbPatch(t,id,d){const r=await fetch(`${SB_URL}/rest/v1/${t}?id=eq.${id}`,{method:'PATCH',headers:HDR,body:JSON.stringify(d)});if(!r.ok)throw new Error(await r.text());return r.json()}
+async function sbDel(t,id){const r=await fetch(`${SB_URL}/rest/v1/${t}?id=eq.${id}`,{method:'DELETE',headers:HDR});if(!r.ok)throw new Error(await r.text())}
+
+let allFra=[], allProv=[], curId=null, curPagaments=[], curBi=0;
+
+async function init(){
+  await Promise.all([loadProveidors(), loadFactures()]);
+}
+
+async function loadProveidors(){
+  try{
+    allProv = await sbGet('proveidors','select=id,nom,sinonim&order=nom');
+    const sel = document.getElementById('m-prov');
+    sel.innerHTML = '<option value="">— Selecciona proveïdor —</option>';
+    allProv.forEach(p=>{
+      const o=document.createElement('option');
+      o.value=p.id; o.textContent=p.nom+(p.sinonim?` (${p.sinonim})`:'');
+      sel.appendChild(o);
+    });
+  }catch(e){console.error(e)}
+}
+
+async function loadFactures(){
+  try{
+    allFra = await sbGet('factures_rebudes','select=*,proveidors(nom,sinonim)&order=data_fra.desc');
+    renderStats(); renderTable(allFra);
+  }catch(e){ toast('Error: '+e.message,'err'); allFra=[]; renderTable([]); }
+}
+
+async function refreshData(){ toast('Actualitzant...','inf'); await loadFactures(); toast('Actualitzat','ok'); }
+
+// ── ESTAT ──
+function getEstat(fr){
+  if(fr.estat==='PAGAT') return 'PAGAT';
+  const today=new Date(); today.setHours(0,0,0,0);
+  if(!fr.data_termini) return 'PENDENT';
+  const t=new Date(fr.data_termini+'T00:00:00');
+  if(t<today) return 'VENCUDA';
+  if((t-today)/864e5<=7) return 'PROXIM';
+  if(fr.import_pagat>0) return 'PARCIALMENT';
+  return 'PENDENT';
+}
+const ESTAT_MAP={
+  PAGAT:      ['bg','Pagat'],
+  PENDENT:    ['by','Pendent'],
+  PARCIALMENT:['bp','Parcialment'],
+  PROXIM:     ['ba','Proper termini'],
+  VENCUDA:    ['br','Vençuda'],
+};
+function badgeHtml(fr){
+  const [cls,lbl]=ESTAT_MAP[getEstat(fr)]||['bx',fr.estat];
+  return `<span class="badge ${cls}">${lbl}</span>`;
+}
+
+// ── STATS ──
+function renderStats(){
+  let n={PAGAT:0,PENDENT:0,PROXIM:0,VENCUDA:0};
+  let e={PAGAT:0,PENDENT:0,PROXIM:0,VENCUDA:0};
+  allFra.forEach(fr=>{
+    const s=getEstat(fr); const tot=fr.total_factura||0;
+    if(s==='PARCIALMENT'){n.PENDENT++;e.PENDENT+=tot;}
+    else if(n[s]!==undefined){n[s]++;e[s]+=tot;}
+    else if(s==='PROXIM'){n.PROXIM++;e.PROXIM+=tot;}
+  });
+  const f=v=>v.toLocaleString('ca-ES',{minimumFractionDigits:2,maximumFractionDigits:2})+' €';
+  document.getElementById('s-pag').textContent=n.PAGAT;
+  document.getElementById('s-pag-e').textContent=f(e.PAGAT);
+  document.getElementById('s-pen').textContent=n.PENDENT;
+  document.getElementById('s-pen-e').textContent=f(e.PENDENT);
+  document.getElementById('s-prx').textContent=n.PROXIM;
+  document.getElementById('s-prx-e').textContent=f(e.PROXIM);
+  document.getElementById('s-ven').textContent=n.VENCUDA;
+  document.getElementById('s-ven-e').textContent=f(e.VENCUDA);
+}
+
+// ── TAULA ──
+function renderTable(rows){
+  document.getElementById('f-count').textContent=rows.length+' factures';
+  const tbody=document.getElementById('tbl-body');
+  if(!rows.length){
+    tbody.innerHTML=`<tr><td colspan="11"><div class="empty"><div class="eico">📥</div><p>Cap factura rebuda.</p><button class="btn btn-primary" onclick="openModal(null)">+ Nova factura rebuda</button></div></td></tr>`;
+    return;
+  }
+  const fd=d=>d?new Date(d+'T00:00:00').toLocaleDateString('ca-ES',{day:'2-digit',month:'2-digit',year:'numeric'}):'—';
+  const fe=(n,d=2)=>(n||0).toLocaleString('ca-ES',{minimumFractionDigits:d,maximumFractionDigits:d});
+  tbody.innerHTML=rows.map(fr=>{
+    const pnom=fr.proveidors?.nom||'—';
+    const pagat=fr.import_pagat||0; const tot=fr.total_factura||0;
+    return `<tr onclick="openModal(${fr.id})">
+      <td><span class="no-fra">${fr.no_factura}</span></td>
+      <td style="color:var(--muted);font-size:12px">${fr.no_fra_prov||'—'}</td>
+      <td>${fd(fr.data_fra)}</td>
+      <td>${fd(fr.data_termini)}</td>
+      <td style="font-weight:600">${pnom}</td>
+      <td style="max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted);font-size:12px" title="${fr.concepte||''}">${fr.concepte||'—'}</td>
+      <td class="amt">${fe(fr.base_imposable)}</td>
+      <td class="amt" style="font-weight:700">${fe(tot)}</td>
+      <td class="amt" style="color:${pagat>=tot&&tot>0?'var(--green)':'var(--muted)'}">${fe(pagat)}</td>
+      <td>${badgeHtml(fr)}</td>
+      <td onclick="event.stopPropagation()" style="white-space:nowrap">
+        <button class="btn btn-secondary btn-xs" onclick="openModal(${fr.id})">✏️</button>
+        <button class="btn btn-xs btn-danger" style="margin-left:4px" onclick="confirmDel(${fr.id})" title="Eliminar">✕</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+// ── FILTRES ──
+function applyFilters(){
+  const cerca=document.getElementById('f-cerca').value.toLowerCase().trim();
+  const est=document.getElementById('f-estat').value;
+  const de=document.getElementById('f-de').value;
+  const fins=document.getElementById('f-fins').value;
+  const res=allFra.filter(fr=>{
+    const pnom=fr.proveidors?.nom||'';
+    const mc=!cerca||fr.no_factura.toLowerCase().includes(cerca)||(fr.no_fra_prov||'').toLowerCase().includes(cerca)||pnom.toLowerCase().includes(cerca)||(fr.concepte||'').toLowerCase().includes(cerca);
+    const me=!est||getEstat(fr)===est||fr.estat===est;
+    const md=!de||(fr.data_fra>=de);
+    const mf=!fins||(fr.data_fra<=fins);
+    return mc&&me&&md&&mf;
+  });
+  renderTable(res);
+}
+function clearFilters(){
+  ['f-cerca','f-de','f-fins'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('f-estat').value='';
+  renderTable(allFra);
+}
+
+// ── MODAL ──
+async function openModal(id){
+  curId=id; curPagaments=[];
+  showTab('tp-fra');
+  if(id){
+    const fr=allFra.find(x=>x.id===id);
+    if(!fr) return;
+    document.getElementById('m-title').textContent='Fra. '+fr.no_factura;
+    fillForm(fr);
+    await loadPagaments(id);
+  } else {
+    document.getElementById('m-title').textContent='Nova factura rebuda';
+    resetForm();
+    renderPagaments();
+  }
+  document.getElementById('overlay').classList.add('open');
+}
+function closeModal(){ document.getElementById('overlay').classList.remove('open'); curId=null; curPagaments=[]; }
+
+function fillForm(fr){
+  const s=(id,v)=>{const el=document.getElementById(id);if(el)el.value=(v??'')};
+  s('m-no',fr.no_factura); s('m-no-prov',fr.no_fra_prov); s('m-estat',fr.estat);
+  s('m-prov',fr.id_prov); s('m-data',fr.data_fra); s('m-entrada',fr.data_entrada); s('m-termini',fr.data_termini);
+  s('m-concepte',fr.concepte); s('m-bi',fr.base_imposable??0); s('m-iva',fr.tipus_iva??21);
+  s('m-div',fr.divisa||'EUR'); s('m-tc',fr.tc_divisa??1);
+  s('m-cte-prov',fr.compte_prov||'400'); s('m-cte-desp',fr.compte_despeses||'600');
+  s('m-cte-iva',fr.compte_iva_sup||'472'); s('m-assentat',fr.assentat?'true':'false');
+  s('m-notes',fr.notes);
+  curBi=fr.base_imposable||0;
+  updateBadge(); recalc();
+}
+
+function resetForm(){
+  const today=new Date().toISOString().split('T')[0];
+  document.getElementById('m-no').value='';
+  document.getElementById('m-no-prov').value='';
+  document.getElementById('m-estat').value='PENDENT';
+  document.getElementById('m-prov').value='';
+  document.getElementById('m-data').value=today;
+  document.getElementById('m-entrada').value=today;
+  document.getElementById('m-termini').value='';
+  document.getElementById('m-concepte').value='';
+  document.getElementById('m-bi').value=0;
+  document.getElementById('m-iva').value=21;
+  document.getElementById('m-div').value='EUR';
+  document.getElementById('m-tc').value=1;
+  document.getElementById('m-cte-prov').value='400';
+  document.getElementById('m-cte-desp').value='600';
+  document.getElementById('m-cte-iva').value='472';
+  document.getElementById('m-assentat').value='false';
+  document.getElementById('m-notes').value='';
+  curBi=0; updateBadge(); recalc(); renderPagaments();
+}
+
+function updateBadge(){
+  const e=document.getElementById('m-estat').value;
+  const [cls,lbl]=ESTAT_MAP[e]||['bx',e];
+  document.getElementById('m-badge').innerHTML=`<span class="badge ${cls}">${lbl}</span>`;
+}
+
+// ── CÀLCULS ──
+function recalc(){
+  curBi=parseFloat(document.getElementById('m-bi').value)||0;
+  const ivaPc=parseFloat(document.getElementById('m-iva').value)||0;
+  document.getElementById('t-iva-pct').value=ivaPc;
+  const iva=Math.round(curBi*ivaPc/100*100)/100;
+  const tot=Math.round((curBi+iva)*100)/100;
+  const fe=n=>n.toLocaleString('ca-ES',{minimumFractionDigits:2,maximumFractionDigits:2})+' EUR';
+  document.getElementById('t-bi').textContent=fe(curBi);
+  document.getElementById('t-iva').textContent=fe(iva);
+  document.getElementById('t-tot').textContent=fe(tot);
+  updateAssentament();
+  updatePagResum();
+}
+function syncIva(){
+  document.getElementById('m-iva').value=document.getElementById('t-iva-pct').value;
+  recalc();
+}
+
+// ── PAGAMENTS ──
+async function loadPagaments(idFra){
+  try{
+    curPagaments=await sbGet('pagaments_proveidors',`id_factura=eq.${idFra}&order=data_pag`);
+  }catch{curPagaments=[];}
+  renderPagaments();
+}
+
+function renderPagaments(){
+  const body=document.getElementById('pag-body');
+  if(!curPagaments.length){
+    body.innerHTML='<div class="pag-empty">Cap pagament registrat</div>';
+  } else {
+    const fd=d=>d?new Date(d+'T00:00:00').toLocaleDateString('ca-ES',{day:'2-digit',month:'2-digit',year:'numeric'}):'—';
+    const fe=n=>(n||0).toLocaleString('ca-ES',{minimumFractionDigits:2,maximumFractionDigits:2});
+    body.innerHTML=curPagaments.map((p,i)=>`
+      <div class="pag-row">
+        <div>${fd(p.data_pag)}</div>
+        <div>${p.forma_pag||'—'}</div>
+        <div style="text-align:right;font-weight:600">${fe(p.import)} €</div>
+        <div style="color:var(--muted);font-size:12px">${p.banc||'—'}</div>
+        <div style="text-align:right;font-size:12px;color:var(--muted)">${p.despeses_banc>0?fe(p.despeses_banc)+' €':'—'}</div>
+        <div><button class="btn btn-xs btn-danger" onclick="delPagament(${i})" title="Eliminar">✕</button></div>
+      </div>`).join('');
+  }
+  updatePagResum();
+}
+
+function updatePagResum(){
+  const ivaPc=parseFloat(document.getElementById('m-iva').value)||0;
+  const tot=Math.round((curBi+curBi*ivaPc/100)*100)/100;
+  const pagat=curPagaments.reduce((s,p)=>s+(p.import||0),0);
+  const pendent=tot-pagat;
+  const fe=n=>n.toLocaleString('ca-ES',{minimumFractionDigits:2,maximumFractionDigits:2})+' €';
+  document.getElementById('pp-total').textContent=fe(tot);
+  document.getElementById('pp-pagat').textContent=fe(pagat);
+  document.getElementById('pp-pendent').textContent=fe(pendent);
+  document.getElementById('pag-resum').textContent=`Pagat: ${fe(pagat)} / ${fe(tot)}`;
+}
+
+async function addPagament(){
+  const data=document.getElementById('np-data').value;
+  const imp=parseFloat(document.getElementById('np-import').value)||0;
+  if(!data||imp<=0){ toast('Introdueix data i import','err'); return; }
+  const pag={
+    data_pag:data,
+    forma_pag:document.getElementById('np-fpag').value,
+    import:imp,
+    banc:document.getElementById('np-banc').value||null,
+    despeses_banc:parseFloat(document.getElementById('np-desp').value)||0,
+  };
+  if(curId){
+    try{
+      pag.id_factura=curId;
+      const res=await sbPost('pagaments_proveidors',pag);
+      curPagaments.push(res[0]);
+      // Actualitzar import_pagat i estat
+      const pagat=curPagaments.reduce((s,p)=>s+(p.import||0),0);
+      const ivaPc=parseFloat(document.getElementById('m-iva').value)||0;
+      const tot=Math.round((curBi+curBi*ivaPc/100)*100)/100;
+      const nouEstat=pagat>=tot?'PAGAT':pagat>0?'PARCIALMENT':'PENDENT';
+      await sbPatch('factures_rebudes',curId,{import_pagat:pagat,estat:nouEstat});
+      document.getElementById('m-estat').value=nouEstat;
+      updateBadge();
+      toast('Pagament afegit','ok');
+    }catch(e){ toast('Error: '+e.message,'err'); return; }
+  } else {
+    pag.id_factura=null;
+    curPagaments.push(pag);
+  }
+  // Netejar camps
+  document.getElementById('np-data').value='';
+  document.getElementById('np-import').value='';
+  document.getElementById('np-banc').value='';
+  document.getElementById('np-desp').value=0;
+  renderPagaments();
+}
+
+async function delPagament(i){
+  const pag=curPagaments[i];
+  if(!confirm('Eliminar aquest pagament?')) return;
+  if(pag.id){
+    try{
+      await sbDel('pagaments_proveidors',pag.id);
+    }catch(e){ toast('Error: '+e.message,'err'); return; }
+  }
+  curPagaments.splice(i,1);
+  if(curId){
+    const pagat=curPagaments.reduce((s,p)=>s+(p.import||0),0);
+    const ivaPc=parseFloat(document.getElementById('m-iva').value)||0;
+    const tot=Math.round((curBi+curBi*ivaPc/100)*100)/100;
+    const nouEstat=pagat>=tot&&tot>0?'PAGAT':pagat>0?'PARCIALMENT':'PENDENT';
+    await sbPatch('factures_rebudes',curId,{import_pagat:pagat,estat:nouEstat});
+    document.getElementById('m-estat').value=nouEstat;
+    updateBadge();
+  }
+  renderPagaments();
+  toast('Pagament eliminat','ok');
+}
+
+// ── ASSENTAMENT ──
+function updateAssentament(){
+  const bi=curBi;
+  const ivaPc=parseFloat(document.getElementById('m-iva').value)||0;
+  const iva=Math.round(bi*ivaPc/100*100)/100;
+  const tot=Math.round((bi+iva)*100)/100;
+  const noFra=document.getElementById('m-no').value||'Fra.';
+  const cProv=document.getElementById('m-cte-prov')?.value||'400';
+  const cDesp=document.getElementById('m-cte-desp')?.value||'600';
+  const cIva=document.getElementById('m-cte-iva')?.value||'472';
+  const fe=n=>n.toLocaleString('ca-ES',{minimumFractionDigits:2,maximumFractionDigits:2});
+  const rows=[
+    {c:cDesp,desc:`Despeses — ${noFra}`,dr:bi,hr:0},
+    {c:cIva, desc:`IVA suportat ${ivaPc}%`,dr:iva,hr:0},
+    {c:cProv,desc:`Proveïdor — ${noFra}`,dr:0,hr:tot},
+  ];
+  const body=document.getElementById('ass-body');
+  if(body) body.innerHTML=rows.map(r=>`<tr>
+    <td class="compte">${r.c}</td><td>${r.desc}</td>
+    <td class="rgt" style="color:var(--green)">${r.dr>0?fe(r.dr):''}</td>
+    <td class="rgt" style="color:var(--red-txt)">${r.hr>0?fe(r.hr):''}</td>
+  </tr>`).join('');
+}
+
+// ── GUARDAR ──
+async function saveFactura(){
+  const noFra=document.getElementById('m-no').value.trim();
+  const dataFra=document.getElementById('m-data').value;
+  if(!noFra||!dataFra){ toast('Número i data obligatoris','err'); return; }
+  const ivaPc=parseFloat(document.getElementById('m-iva').value)||0;
+  const iva=Math.round(curBi*ivaPc/100*100)/100;
+  const tot=Math.round((curBi+iva)*100)/100;
+  const pagat=curPagaments.reduce((s,p)=>s+(p.import||0),0);
+  const idProv=document.getElementById('m-prov').value;
+  const data={
+    no_factura:noFra,
+    no_fra_prov:document.getElementById('m-no-prov').value||null,
+    id_prov:idProv?parseInt(idProv):null,
+    data_fra:dataFra,
+    data_entrada:document.getElementById('m-entrada').value||null,
+    data_termini:document.getElementById('m-termini').value||null,
+    forma_pag:document.getElementById('m-fpag')?.value||'Transferència',
+    divisa:document.getElementById('m-div').value,
+    tc_divisa:parseFloat(document.getElementById('m-tc').value)||1,
+    base_imposable:curBi,
+    tipus_iva:ivaPc,
+    import_iva:iva,
+    total_factura:tot,
+    estat:document.getElementById('m-estat').value,
+    import_pagat:pagat,
+    concepte:document.getElementById('m-concepte').value||null,
+    compte_prov:document.getElementById('m-cte-prov').value,
+    compte_despeses:document.getElementById('m-cte-desp').value,
+    compte_iva_sup:document.getElementById('m-cte-iva').value,
+    assentat:document.getElementById('m-assentat').value==='true',
+    notes:document.getElementById('m-notes').value||null,
+    updated_at:new Date().toISOString(),
+  };
+  const btn=document.getElementById('btn-save');
+  btn.disabled=true; btn.innerHTML='<span class="spin"></span> Guardant...';
+  try{
+    let newId=curId;
+    if(curId){ await sbPatch('factures_rebudes',curId,data); }
+    else {
+      const res=await sbPost('factures_rebudes',data);
+      newId=res[0]?.id;
+    }
+    // Guardar pagaments pendents (nova factura)
+    if(!curId && curPagaments.length && newId){
+      const pags=curPagaments.map(p=>({...p,id_factura:newId}));
+      await sbPost('pagaments_proveidors',pags);
+    }
+    toast('Factura guardada','ok');
+    await loadFactures();
+    closeModal();
+  }catch(e){ toast('Error: '+e.message,'err'); }
+  finally{ btn.disabled=false; btn.innerHTML='💾 Guardar'; }
+}
+
+async function confirmDel(id){
+  const fr=allFra.find(x=>x.id===id);
+  if(!fr) return;
+  if(!confirm(`Eliminar la factura ${fr.no_factura}?`)) return;
+  try{ await sbDel('factures_rebudes',id); toast('Eliminada','ok'); await loadFactures(); }
+  catch(e){ toast('Error: '+e.message,'err'); }
+}
+
+function showTab(tabId){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('on',t.dataset.tab===tabId));
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.toggle('on',p.id===tabId));
+  if(tabId==='tp-cpt') updateAssentament();
+  if(tabId==='tp-pag') updatePagResum();
+}
+document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>showTab(t.dataset.tab)));
+
+function toast(msg,type='inf'){
+  const el=document.createElement('div');
+  el.className=`toast ${type}`;el.textContent=msg;
+  document.getElementById('toast').appendChild(el);
+  setTimeout(()=>el.remove(),3500);
+}
+
+// Inicialitzar data pagament
+document.getElementById('np-data').value=new Date().toISOString().split('T')[0];
+
+init();
+</script>
+</body>
+</html>

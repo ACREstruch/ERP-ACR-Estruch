@@ -829,11 +829,11 @@ async function sbPatch(table, id, data){
   return r.json();
 }
 async function sbDel(table, id){
-  const r = await fetch(`${SB_URL}/rest/v1/${table}?id=eq.${id}`, {method:'DELETE', headers:HDR});
+  const r = await fetch(`${SB_URL}/rest/v1/${table}?id=eq.${id}`, {method:'DELETE', headers:getHDR()});
   if(!r.ok) throw new Error(await r.text());
 }
 async function sbDelWhere(table, col, val){
-  const r = await fetch(`${SB_URL}/rest/v1/${table}?${col}=eq.${encodeURIComponent(val)}`, {method:'DELETE', headers:HDR});
+  const r = await fetch(`${SB_URL}/rest/v1/${table}?${col}=eq.${encodeURIComponent(val)}`, {method:'DELETE', headers:getHDR()});
   if(!r.ok) throw new Error(await r.text());
 }
 

@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ERP ACR Estruch — Accés</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --blue:#00387C;--blue-mid:#1a54a0;
+  --green:#1a8c42;--red:#c0392b;
+  --r:8px;
+}
+body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:linear-gradient(135deg,#00387C 0%,#1a54a0 50%,#00387C 100%);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+.card{background:#fff;border-radius:12px;box-shadow:0 24px 64px rgba(0,0,0,.3);width:100%;max-width:400px;overflow:hidden}
+.card-top{background:linear-gradient(135deg,var(--blue),var(--blue-mid));padding:36px 32px;text-align:center}
+.logo{font-size:32px;font-weight:800;color:#fff;letter-spacing:-.5px;margin-bottom:6px}
+.logo .sep{color:rgba(255,255,255,.4);font-weight:300}
+.logo-sub{font-size:12px;color:rgba(255,255,255,.65);letter-spacing:.5px;font-style:italic;margin-bottom:4px}
+.logo-desc{font-size:13px;color:rgba(255,255,255,.5);margin-top:12px}
+.card-body{padding:32px}
+.fg{display:flex;flex-direction:column;gap:6px;margin-bottom:18px}
+.fg label{font-size:11px;font-weight:700;color:#6c757d;text-transform:uppercase;letter-spacing:.5px}
+.fg input{padding:10px 14px;border:2px solid #dee2e6;border-radius:var(--r);font-size:14px;transition:border-color .15s;outline:none;font-family:inherit}
+.fg input:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(0,56,124,.1)}
+.btn-login{width:100%;padding:12px;background:var(--blue);color:#fff;border:none;border-radius:var(--r);font-size:15px;font-weight:700;cursor:pointer;transition:background .15s;margin-top:4px;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn-login:hover{background:var(--blue-mid)}
+.btn-login:disabled{opacity:.6;cursor:default}
+.error{background:#f8d7da;color:#721c24;border:1px solid #f5c6cb;border-radius:var(--r);padding:10px 14px;font-size:13px;margin-bottom:16px;display:none}
+.error.show{display:block}
+.footer-txt{text-align:center;margin-top:20px;font-size:12px;color:#adb5bd}
+.spin{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:rot .6s linear infinite}
+@keyframes rot{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="card-top">
+    <div class="logo">ACR<span class="sep">|</span>Estruch</div>
+    <div class="logo-sub">export &amp; consulting</div>
+    <div class="logo-desc">Sistema ERP — Accés restringit</div>
+  </div>
+  <div class="card-body">
+    <div class="error" id="error-msg"></div>
+    <div class="fg">
+      <label>Correu electrònic</label>
+      <input type="email" id="email" placeholder="nom@acrestruch.com" autocomplete="email">
+    </div>
+    <div class="fg">
+      <label>Contrasenya</label>
+      <input type="password" id="password" placeholder="••••••••" autocomplete="current-password">
+    </div>
+    <button class="btn-login" id="btn-login" onclick="doLogin()">Entrar</button>
+    <div class="footer-txt">ACR Estruch ERP v1.0</div>
+  </div>
+</div>
+
+<script>
+const SB_URL='https://ftuaeaghnnlusigqtoqv.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ0dWFlYWdobm5sdXNpZ3F0b3F2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAxNjI0MjIsImV4cCI6MjA5NTczODQyMn0.9n1gWnq_QfrLIWU7sIBReXgQAGA-NPFOpsdDp-jbDW8';
+
+// Redirigir si ja hi ha sessió
+(function(){
+  try{
+    const s=localStorage.getItem('erp_session');
+    if(s){
+      const sess=JSON.parse(s);
+      if(Date.now()/1000 < sess.expires_at-60) location.replace('index.html');
+    }
+  }catch(e){}
+})();
+
+// Enter key
+document.getElementById('password').addEventListener('keydown',e=>{
+  if(e.key==='Enter') doLogin();
+});
+document.getElementById('email').addEventListener('keydown',e=>{
+  if(e.key==='Enter') document.getElementById('password').focus();
+});
+
+async function doLogin(){
+  const email=document.getElementById('email').value.trim();
+  const password=document.getElementById('password').value;
+  const errEl=document.getElementById('error-msg');
+  const btn=document.getElementById('btn-login');
+
+  errEl.classList.remove('show');
+  if(!email||!password){ showErr('Introdueix correu i contrasenya.'); return; }
+
+  btn.disabled=true;
+  btn.innerHTML='<span class="spin"></span> Verificant...';
+
+  try{
+    const r=await fetch(`${SB_URL}/auth/v1/token?grant_type=password`,{
+      method:'POST',
+      headers:{'Content-Type':'application/json','apikey':SB_KEY},
+      body:JSON.stringify({email,password})
+    });
+    const data=await r.json();
+    if(!r.ok) throw new Error(data.error_description||data.msg||'Credencials incorrectes');
+
+    localStorage.setItem('erp_session', JSON.stringify(data));
+    location.replace('index.html');
+  }catch(e){
+    showErr(e.message==='Invalid login credentials'?'Correu o contrasenya incorrectes.':e.message);
+    btn.disabled=false;
+    btn.innerHTML='Entrar';
+  }
+}
+
+function showErr(msg){
+  const el=document.getElementById('error-msg');
+  el.textContent=msg;
+  el.classList.add('show');
+}
+</script>
+</body>
+</html>

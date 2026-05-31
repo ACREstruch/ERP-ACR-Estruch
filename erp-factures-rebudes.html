@@ -135,6 +135,19 @@ th.amt{text-align:right}
 input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
 input[type=number]{-moz-appearance:textfield}
 ::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:rgba(0,0,0,.2);border-radius:3px}
+
+/* ── FILES COMPACTES ── */
+.main-tbl td{padding:5px 10px!important;font-size:12.5px;}
+/* ── HEADER FIX (sticky) ── */
+.tbl-wrap{overflow-x:auto;overflow-y:auto;max-height:calc(100vh - 280px);}
+.main-tbl thead th{position:sticky;top:0;z-index:3;background:#f0f4f8;box-shadow:0 2px 0 var(--border);}
+/* ── GRUP ANY ── */
+.grp-hdr{background:var(--blue)!important;cursor:pointer;user-select:none;}
+.grp-hdr td{color:#fff!important;font-weight:700!important;font-size:12px!important;padding:5px 14px!important;letter-spacing:.3px;}
+.grp-hdr:hover td{background:var(--blue-mid)!important;}
+.grp-hdr .grp-ico{display:inline-block;width:14px;transition:transform .2s;}
+.grp-hdr.collapsed .grp-ico{transform:rotate(-90deg);}
+
 </style>
 </head>
 <body>
@@ -509,6 +522,17 @@ async function loadFactures(){
 
 async function refreshData(){ toast('Actualitzant...','inf'); await loadFactures(); toast('Actualitzat','ok'); }
 
+
+function toggleYear(year){
+  if(collapsedYears.has(year)) collapsedYears.delete(year);
+  else collapsedYears.add(year);
+  document.querySelectorAll(`[data-yr='${year}']`).forEach(tr=>{
+    tr.style.display = collapsedYears.has(year)?'none':'';
+  });
+  const hdr = document.querySelector(`[data-yr-hdr='${year}']`);
+  if(hdr) hdr.classList.toggle('collapsed', collapsedYears.has(year));
+}
+
 // ── ESTAT ──
 function getEstat(fr){
   if(fr.estat==='PAGAT') return 'PAGAT';
@@ -563,27 +587,52 @@ function renderTable(rows){
   }
   const fd=d=>d?new Date(d+'T00:00:00').toLocaleDateString('ca-ES',{day:'2-digit',month:'2-digit',year:'numeric'}):'—';
   const fe=(n,d=2)=>(n||0).toLocaleString('ca-ES',{minimumFractionDigits:d,maximumFractionDigits:d});
-  tbody.innerHTML=rows.map(fr=>{
-    const pnom=fr.proveidors?.nom||'—';
-    const pagat=fr.import_pagat||0; const tot=fr.total_factura||0;
-    return `<tr onclick="openModal(${fr.id})">
-      <td style="font-variant-numeric:tabular-nums;color:var(--muted);font-size:12px">${fr.id_insp||'—'}</td>
-      <td><span class="no-fra">${fr.no_factura}</span></td>
-      <td style="color:var(--muted);font-size:12px">${fr.no_fra_prov||'—'}</td>
-      <td>${fd(fr.data_fra)}</td>
-      <td>${fd(fr.data_termini)}</td>
-      <td style="font-weight:600">${pnom}</td>
-      <td style="max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted);font-size:12px" title="${fr.concepte||''}">${fr.concepte||'—'}</td>
-      <td class="amt">${fe(fr.base_imposable)}</td>
-      <td class="amt" style="font-weight:700">${fe(tot)}</td>
-      <td class="amt" style="color:${pagat>=tot&&tot>0?'var(--green)':'var(--muted)'}">${fe(pagat)}</td>
-      <td>${badgeHtml(fr)}</td>
-      <td onclick="event.stopPropagation()" style="white-space:nowrap">
-        <button class="btn btn-secondary btn-xs" onclick="openModal(${fr.id})">✏️</button>
-        <button class="btn btn-xs btn-danger" style="margin-left:4px" onclick="confirmDel(${fr.id})" title="Eliminar">✕</button>
+
+  // Agrupar per any (desc)
+  const groups={};
+  rows.forEach(fr=>{
+    const yr=fr.data_fra?new Date(fr.data_fra+'T00:00:00').getFullYear():'—';
+    if(!groups[yr]) groups[yr]=[];
+    groups[yr].push(fr);
+  });
+  const years=Object.keys(groups).sort((a,b)=>b-a);
+
+  let html='';
+  years.forEach(yr=>{
+    const grpRows=groups[yr];
+    const collapsed=collapsedYears.has(String(yr));
+    const totalGrp=grpRows.reduce((s,f)=>s+(f.total_factura||0),0);
+    html+=`<tr class="grp-hdr${collapsed?' collapsed':''}" data-yr-hdr="${yr}" onclick="toggleYear('${yr}')">
+      <td colspan="12">
+        <span class="grp-ico">▼</span>
+        &nbsp;<strong>${yr}</strong>
+        &nbsp;— ${grpRows.length} factura${grpRows.length!==1?'s':''}
+        &nbsp;·&nbsp;Total: ${fe(totalGrp)} €
       </td>
     </tr>`;
-  }).join('');
+    grpRows.forEach(fr=>{
+      const pnom=fr.proveidors?.nom||'—';
+      const pagat=fr.import_pagat||0; const tot=fr.total_factura||0;
+      html+=`<tr data-yr="${yr}" style="${collapsed?'display:none':''}" onclick="openModal(${fr.id})">
+        <td style="color:var(--muted);font-size:11px">${fr.id_insp||'—'}</td>
+        <td><span class="no-fra">${fr.no_factura}</span></td>
+        <td style="color:var(--muted);font-size:11px">${fr.no_fra_prov||'—'}</td>
+        <td>${fd(fr.data_fra)}</td>
+        <td>${fd(fr.data_termini)}</td>
+        <td style="font-weight:600">${pnom}</td>
+        <td style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted);font-size:11px" title="${fr.concepte||''}">${fr.concepte||'—'}</td>
+        <td class="amt">${fe(fr.base_imposable)}</td>
+        <td class="amt" style="font-weight:700">${fe(tot)}</td>
+        <td class="amt" style="color:${pagat>=tot&&tot>0?'var(--green)':'var(--muted)'}">${fe(pagat)}</td>
+        <td>${badgeHtml(fr)}</td>
+        <td onclick="event.stopPropagation()" style="white-space:nowrap">
+          <button class="btn btn-secondary btn-xs" onclick="openModal(${fr.id})">✏️</button>
+          <button class="btn btn-xs btn-danger" style="margin-left:4px" onclick="confirmDel(${fr.id})" title="Eliminar">✕</button>
+        </td>
+      </tr>`;
+    });
+  });
+  tbody.innerHTML=html;
 }
 
 // ── FILTRES ──

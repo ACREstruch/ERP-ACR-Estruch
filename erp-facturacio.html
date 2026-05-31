@@ -326,9 +326,9 @@ input[type=number]{-moz-appearance:textfield}
 .tbl-wrap{overflow-x:auto;overflow-y:auto;max-height:calc(100vh - 280px);}
 .main-tbl thead th{position:sticky;top:0;z-index:3;background:#f0f4f8;box-shadow:0 2px 0 var(--border);}
 /* ── GRUP ANY ── */
-.grp-hdr{background:#E8E9F8!important;cursor:pointer;user-select:none;}
+.grp-hdr{background:transparent!important;cursor:pointer;user-select:none;border-bottom:1px solid var(--border-light);}
 .grp-hdr td{color:#00387C!important;font-weight:400!important;font-size:12px!important;padding:5px 14px!important;letter-spacing:.3px;}
-.grp-hdr:hover td{background:#d8daee!important;}
+.grp-hdr:hover td{background:var(--blue-light)!important;}
 .grp-hdr .grp-ico{display:inline-block;width:14px;transition:transform .2s;}
 .grp-hdr.collapsed .grp-ico{transform:rotate(-90deg);}
 
@@ -842,6 +842,7 @@ async function sbDelWhere(table, col, val){
 // ════════════════════════════════════════════════
 let allInvoices = [];
 let collapsedYears = new Set();
+let _grpsInit = false;
 
 let allClients  = [];
 let curId       = null;   // invoice id being edited
@@ -983,6 +984,16 @@ function renderTable(rows){
   }
   const fd = d => d ? new Date(d+'T00:00:00').toLocaleDateString('ca-ES',{day:'2-digit',month:'2-digit',year:'numeric'}) : '—';
   const fe = (n,d=2) => (n||0).toLocaleString('ca-ES',{minimumFractionDigits:d,maximumFractionDigits:d});
+
+  // Auto-collapse: primera càrrega → col·lapsar tots excepte any en curs
+  if (!_grpsInit) {
+    const _curYr = String(new Date().getFullYear());
+    rows.forEach(r => {
+      const yr = String((r.data_fra ? new Date(r.data_fra+'T00:00:00').getFullYear() : '—'));
+      if (yr !== _curYr) collapsedYears.add(yr);
+    });
+    _grpsInit = true;
+  }
 
   // Agrupar per any (desc)
   const groups = {};

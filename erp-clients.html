@@ -77,6 +77,10 @@ table.main-tbl{width:100%;border-collapse:collapse;font-size:13px}
 .main-tbl tbody tr:last-child td{border-bottom:none}
 .client-nom{font-weight:700;color:var(--blue)}
 .tag{display:inline-block;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600;background:var(--blue-light);color:var(--blue)}
+.sit{display:inline-block;padding:2px 9px;border-radius:12px;font-size:11px;font-weight:600;white-space:nowrap}
+.sit-act{background:#00387C;color:#fff;font-weight:700}
+.sit-na{background:#E8E9F8;color:#00387C}
+.sit-nul{background:#BA1419;color:#fff}
 
 /* EMPTY */
 .empty{text-align:center;padding:50px 20px;color:var(--muted)}
@@ -222,6 +226,7 @@ input[type=number]{-moz-appearance:textfield}
         <table class="main-tbl">
           <thead>
             <tr>
+              <th>Situació</th>
               <th>ID Client</th>
               <th>Raó Social</th>
               <th>Sinònim</th>
@@ -274,7 +279,15 @@ input[type=number]{-moz-appearance:textfield}
         </div>
         <div class="fg">
           <label>ID Client</label>
-          <input type="text" id="m-codi" placeholder="CLI190226CI8">
+          <input type="text" id="m-codi" placeholder="4300092">
+        </div>
+        <div class="fg">
+          <label>Situació</label>
+          <select id="m-sit">
+            <option value="ACT">ACT — Actiu</option>
+            <option value="N/A">N/A</option>
+            <option value="NUL">NUL — Anul·lat</option>
+          </select>
         </div>
         <div class="fg">
           <label>NIF / VAT</label>
@@ -466,6 +479,12 @@ function populatePaisFilter(){
   });
 }
 
+function sitBadge(s){
+  const map={ACT:['sit-act','ACT'],'N/A':['sit-na','N/A'],NUL:['sit-nul','NUL']};
+  const [cls,lbl]=map[s]||['sit-na',s||'ACT'];
+  return `<span class="sit ${cls}">${lbl}</span>`;
+}
+
 function renderTable(rows){
   document.getElementById('f-count').textContent = rows.length + ' clients';
   const tbody = document.getElementById('tbl-body');
@@ -478,6 +497,7 @@ function renderTable(rows){
     return;
   }
   tbody.innerHTML = rows.map(c=>`<tr onclick="openModal(${c.id})">
+    <td>${sitBadge(c.situacio)}</td>
     <td><span class="tag">${c.codi||'—'}</span></td>
     <td><span class="client-nom">${c.rao_social}</span></td>
     <td style="color:var(--muted)">${c.sinonim||'—'}</td>
@@ -539,7 +559,7 @@ function closeModal(){
 
 function fillForm(c){
   const s=(id,v)=>{const el=document.getElementById(id);if(el)el.value=(v??'')};
-  s('m-rao',c.rao_social); s('m-sin',c.sinonim); s('m-codi',c.codi); s('m-nif',c.nif_vat);
+  s('m-rao',c.rao_social); s('m-sin',c.sinonim); s('m-codi',c.codi); s('m-sit',c.situacio||'ACT'); s('m-nif',c.nif_vat);
   s('m-adr',c.adreca); s('m-cp',c.cp); s('m-ciu',c.ciutat); s('m-pais',c.pais);
   s('m-tel',c.tel); s('m-email',c.email); s('m-web',c.web);
   s('m-cnt-nom',c.cont_nom); s('m-cnt-cog',c.cont_cognom); s('m-cnt-email',c.cont_email);
@@ -555,6 +575,7 @@ function resetForm(){
   ['m-rao','m-sin','m-codi','m-nif','m-adr','m-cp','m-ciu','m-pais',
    'm-tel','m-email','m-web','m-cnt-nom','m-cnt-cog','m-cnt-email',
    'm-banc','m-iban','m-notes'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  document.getElementById('m-sit').value='ACT';
   document.getElementById('m-fpag').value='Transferència';
   document.getElementById('m-dies').value=30;
   document.getElementById('m-div').value='EUR';
@@ -570,6 +591,7 @@ async function saveClient(){
     rao_social:  rao,
     sinonim:     document.getElementById('m-sin').value||null,
     codi:        document.getElementById('m-codi').value||null,
+    situacio:    document.getElementById('m-sit').value||'ACT',
     nif_vat:     document.getElementById('m-nif').value||null,
     adreca:      document.getElementById('m-adr').value||null,
     cp:          document.getElementById('m-cp').value||null,

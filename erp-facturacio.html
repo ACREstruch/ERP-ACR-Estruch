@@ -385,28 +385,28 @@ input[type=number]{-moz-appearance:textfield}
     <!-- Stats -->
     <div class="stats-row">
       <div class="stat g">
-        <div class="stat-label">Cobrades</div>
+        <div class="stat-label">COB — Cobrades</div>
         <div class="stat-value" id="s-cob">—</div>
         <div class="stat-sub" id="s-cob-e">—</div>
         <div class="stat-icon">✅</div>
       </div>
-      <div class="stat y">
-        <div class="stat-label">Pendents</div>
+      <div class="stat r">
+        <div class="stat-label">PEND — Pendents</div>
         <div class="stat-value" id="s-pen">—</div>
         <div class="stat-sub" id="s-pen-e">—</div>
-        <div class="stat-icon">🕐</div>
+        <div class="stat-icon">🔴</div>
       </div>
       <div class="stat a">
-        <div class="stat-label">Venç en &lt;7 dies</div>
+        <div class="stat-label">VENÇ &lt;7 — Proper venc.</div>
         <div class="stat-value" id="s-prx">—</div>
         <div class="stat-sub" id="s-prx-e">—</div>
         <div class="stat-icon">⏰</div>
       </div>
-      <div class="stat r">
-        <div class="stat-label">Vençudes</div>
+      <div class="stat" style="border-top-color:var(--grey)">
+        <div class="stat-label">RECTF — Rectificatives</div>
         <div class="stat-value" id="s-ven">—</div>
         <div class="stat-sub" id="s-ven-e">—</div>
-        <div class="stat-icon">⚠️</div>
+        <div class="stat-icon">↩️</div>
       </div>
     </div>
 
@@ -416,11 +416,10 @@ input[type=number]{-moz-appearance:textfield}
         <input class="f-search" type="text" id="f-cerca" placeholder="🔍  Cerca factura, client, projecte..." oninput="applyFilters()">
         <select id="f-estat" onchange="applyFilters()">
           <option value="">Tots els estats</option>
-          <option value="COBRAT">Cobrat</option>
-          <option value="PENDENT">Pendent</option>
-          <option value="PROXIM">Proper venciment</option>
-          <option value="VENCUDA">Vençuda</option>
-          <option value="RECTIFICATIVA">Rectificativa</option>
+          <option value="COBRAT">COB — Cobrat</option>
+          <option value="PENDENT">PEND — Pendent</option>
+          <option value="PROXIM">VENÇ &lt;7 — Proper venciment</option>
+          <option value="RECTIFICATIVA">RECTF — Rectificativa</option>
         </select>
         <input type="date" id="f-de" onchange="applyFilters()" title="Des de (data factura)">
         <input type="date" id="f-fins" onchange="applyFilters()" title="Fins a (data factura)">
@@ -500,10 +499,9 @@ input[type=number]{-moz-appearance:textfield}
         <div class="fg">
           <label>Estat</label>
           <select id="m-estat" onchange="updateBadge()">
-            <option value="PENDENT">Pendent</option>
-            <option value="COBRAT">Cobrat</option>
-            <option value="VENCUDA">Vençuda</option>
-            <option value="RECTIFICATIVA">Rectificativa</option>
+            <option value="PENDENT">PEND — Pendent</option>
+            <option value="COBRAT">COB — Cobrat</option>
+            <option value="RECTIFICATIVA">RECTF — Rectificativa</option>
           </select>
         </div>
 
@@ -905,18 +903,16 @@ function getEstat(inv){
   const today = new Date(); today.setHours(0,0,0,0);
   if(!inv.data_venciment)           return 'PENDENT';
   const venc = new Date(inv.data_venciment + 'T00:00:00');
-  if(venc < today)                  return 'VENCUDA';
   const dies = (venc - today) / 864e5;
-  if(dies <= 7)                     return 'PROXIM';
-  return 'PENDENT';
+  if(dies > 0 && dies <= 7)         return 'PROXIM';
+  return 'PENDENT'; // inclou vençudes — tot el no cobrat és PEND
 }
 
 const ESTAT_MAP = {
-  COBRAT:       ['bg','Cobrat'],
-  PENDENT:      ['by','Pendent'],
-  PROXIM:       ['ba','Proper venc.'],
-  VENCUDA:      ['br','Vençuda'],
-  RECTIFICATIVA:['bx','Rectificativa'],
+  COBRAT:       ['bg','COB'],
+  PENDENT:      ['br','PEND'],
+  PROXIM:       ['ba','VENÇ <7'],
+  RECTIFICATIVA:['bx','RECTF'],
 };
 
 function badgeHtml(inv){
@@ -928,13 +924,11 @@ function badgeHtml(inv){
 // STATS
 // ════════════════════════════════════════════════
 function renderStats(){
-  let n={COBRAT:0,PENDENT:0,PROXIM:0,VENCUDA:0};
-  let e={COBRAT:0,PENDENT:0,PROXIM:0,VENCUDA:0};
+  let n={COBRAT:0,PENDENT:0,PROXIM:0,RECTIFICATIVA:0};
+  let e={COBRAT:0,PENDENT:0,PROXIM:0,RECTIFICATIVA:0};
   allInvoices.forEach(inv=>{
     const s = getEstat(inv);
-    const k = s==='RECTIFICATIVA' ? null : s;
-    if(!k) return;
-    n[k]++; e[k]+=(inv.total_factura||0);
+    if(n[s]!==undefined){ n[s]++; e[s]+=(inv.total_factura||0); }
   });
   const f = v => v.toLocaleString('ca-ES',{minimumFractionDigits:2})+' €';
   document.getElementById('s-cob').textContent = n.COBRAT;
@@ -943,8 +937,8 @@ function renderStats(){
   document.getElementById('s-pen-e').textContent = f(e.PENDENT);
   document.getElementById('s-prx').textContent = n.PROXIM;
   document.getElementById('s-prx-e').textContent = f(e.PROXIM);
-  document.getElementById('s-ven').textContent = n.VENCUDA;
-  document.getElementById('s-ven-e').textContent = f(e.VENCUDA);
+  document.getElementById('s-ven').textContent = n.RECTIFICATIVA;
+  document.getElementById('s-ven-e').textContent = f(e.RECTIFICATIVA);
 }
 
 // ════════════════════════════════════════════════

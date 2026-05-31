@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ERP ACR Estruch — Major</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --blue:#00387C;--blue-mid:#1a54a0;--blue-light:#e8f0fb;--blue-dim:#d0e0f5;
+  --green:#1a8c42;--green-bg:#d4edda;--green-txt:#155724;
+  --red:#c0392b;--red-bg:#f8d7da;--red-txt:#721c24;
+  --grey:#6c757d;--grey-bg:#e9ecef;--grey-txt:#495057;
+  --bg:#f0f4f8;--white:#fff;--border:#dee2e6;--border-light:#eaeef2;
+  --text:#212529;--muted:#6c757d;
+  --sidebar:220px;--topbar:58px;--r:6px;
+  --shadow:0 1px 4px rgba(0,0,0,.1),0 4px 12px rgba(0,0,0,.06);
+}
+body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;font-size:14px;background:var(--bg);color:var(--text);height:100vh;overflow:hidden}
+#app{display:flex;height:100vh}
+#sidebar{width:var(--sidebar);background:var(--blue);display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto}
+#logo-area{padding:18px 16px 16px;border-bottom:1px solid rgba(255,255,255,.15);cursor:pointer}
+.logo-main{font-size:19px;font-weight:800;color:#fff;letter-spacing:-.4px;line-height:1.1}
+.logo-main .sep{color:rgba(255,255,255,.5);font-weight:300;margin:0 1px}
+.logo-sub{font-size:10.5px;color:rgba(255,255,255,.6);margin-top:3px;letter-spacing:.3px;font-style:italic}
+#nav{padding:10px 0;flex:1}
+.nav-section{padding:10px 14px 3px;font-size:10px;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:1.2px;font-weight:600}
+.nav-item{display:flex;align-items:center;gap:9px;padding:9px 16px;color:rgba(255,255,255,.78);cursor:pointer;border-left:3px solid transparent;transition:all .15s;font-size:13px;user-select:none}
+.nav-item:hover{background:rgba(255,255,255,.1);color:#fff}
+.nav-item.active{background:rgba(255,255,255,.16);color:#fff;border-left-color:#fff;font-weight:600}
+.nav-item .ico{font-size:15px;width:19px;text-align:center;flex-shrink:0}
+.nav-sub{padding:6px 16px 6px 44px;color:rgba(255,255,255,.6);cursor:pointer;font-size:12px;transition:all .15s;border-left:3px solid transparent;user-select:none}
+.nav-sub:hover{color:#fff;background:rgba(255,255,255,.07)}
+.nav-footer{padding:12px 14px;border-top:1px solid rgba(255,255,255,.12);font-size:11px;color:rgba(255,255,255,.4)}
+#main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+#topbar{height:var(--topbar);background:var(--white);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 22px;gap:12px;flex-shrink:0;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+#topbar h1{font-size:17px;font-weight:700;color:var(--blue);flex:1}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 15px;border-radius:var(--r);border:none;cursor:pointer;font-size:13px;font-weight:500;transition:all .15s;white-space:nowrap}
+.btn-primary{background:var(--blue);color:#fff}.btn-primary:hover{background:var(--blue-mid)}
+.btn-secondary{background:#fff;color:var(--blue);border:1.5px solid var(--blue)}.btn-secondary:hover{background:var(--blue-light)}
+.btn-sm{padding:5px 10px;font-size:12px}
+#content{flex:1;overflow-y:auto;padding:18px 22px}
+/* Selector comptes */
+.compte-selector{background:var(--white);border-radius:var(--r);box-shadow:var(--shadow);padding:16px 20px;margin-bottom:16px;display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap}
+.compte-selector .fg{display:flex;flex-direction:column;gap:4px}
+.compte-selector label{font-size:10.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px}
+.compte-selector select,.compte-selector input{padding:7px 10px;border:1.5px solid var(--border);border-radius:var(--r);font-size:13px;background:#fff;font-family:inherit}
+.compte-selector select:focus,.compte-selector input:focus{outline:none;border-color:var(--blue)}
+/* Compte header */
+.compte-hdr{background:var(--blue);color:#fff;border-radius:var(--r);padding:16px 20px;margin-bottom:14px;display:flex;gap:24px;align-items:center}
+.compte-hdr .codi{font-size:28px;font-weight:800;font-family:monospace;opacity:.9}
+.compte-hdr .desc{font-size:16px;font-weight:600}
+.compte-hdr .saldo-box{margin-left:auto;text-align:right}
+.compte-hdr .saldo-label{font-size:11px;opacity:.7;text-transform:uppercase;letter-spacing:.5px}
+.compte-hdr .saldo-val{font-size:24px;font-weight:800}
+.saldo-deure{color:#a8d8a8}
+.saldo-haver{color:#ffb3b3}
+/* Taula major */
+.card{background:var(--white);border-radius:var(--r);box-shadow:var(--shadow);margin-bottom:16px}
+.tbl-wrap{overflow-x:auto}
+table.maj-tbl{width:100%;border-collapse:collapse;font-size:13px}
+.maj-tbl th{padding:9px 14px;text-align:left;font-size:10.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;border-bottom:2px solid var(--border);background:#fafbfc}
+.maj-tbl td{padding:10px 14px;border-bottom:1px solid var(--border-light);vertical-align:middle}
+.maj-tbl tbody tr:hover td{background:var(--blue-light)}
+.maj-tbl tbody tr:last-child td{border-bottom:none}
+td.amt{text-align:right;font-variant-numeric:tabular-nums}
+th.amt{text-align:right}
+.saldo-pos{color:var(--green);font-weight:700}
+.saldo-neg{color:var(--red);font-weight:700}
+.total-row td{background:#f0f4f8;font-weight:700;border-top:2px solid var(--border)}
+.num-ass{font-family:monospace;font-size:12px;color:var(--blue);font-weight:700}
+.empty-state{text-align:center;padding:50px;color:var(--muted)}
+.empty-state .eico{font-size:48px;margin-bottom:16px;opacity:.3}
+#toast{position:fixed;bottom:22px;right:22px;z-index:999;display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.toast{padding:11px 18px;border-radius:var(--r);font-size:13px;font-weight:600;color:#fff;box-shadow:0 4px 16px rgba(0,0,0,.25);animation:tin .3s ease;pointer-events:auto}
+.toast.ok{background:var(--green)}.toast.err{background:var(--red)}.toast.inf{background:var(--blue)}
+@keyframes tin{from{transform:translateX(110%);opacity:0}to{transform:translateX(0);opacity:1}}
+::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:rgba(0,0,0,.2);border-radius:3px}
+</style>
+</head>
+<body>
+<div id="app">
+<nav id="sidebar">
+  <div id="logo-area" onclick="location.href='erp-facturacio.html'">
+    <div class="logo-main">ACR<span class="sep">|</span>Estruch</div>
+    <div class="logo-sub">export &amp; consulting</div>
+  </div>
+  <div id="nav">
+    <div class="nav-section">Mòduls</div>
+    <div class="nav-item" onclick="location.href='erp-facturacio.html'"><span class="ico">🧾</span> Facturació</div>
+    <div class="nav-sub" onclick="location.href='erp-facturacio.html'">Factures emeses</div>
+    <div class="nav-sub" onclick="location.href='erp-factures-rebudes.html'">Factures rebudes</div>
+    <div class="nav-item" onclick="location.href='erp-clients.html'"><span class="ico">👥</span> Clients</div>
+    <div class="nav-item" onclick="location.href='erp-proveidors.html'"><span class="ico">🏭</span> Proveïdors</div>
+    <div class="nav-item" onclick="location.href='erp-projectes.html'"><span class="ico">📋</span> Projectes</div>
+    <div class="nav-section" style="margin-top:10px">Comptabilitat</div>
+    <div class="nav-item active"><span class="ico">📒</span> Major</div>
+    <div class="nav-item" onclick="location.href='erp-assentaments.html'"><span class="ico">✏️</span> Assentaments</div>
+    <div class="nav-item" onclick="location.href='erp-pla-comptes.html'"><span class="ico">🗂️</span> Pla de comptes</div>
+  </div>
+  <div class="nav-footer">ACR Estruch ERP v1.0</div>
+</nav>
+<main id="main">
+  <header id="topbar">
+    <h1>Major <span style="font-size:13px;font-weight:400;color:var(--muted)">Llibre major per compte</span></h1>
+    <button class="btn btn-secondary btn-sm" onclick="loadMajor()">↻ Actualitzar</button>
+  </header>
+  <div id="content">
+
+    <!-- Selector -->
+    <div class="compte-selector">
+      <div class="fg">
+        <label>Compte</label>
+        <select id="sel-compte" onchange="loadMajor()" style="min-width:300px">
+          <option value="">— Selecciona un compte —</option>
+        </select>
+      </div>
+      <div class="fg">
+        <label>Des de</label>
+        <input type="date" id="sel-de" onchange="loadMajor()">
+      </div>
+      <div class="fg">
+        <label>Fins a</label>
+        <input type="date" id="sel-fins" onchange="loadMajor()">
+      </div>
+      <button class="btn btn-primary" onclick="loadMajor()">Consultar</button>
+    </div>
+
+    <div id="major-content">
+      <div class="empty-state">
+        <div class="eico">📒</div>
+        <p style="font-size:15px;margin-bottom:8px">Selecciona un compte per veure els moviments</p>
+        <p style="font-size:13px">El major mostra tots els assentaments d'un compte amb el saldo acumulat</p>
+      </div>
+    </div>
+
+  </div>
+</main>
+</div>
+<div id="toast"></div>
+
+<script>
+const SB_URL='https://ftuaeaghnnlusigqtoqv.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ0dWFlYWdobm5sdXNpZ3F0b3F2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAxNjI0MjIsImV4cCI6MjA5NTczODQyMn0.9n1gWnq_QfrLIWU7sIBReXgQAGA-NPFOpsdDp-jbDW8';
+const HDR={'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Prefer':'return=representation'};
+async function sbGet(t,q=''){const r=await fetch(`${SB_URL}/rest/v1/${t}?${q}`,{headers:HDR});if(!r.ok)throw new Error(await r.text());return r.json()}
+
+const fe=(n)=>(n||0).toLocaleString('ca-ES',{minimumFractionDigits:2,maximumFractionDigits:2});
+const fd=d=>d?new Date(d+'T00:00:00').toLocaleDateString('ca-ES',{day:'2-digit',month:'2-digit',year:'numeric'}):'—';
+
+async function init(){
+  try{
+    const comptes=await sbGet('pla_comptes','select=compte,descripcio,saldo_normal,tipus&order=compte&actiu=eq.true');
+    const sel=document.getElementById('sel-compte');
+    comptes.forEach(c=>{
+      const o=document.createElement('option');
+      o.value=c.compte;
+      o.textContent=`${c.compte} — ${c.descripcio}`;
+      o.dataset.saldo=c.saldo_normal||'DEURE';
+      o.dataset.tipus=c.tipus||'';
+      sel.appendChild(o);
+    });
+  }catch(e){toast('Error carregant comptes: '+e.message,'err');}
+}
+
+async function loadMajor(){
+  const sel=document.getElementById('sel-compte');
+  const compte=sel.value;
+  if(!compte) return;
+
+  const opt=sel.selectedOptions[0];
+  const saldoNormal=opt?.dataset.saldo||'DEURE';
+  const de=document.getElementById('sel-de').value;
+  const fins=document.getElementById('sel-fins').value;
+
+  try{
+    // Get all assentament lines for this account
+    let q=`compte=eq.${compte}&select=*,assentaments(num_ass,data_ass,concepte,origen,ref_origen)&order=assentaments(data_ass).asc,id.asc`;
+    let lines=await sbGet('assentament_lines',q);
+
+    // Filter by date
+    if(de||fins){
+      lines=lines.filter(l=>{
+        const d=l.assentaments?.data_ass||'';
+        return (!de||d>=de)&&(!fins||d<=fins);
+      });
+    }
+
+    // Sort by date then id
+    lines.sort((a,b)=>{
+      const da=a.assentaments?.data_ass||'';
+      const db=b.assentaments?.data_ass||'';
+      if(da!==db)return da.localeCompare(db);
+      return a.id-b.id;
+    });
+
+    // Calculate running balance
+    let saldo=0;
+    const rows=lines.map(l=>{
+      const d=l.deure||0, h=l.haver||0;
+      saldo+=(saldoNormal==='DEURE'?(d-h):(h-d));
+      return {...l,saldo};
+    });
+
+    const totalDeure=lines.reduce((s,l)=>s+(l.deure||0),0);
+    const totalHaver=lines.reduce((s,l)=>s+(l.haver||0),0);
+    const saldoFinal=saldoNormal==='DEURE'?(totalDeure-totalHaver):(totalHaver-totalDeure);
+
+    // Find compte info
+    const compteNom=opt?.textContent||compte;
+
+    const html=`
+      <div class="compte-hdr">
+        <div class="codi">${compte}</div>
+        <div>
+          <div class="desc">${compteNom.split(' — ')[1]||compte}</div>
+          <div style="font-size:12px;opacity:.7;margin-top:2px">${lines.length} moviments${de||fins?' (filtrat per dates)':''}</div>
+        </div>
+        <div class="saldo-box">
+          <div class="saldo-label">Saldo ${saldoNormal.toLowerCase()}</div>
+          <div class="saldo-val ${saldoFinal>=0?'saldo-deure':'saldo-haver'}">${fe(Math.abs(saldoFinal))} €</div>
+        </div>
+      </div>
+      ${rows.length===0?`<div class="empty-state"><div class="eico">📭</div><p>Cap moviment per a aquest compte${de||fins?' en el període seleccionat':''}</p></div>`:`
+      <div class="card">
+        <div class="tbl-wrap">
+          <table class="maj-tbl">
+            <thead>
+              <tr>
+                <th>Nº Ass.</th>
+                <th>Data</th>
+                <th>Concepte</th>
+                <th>Origen</th>
+                <th class="amt">Deure</th>
+                <th class="amt">Haver</th>
+                <th class="amt">Saldo</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${rows.map(r=>`<tr>
+                <td><span class="num-ass">${r.assentaments?.num_ass||'—'}</span></td>
+                <td>${fd(r.assentaments?.data_ass)}</td>
+                <td>${r.concepte||r.assentaments?.concepte||'—'}</td>
+                <td style="font-size:11px;color:var(--muted)">${r.assentaments?.ref_origen||r.assentaments?.origen||'—'}</td>
+                <td class="amt" style="color:${r.deure>0?'var(--green)':'var(--muted)'}">${r.deure>0?fe(r.deure):'—'}</td>
+                <td class="amt" style="color:${r.haver>0?'var(--red-txt)':'var(--muted)'}">${r.haver>0?fe(r.haver):'—'}</td>
+                <td class="amt ${r.saldo>=0?'saldo-pos':'saldo-neg'}">${fe(Math.abs(r.saldo))}</td>
+              </tr>`).join('')}
+              <tr class="total-row">
+                <td colspan="4" style="font-size:12px">TOTAL</td>
+                <td class="amt">${fe(totalDeure)}</td>
+                <td class="amt">${fe(totalHaver)}</td>
+                <td class="amt ${saldoFinal>=0?'saldo-pos':'saldo-neg'}">${fe(Math.abs(saldoFinal))}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>`}`;
+
+    document.getElementById('major-content').innerHTML=html;
+  }catch(e){toast('Error: '+e.message,'err');console.error(e);}
+}
+
+function toast(msg,type='inf'){const el=document.createElement('div');el.className=`toast ${type}`;el.textContent=msg;document.getElementById('toast').appendChild(el);setTimeout(()=>el.remove(),3500);}
+
+init();
+</script>
+</body>
+</html>

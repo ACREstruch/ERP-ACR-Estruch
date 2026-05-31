@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ERP ACR Estruch — Pla de Comptes</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --blue:#00387C;--blue-mid:#1a54a0;--blue-light:#e8f0fb;--blue-dim:#d0e0f5;
+  --green:#1a8c42;--green-bg:#d4edda;--green-txt:#155724;
+  --red:#c0392b;--red-bg:#f8d7da;--red-txt:#721c24;
+  --grey:#6c757d;--grey-bg:#e9ecef;--grey-txt:#495057;
+  --bg:#f0f4f8;--white:#fff;--border:#dee2e6;--border-light:#eaeef2;
+  --text:#212529;--muted:#6c757d;
+  --sidebar:220px;--topbar:58px;--r:6px;
+  --shadow:0 1px 4px rgba(0,0,0,.1),0 4px 12px rgba(0,0,0,.06);
+}
+body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;font-size:14px;background:var(--bg);color:var(--text);height:100vh;overflow:hidden}
+#app{display:flex;height:100vh}
+#sidebar{width:var(--sidebar);background:var(--blue);display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto}
+#logo-area{padding:18px 16px 16px;border-bottom:1px solid rgba(255,255,255,.15);cursor:pointer}
+.logo-main{font-size:19px;font-weight:800;color:#fff;letter-spacing:-.4px;line-height:1.1}
+.logo-main .sep{color:rgba(255,255,255,.5);font-weight:300;margin:0 1px}
+.logo-sub{font-size:10.5px;color:rgba(255,255,255,.6);margin-top:3px;letter-spacing:.3px;font-style:italic}
+#nav{padding:10px 0;flex:1}
+.nav-section{padding:10px 14px 3px;font-size:10px;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:1.2px;font-weight:600}
+.nav-item{display:flex;align-items:center;gap:9px;padding:9px 16px;color:rgba(255,255,255,.78);cursor:pointer;border-left:3px solid transparent;transition:all .15s;font-size:13px;user-select:none}
+.nav-item:hover{background:rgba(255,255,255,.1);color:#fff}
+.nav-item.active{background:rgba(255,255,255,.16);color:#fff;border-left-color:#fff;font-weight:600}
+.nav-item .ico{font-size:15px;width:19px;text-align:center;flex-shrink:0}
+.nav-sub{padding:6px 16px 6px 44px;color:rgba(255,255,255,.6);cursor:pointer;font-size:12px;transition:all .15s;border-left:3px solid transparent;user-select:none}
+.nav-sub:hover{color:#fff;background:rgba(255,255,255,.07)}
+.nav-sub.active{color:#fff;font-weight:600;border-left-color:rgba(255,255,255,.4)}
+.nav-footer{padding:12px 14px;border-top:1px solid rgba(255,255,255,.12);font-size:11px;color:rgba(255,255,255,.4)}
+#main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+#topbar{height:var(--topbar);background:var(--white);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 22px;gap:12px;flex-shrink:0;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+#topbar h1{font-size:17px;font-weight:700;color:var(--blue);flex:1}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 15px;border-radius:var(--r);border:none;cursor:pointer;font-size:13px;font-weight:500;transition:all .15s;white-space:nowrap}
+.btn-primary{background:var(--blue);color:#fff}.btn-primary:hover{background:var(--blue-mid)}
+.btn-secondary{background:#fff;color:var(--blue);border:1.5px solid var(--blue)}.btn-secondary:hover{background:var(--blue-light)}
+.btn-danger{background:var(--red-bg);color:var(--red-txt);border:1px solid #f5c6cb}.btn-danger:hover{background:#f5c6cb}
+.btn-sm{padding:5px 10px;font-size:12px}.btn-xs{padding:3px 8px;font-size:11px}
+.btn:disabled{opacity:.5;cursor:default}
+#content{flex:1;overflow-y:auto;padding:18px 22px}
+.filter-wrap{background:var(--white);border-radius:var(--r);box-shadow:var(--shadow);padding:12px 18px;margin-bottom:14px}
+.filter-bar{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.filter-bar input,.filter-bar select{padding:6px 10px;border:1.5px solid var(--border);border-radius:var(--r);font-size:13px;background:#fff;color:var(--text)}
+.filter-bar input:focus,.filter-bar select:focus{outline:none;border-color:var(--blue)}
+.card{background:var(--white);border-radius:var(--r);box-shadow:var(--shadow);margin-bottom:16px}
+.tbl-wrap{overflow-x:auto}
+table.main-tbl{width:100%;border-collapse:collapse;font-size:13px}
+.main-tbl th{padding:9px 14px;text-align:left;font-size:10.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;border-bottom:2px solid var(--border);white-space:nowrap;background:#fafbfc}
+.main-tbl td{padding:10px 14px;border-bottom:1px solid var(--border-light);vertical-align:middle}
+.main-tbl tbody tr:hover td{background:var(--blue-light);cursor:pointer}
+.main-tbl tbody tr:last-child td{border-bottom:none}
+.grup-hdr td{background:#f0f4f8;font-weight:700;color:var(--blue);font-size:12px;padding:6px 14px;border-bottom:1px solid var(--border)}
+.compte-cod{font-weight:700;color:var(--blue);font-family:monospace;font-size:13px}
+.badge-tipus{display:inline-block;padding:2px 8px;border-radius:12px;font-size:10.5px;font-weight:700}
+.t-act{background:#d4edda;color:#155724}.t-pas{background:#f8d7da;color:#721c24}
+.t-ing{background:#d1ecf1;color:#0c5460}.t-des{background:#fff3cd;color:#856404}
+.t-pat{background:#e2d9f3;color:#4a235a}
+.empty{text-align:center;padding:50px 20px;color:var(--muted)}
+.empty .eico{font-size:42px;margin-bottom:12px;opacity:.5}
+.empty p{margin-bottom:14px;font-size:14px}
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:100;align-items:flex-start;justify-content:center;padding:30px 16px;overflow-y:auto}
+.overlay.open{display:flex}
+.modal{background:#fff;border-radius:8px;box-shadow:0 20px 60px rgba(0,0,0,.3);width:100%;max-width:560px;display:flex;flex-direction:column;margin:auto}
+.modal-hdr{padding:14px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.modal-hdr h3{font-size:16px;font-weight:700;color:var(--blue);flex:1}
+.modal-close{background:none;border:none;font-size:22px;cursor:pointer;color:var(--muted);line-height:1;padding:0 4px}
+.modal-body{padding:20px 22px;display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.modal-ftr{padding:12px 22px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px}
+.fg{display:flex;flex-direction:column;gap:4px}
+.fg label{font-size:10.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px}
+.fg input,.fg select{padding:7px 10px;border:1.5px solid var(--border);border-radius:var(--r);font-size:13px;background:#fff;font-family:inherit}
+.fg input:focus,.fg select:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(0,56,124,.08)}
+.full{grid-column:1/-1}
+#toast{position:fixed;bottom:22px;right:22px;z-index:999;display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.toast{padding:11px 18px;border-radius:var(--r);font-size:13px;font-weight:600;color:#fff;box-shadow:0 4px 16px rgba(0,0,0,.25);animation:tin .3s ease;pointer-events:auto}
+.toast.ok{background:var(--green)}.toast.err{background:var(--red)}.toast.inf{background:var(--blue)}
+@keyframes tin{from{transform:translateX(110%);opacity:0}to{transform:translateX(0);opacity:1}}
+.spin{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:rot .6s linear infinite}
+@keyframes rot{to{transform:rotate(360deg)}}
+::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:rgba(0,0,0,.2);border-radius:3px}
+</style>
+</head>
+<body>
+<div id="app">
+<nav id="sidebar">
+  <div id="logo-area" onclick="location.href='erp-facturacio.html'">
+    <div class="logo-main">ACR<span class="sep">|</span>Estruch</div>
+    <div class="logo-sub">export &amp; consulting</div>
+  </div>
+  <div id="nav">
+    <div class="nav-section">Mòduls</div>
+    <div class="nav-item" onclick="location.href='erp-facturacio.html'"><span class="ico">🧾</span> Facturació</div>
+    <div class="nav-sub" onclick="location.href='erp-facturacio.html'">Factures emeses</div>
+    <div class="nav-sub" onclick="location.href='erp-factures-rebudes.html'">Factures rebudes</div>
+    <div class="nav-item" onclick="location.href='erp-clients.html'"><span class="ico">👥</span> Clients</div>
+    <div class="nav-item" onclick="location.href='erp-proveidors.html'"><span class="ico">🏭</span> Proveïdors</div>
+    <div class="nav-item" onclick="location.href='erp-projectes.html'"><span class="ico">📋</span> Projectes</div>
+    <div class="nav-section" style="margin-top:10px">Comptabilitat</div>
+    <div class="nav-item" onclick="location.href='erp-major.html'"><span class="ico">📒</span> Major</div>
+    <div class="nav-item" onclick="location.href='erp-assentaments.html'"><span class="ico">✏️</span> Assentaments</div>
+    <div class="nav-item active"><span class="ico">🗂️</span> Pla de comptes</div>
+  </div>
+  <div class="nav-footer">ACR Estruch ERP v1.0</div>
+</nav>
+<main id="main">
+  <header id="topbar">
+    <h1>Pla de Comptes <span style="font-size:13px;font-weight:400;color:var(--muted)">PGC Español</span></h1>
+    <button class="btn btn-secondary btn-sm" onclick="loadComptes()">↻ Actualitzar</button>
+    <button class="btn btn-primary" onclick="openModal(null)">+ Nou compte</button>
+  </header>
+  <div id="content">
+    <div class="filter-wrap">
+      <div class="filter-bar">
+        <input type="text" id="f-cerca" placeholder="🔍  Cerca compte o descripció..." oninput="applyFilters()" style="min-width:220px">
+        <select id="f-grup" onchange="applyFilters()">
+          <option value="">Tots els grups</option>
+          <option value="4">Grup 4 — Creditors i deutors</option>
+          <option value="5">Grup 5 — Comptes financers</option>
+          <option value="6">Grup 6 — Despeses</option>
+          <option value="7">Grup 7 — Ingressos</option>
+          <option value="1">Grup 1 — Finançament bàsic</option>
+          <option value="2">Grup 2 — Actiu no corrent</option>
+        </select>
+        <select id="f-tipus" onchange="applyFilters()">
+          <option value="">Tots els tipus</option>
+          <option value="ACTIU">Actiu</option>
+          <option value="PASSIU">Passiu</option>
+          <option value="INGRES">Ingrés</option>
+          <option value="DESPESA">Despesa</option>
+        </select>
+        <button class="btn btn-secondary btn-sm" onclick="clearFilters()">✕ Netejar</button>
+        <span id="f-count" style="margin-left:auto;font-size:12px;color:var(--muted)"></span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="tbl-wrap">
+        <table class="main-tbl">
+          <thead>
+            <tr>
+              <th>Compte</th>
+              <th>Descripció</th>
+              <th>Grup</th>
+              <th>Tipus</th>
+              <th>Saldo normal</th>
+              <th>Actiu</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="tbl-body">
+            <tr><td colspan="7"><div class="empty"><div class="eico">🔄</div><p>Carregant...</p></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</main>
+</div>
+
+<div class="overlay" id="overlay" onclick="if(event.target===this)closeModal()">
+<div class="modal">
+  <div class="modal-hdr">
+    <h3 id="m-title">Nou compte</h3>
+    <button class="modal-close" onclick="closeModal()">✕</button>
+  </div>
+  <div class="modal-body">
+    <div class="fg"><label>Compte *</label><input type="text" id="m-compte" placeholder="430" style="font-family:monospace;font-size:15px;font-weight:700"></div>
+    <div class="fg full"><label>Descripció *</label><input type="text" id="m-desc" placeholder="Clients"></div>
+    <div class="fg"><label>Grup</label>
+      <select id="m-grup">
+        <option value="1">1 — Finançament bàsic</option>
+        <option value="2">2 — Actiu no corrent</option>
+        <option value="3">3 — Existències</option>
+        <option value="4" selected>4 — Creditors i deutors</option>
+        <option value="5">5 — Comptes financers</option>
+        <option value="6">6 — Despeses</option>
+        <option value="7">7 — Ingressos</option>
+      </select>
+    </div>
+    <div class="fg"><label>Tipus</label>
+      <select id="m-tipus">
+        <option value="ACTIU">Actiu</option>
+        <option value="PASSIU">Passiu</option>
+        <option value="INGRES">Ingrés</option>
+        <option value="DESPESA">Despesa</option>
+        <option value="PATRIMONI">Patrimoni</option>
+      </select>
+    </div>
+    <div class="fg"><label>Saldo normal</label>
+      <select id="m-saldo">
+        <option value="DEURE">Deure</option>
+        <option value="HAVER">Haver</option>
+      </select>
+    </div>
+    <div class="fg"><label>Actiu</label>
+      <select id="m-actiu">
+        <option value="true">Sí</option>
+        <option value="false">No</option>
+      </select>
+    </div>
+  </div>
+  <div class="modal-ftr">
+    <button class="btn btn-secondary" onclick="closeModal()">Cancel·lar</button>
+    <button class="btn btn-primary" id="btn-save" onclick="saveCompte()">💾 Guardar</button>
+  </div>
+</div>
+</div>
+<div id="toast"></div>
+
+<script>
+const SB_URL='https://ftuaeaghnnlusigqtoqv.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ0dWFlYWdobm5sdXNpZ3F0b3F2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAxNjI0MjIsImV4cCI6MjA5NTczODQyMn0.9n1gWnq_QfrLIWU7sIBReXgQAGA-NPFOpsdDp-jbDW8';
+const HDR={'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Prefer':'return=representation'};
+async function sbGet(t,q=''){const r=await fetch(`${SB_URL}/rest/v1/${t}?${q}`,{headers:HDR});if(!r.ok)throw new Error(await r.text());return r.json()}
+async function sbPost(t,d){const r=await fetch(`${SB_URL}/rest/v1/${t}`,{method:'POST',headers:HDR,body:JSON.stringify(d)});if(!r.ok)throw new Error(await r.text());return r.json()}
+async function sbPatch(t,id,d){const r=await fetch(`${SB_URL}/rest/v1/${t}?id=eq.${id}`,{method:'PATCH',headers:HDR,body:JSON.stringify(d)});if(!r.ok)throw new Error(await r.text());return r.json()}
+async function sbDel(t,id){const r=await fetch(`${SB_URL}/rest/v1/${t}?id=eq.${id}`,{method:'DELETE',headers:HDR});if(!r.ok)throw new Error(await r.text())}
+
+let allComptes=[], curId=null;
+const GRUPS={1:'Finançament',2:'Actiu nc',3:'Existències',4:'Creditors/Deutors',5:'Financer',6:'Despeses',7:'Ingressos'};
+const TIPUS_CLS={ACTIU:'t-act',PASSIU:'t-pas',INGRES:'t-ing',DESPESA:'t-des',PATRIMONI:'t-pat'};
+
+async function loadComptes(){
+  try{
+    allComptes=await sbGet('pla_comptes','select=*&order=compte');
+    renderTable(allComptes);
+    document.getElementById('f-count').textContent=allComptes.length+' comptes';
+  }catch(e){toast('Error: '+e.message,'err');}
+}
+
+function renderTable(rows){
+  document.getElementById('f-count').textContent=rows.length+' comptes';
+  const tbody=document.getElementById('tbl-body');
+  if(!rows.length){tbody.innerHTML=`<tr><td colspan="7"><div class="empty"><div class="eico">🗂️</div><p>Cap compte trobat.</p></div></td></tr>`;return;}
+  tbody.innerHTML=rows.map(c=>`<tr onclick="openModal(${c.id})">
+    <td><span class="compte-cod">${c.compte}</span></td>
+    <td>${c.descripcio}</td>
+    <td style="color:var(--muted);font-size:12px">${GRUPS[c.grup]||c.grup||'—'}</td>
+    <td><span class="badge-tipus ${TIPUS_CLS[c.tipus]||''}">${c.tipus||'—'}</span></td>
+    <td style="font-size:12px">${c.saldo_normal||'—'}</td>
+    <td>${c.actiu?'<span style="color:var(--green);font-weight:700">Sí</span>':'<span style="color:var(--muted)">No</span>'}</td>
+    <td onclick="event.stopPropagation()" style="white-space:nowrap">
+      <button class="btn btn-secondary btn-xs" onclick="openModal(${c.id})">✏️</button>
+      <button class="btn btn-xs btn-danger" style="margin-left:4px" onclick="confirmDel(${c.id})" title="Eliminar">✕</button>
+    </td>
+  </tr>`).join('');
+}
+
+function applyFilters(){
+  const cerca=document.getElementById('f-cerca').value.toLowerCase().trim();
+  const grup=document.getElementById('f-grup').value;
+  const tipus=document.getElementById('f-tipus').value;
+  const res=allComptes.filter(c=>{
+    const mc=!cerca||c.compte.toLowerCase().includes(cerca)||c.descripcio.toLowerCase().includes(cerca);
+    const mg=!grup||String(c.grup)===grup;
+    const mt=!tipus||c.tipus===tipus;
+    return mc&&mg&&mt;
+  });
+  renderTable(res);
+}
+function clearFilters(){document.getElementById('f-cerca').value='';document.getElementById('f-grup').value='';document.getElementById('f-tipus').value='';renderTable(allComptes);}
+
+function openModal(id){
+  curId=id;
+  if(id){
+    const c=allComptes.find(x=>x.id===id);
+    if(!c)return;
+    document.getElementById('m-title').textContent='Compte '+c.compte;
+    document.getElementById('m-compte').value=c.compte;
+    document.getElementById('m-desc').value=c.descripcio;
+    document.getElementById('m-grup').value=c.grup||4;
+    document.getElementById('m-tipus').value=c.tipus||'ACTIU';
+    document.getElementById('m-saldo').value=c.saldo_normal||'DEURE';
+    document.getElementById('m-actiu').value=c.actiu?'true':'false';
+  } else {
+    document.getElementById('m-title').textContent='Nou compte';
+    document.getElementById('m-compte').value='';
+    document.getElementById('m-desc').value='';
+    document.getElementById('m-grup').value=4;
+    document.getElementById('m-tipus').value='ACTIU';
+    document.getElementById('m-saldo').value='DEURE';
+    document.getElementById('m-actiu').value='true';
+  }
+  document.getElementById('overlay').classList.add('open');
+}
+function closeModal(){document.getElementById('overlay').classList.remove('open');curId=null;}
+
+async function saveCompte(){
+  const compte=document.getElementById('m-compte').value.trim();
+  const desc=document.getElementById('m-desc').value.trim();
+  if(!compte||!desc){toast('Compte i descripció obligatoris','err');return;}
+  const data={compte,descripcio:desc,grup:parseInt(document.getElementById('m-grup').value),tipus:document.getElementById('m-tipus').value,saldo_normal:document.getElementById('m-saldo').value,actiu:document.getElementById('m-actiu').value==='true'};
+  const btn=document.getElementById('btn-save');
+  btn.disabled=true;btn.innerHTML='<span class="spin"></span>';
+  try{
+    if(curId){await sbPatch('pla_comptes',curId,data);}else{await sbPost('pla_comptes',data);}
+    toast('Compte guardat','ok');await loadComptes();closeModal();
+  }catch(e){toast('Error: '+e.message,'err');}
+  finally{btn.disabled=false;btn.innerHTML='💾 Guardar';}
+}
+
+async function confirmDel(id){
+  const c=allComptes.find(x=>x.id===id);
+  if(!c||!confirm(`Eliminar compte ${c.compte}?`))return;
+  try{await sbDel('pla_comptes',id);toast('Eliminat','ok');await loadComptes();}
+  catch(e){toast('Error: '+e.message,'err');}
+}
+
+function toast(msg,type='inf'){const el=document.createElement('div');el.className=`toast ${type}`;el.textContent=msg;document.getElementById('toast').appendChild(el);setTimeout(()=>el.remove(),3500);}
+
+loadComptes();
+</script>
+</body>
+</html>

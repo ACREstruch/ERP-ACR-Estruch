@@ -629,8 +629,8 @@ function renderTable(rows){
         <td>${badgeHtml(fr)}</td>
         <td onclick="event.stopPropagation()" style="white-space:nowrap">
           <button class="btn btn-secondary btn-xs" onclick="openModal(${fr.id})">✏️</button>
-          ${fr.estat==='PAGAT'
-            ? `<button class="btn btn-xs" style="margin-left:4px;background:var(--grey-bg);color:var(--grey);border:1px solid var(--border);cursor:default" title="No es pot eliminar una factura pagada" disabled>✕</button>`
+          ${['PAGAT','RECTIFICATIVA'].includes(fr.estat)
+            ? `<button class="btn btn-xs" style="margin-left:4px;background:var(--grey-bg);color:var(--grey);border:1px solid var(--border);cursor:default" title="No es pot eliminar" disabled>✕</button>`
             : `<button class="btn btn-xs btn-danger" style="margin-left:4px" onclick="confirmDel(${fr.id})" title="Eliminar">✕</button>`
           }
         </td>

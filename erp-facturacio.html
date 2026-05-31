@@ -503,7 +503,7 @@ input[type=number]{-moz-appearance:textfield}
         </div>
         <div class="fg">
           <label>Data factura *</label>
-          <input type="date" id="m-data">
+          <input type="date" id="m-data" onchange="onDataFraChange(this.value)">
         </div>
         <div class="fg">
           <label>Data venciment</label>
@@ -1087,10 +1087,39 @@ async function openModal(id){
   } else {
     document.getElementById('m-title').textContent = 'Nova factura';
     resetForm();
+    // Número automàtic
+    document.getElementById('m-no').value = nextInvoiceNum();
+    // Data mínima = última factura emesa
+    const minDate = lastInvoiceDate();
+    const dataEl = document.getElementById('m-data');
+    if(minDate) dataEl.min = minDate;
+    // Venciment = data factura per defecte
+    document.getElementById('m-venc').value = dataEl.value;
     curLines = [{ordre:1,descripcio:'',quantitat:1,preu_unitari:0,descompte:0,import_linia:0}];
     renderLines();
   }
   document.getElementById('overlay').classList.add('open');
+}
+
+function nextInvoiceNum(){
+  const yy = String(new Date().getFullYear()).slice(-2);
+  const thisYear = allInvoices.filter(i => i.no_factura && i.no_factura.startsWith(yy));
+  const maxSeq = thisYear.length
+    ? Math.max(...thisYear.map(i => parseInt(i.no_factura.slice(2))||0))
+    : 0;
+  return `${yy}${String(maxSeq+1).padStart(3,'0')}`;
+}
+
+function lastInvoiceDate(){
+  const last = allInvoices.find(i => i.data_fra);
+  return last ? last.data_fra : null;
+}
+
+function onDataFraChange(newDate){
+  const vencEl = document.getElementById('m-venc');
+  vencEl.min = newDate;
+  // Si venciment és anterior a la nova data, actualitzar-lo
+  if(!vencEl.value || vencEl.value < newDate) vencEl.value = newDate;
 }
 
 function closeModal(){
@@ -1141,7 +1170,9 @@ function resetForm(){
   const today = new Date().toISOString().split('T')[0];
   document.getElementById('m-no').value='';
   document.getElementById('m-data').value=today;
-  document.getElementById('m-venc').value='';
+  document.getElementById('m-data').min='';
+  document.getElementById('m-venc').value=today;
+  document.getElementById('m-venc').min=today;
   document.getElementById('m-estat').value='PENDENT';
   document.getElementById('m-client').value='';
   document.getElementById('m-nref').value='';

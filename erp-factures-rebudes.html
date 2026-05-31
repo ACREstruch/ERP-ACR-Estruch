@@ -523,6 +523,8 @@ async function loadFactures(){
 async function refreshData(){ toast('Actualitzant...','inf'); await loadFactures(); toast('Actualitzat','ok'); }
 
 
+let collapsedYears = new Set();
+
 function toggleYear(year){
   if(collapsedYears.has(year)) collapsedYears.delete(year);
   else collapsedYears.add(year);

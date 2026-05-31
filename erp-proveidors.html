@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ERP ACR Estruch — Proveïdors</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --blue:#00387C;--blue-mid:#1a54a0;--blue-light:#e8f0fb;--blue-dim:#d0e0f5;
+  --green:#1a8c42;--green-bg:#d4edda;--green-txt:#155724;
+  --red:#c0392b;--red-bg:#f8d7da;--red-txt:#721c24;
+  --grey:#6c757d;--grey-bg:#e9ecef;--grey-txt:#495057;
+  --bg:#f0f4f8;--white:#fff;--border:#dee2e6;--border-light:#eaeef2;
+  --text:#212529;--muted:#6c757d;
+  --sidebar:220px;--topbar:58px;--r:6px;
+  --shadow:0 1px 4px rgba(0,0,0,.1),0 4px 12px rgba(0,0,0,.06);
+}
+body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;font-size:14px;background:var(--bg);color:var(--text);height:100vh;overflow:hidden}
+#app{display:flex;height:100vh}
+#sidebar{width:var(--sidebar);background:var(--blue);display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto}
+#logo-area{padding:18px 16px 16px;border-bottom:1px solid rgba(255,255,255,.15);cursor:pointer}
+.logo-main{font-size:19px;font-weight:800;color:#fff;letter-spacing:-.4px;line-height:1.1}
+.logo-main .sep{color:rgba(255,255,255,.5);font-weight:300;margin:0 1px}
+.logo-sub{font-size:10.5px;color:rgba(255,255,255,.6);margin-top:3px;letter-spacing:.3px;font-style:italic}
+#nav{padding:10px 0;flex:1}
+.nav-section{padding:10px 14px 3px;font-size:10px;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:1.2px;font-weight:600}
+.nav-item{display:flex;align-items:center;gap:9px;padding:9px 16px;color:rgba(255,255,255,.78);cursor:pointer;border-left:3px solid transparent;transition:all .15s;font-size:13px;user-select:none}
+.nav-item:hover{background:rgba(255,255,255,.1);color:#fff}
+.nav-item.active{background:rgba(255,255,255,.16);color:#fff;border-left-color:#fff;font-weight:600}
+.nav-item .ico{font-size:15px;width:19px;text-align:center;flex-shrink:0}
+.nav-sub{padding:6px 16px 6px 44px;color:rgba(255,255,255,.6);cursor:pointer;font-size:12px;transition:all .15s;border-left:3px solid transparent;user-select:none}
+.nav-sub:hover{color:#fff;background:rgba(255,255,255,.07)}
+.nav-footer{padding:12px 14px;border-top:1px solid rgba(255,255,255,.12);font-size:11px;color:rgba(255,255,255,.4)}
+#main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+#topbar{height:var(--topbar);background:var(--white);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 22px;gap:12px;flex-shrink:0;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+#topbar h1{font-size:17px;font-weight:700;color:var(--blue);flex:1}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 15px;border-radius:var(--r);border:none;cursor:pointer;font-size:13px;font-weight:500;transition:all .15s;white-space:nowrap}
+.btn-primary{background:var(--blue);color:#fff}.btn-primary:hover{background:var(--blue-mid)}
+.btn-secondary{background:#fff;color:var(--blue);border:1.5px solid var(--blue)}.btn-secondary:hover{background:var(--blue-light)}
+.btn-danger{background:var(--red-bg);color:var(--red-txt);border:1px solid #f5c6cb}.btn-danger:hover{background:#f5c6cb}
+.btn-sm{padding:5px 10px;font-size:12px}.btn-xs{padding:3px 8px;font-size:11px}
+.btn:disabled{opacity:.5;cursor:default}
+#content{flex:1;overflow-y:auto;padding:18px 22px}
+.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:16px}
+.stat{background:var(--white);border-radius:var(--r);box-shadow:var(--shadow);padding:14px 18px;border-top:3px solid var(--blue);position:relative;overflow:hidden}
+.stat-label{font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;font-weight:600;margin-bottom:5px}
+.stat-value{font-size:24px;font-weight:800;color:var(--text);line-height:1}
+.stat-sub{font-size:11px;color:var(--muted);margin-top:4px}
+.stat-icon{position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:28px;opacity:.12}
+.filter-wrap{background:var(--white);border-radius:var(--r);box-shadow:var(--shadow);padding:12px 18px;margin-bottom:14px}
+.filter-bar{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.filter-bar input,.filter-bar select{padding:6px 10px;border:1.5px solid var(--border);border-radius:var(--r);font-size:13px;background:#fff;color:var(--text);transition:border-color .15s}
+.filter-bar input:focus,.filter-bar select:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(0,56,124,.08)}
+.card{background:var(--white);border-radius:var(--r);box-shadow:var(--shadow);margin-bottom:16px}
+.tbl-wrap{overflow-x:auto}
+table.main-tbl{width:100%;border-collapse:collapse;font-size:13px}
+.main-tbl th{padding:9px 14px;text-align:left;font-size:10.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;border-bottom:2px solid var(--border);white-space:nowrap;background:#fafbfc}
+.main-tbl td{padding:11px 14px;border-bottom:1px solid var(--border-light);vertical-align:middle}
+.main-tbl tbody tr:hover td{background:var(--blue-light);cursor:pointer}
+.main-tbl tbody tr:last-child td{border-bottom:none}
+.prov-nom{font-weight:700;color:var(--blue)}
+.tag{display:inline-block;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600;background:var(--blue-light);color:var(--blue)}
+.empty{text-align:center;padding:50px 20px;color:var(--muted)}
+.empty .eico{font-size:42px;margin-bottom:12px;opacity:.5}
+.empty p{margin-bottom:14px;font-size:14px}
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:100;align-items:flex-start;justify-content:center;padding:30px 16px;overflow-y:auto}
+.overlay.open{display:flex}
+.modal{background:#fff;border-radius:8px;box-shadow:0 20px 60px rgba(0,0,0,.3);width:100%;max-width:820px;display:flex;flex-direction:column;margin:auto}
+.modal-hdr{padding:14px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;flex-shrink:0}
+.modal-hdr h3{font-size:16px;font-weight:700;color:var(--blue);flex:1}
+.modal-close{background:none;border:none;font-size:22px;cursor:pointer;color:var(--muted);line-height:1;padding:0 4px}
+.modal-close:hover{color:var(--text)}
+.modal-body{flex:1;overflow-y:auto;max-height:calc(90vh - 130px)}
+.modal-ftr{padding:12px 22px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px;flex-shrink:0}
+.tabs{display:flex;background:#f8f9fa;border-bottom:2px solid var(--border);padding:0 22px;gap:2px;flex-shrink:0}
+.tab{padding:11px 15px;border:none;background:none;cursor:pointer;font-size:13px;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-2px;font-weight:500;transition:all .15s;white-space:nowrap}
+.tab:hover{color:var(--blue)}.tab.on{color:var(--blue);border-bottom-color:var(--blue);font-weight:700}
+.tab-panel{display:none;padding:20px 22px}.tab-panel.on{display:block}
+.fg{display:flex;flex-direction:column;gap:4px}
+.fg label{font-size:10.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px}
+.fg input,.fg select,.fg textarea{padding:7px 10px;border:1.5px solid var(--border);border-radius:var(--r);font-size:13px;background:#fff;color:var(--text);transition:border-color .15s;font-family:inherit}
+.fg input:focus,.fg select:focus,.fg textarea:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(0,56,124,.08)}
+.fg textarea{resize:vertical;min-height:80px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+.full{grid-column:1/-1}
+.sec{grid-column:1/-1;font-size:11px;font-weight:800;color:var(--blue);text-transform:uppercase;letter-spacing:.8px;padding:4px 0 2px;border-bottom:1.5px solid var(--blue-dim);margin-bottom:2px}
+#toast{position:fixed;bottom:22px;right:22px;z-index:999;display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.toast{padding:11px 18px;border-radius:var(--r);font-size:13px;font-weight:600;color:#fff;box-shadow:0 4px 16px rgba(0,0,0,.25);animation:tin .3s ease;pointer-events:auto}
+.toast.ok{background:var(--green)}.toast.err{background:var(--red)}.toast.inf{background:var(--blue)}
+@keyframes tin{from{transform:translateX(110%);opacity:0}to{transform:translateX(0);opacity:1}}
+.spin{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:rot .6s linear infinite}
+@keyframes rot{to{transform:rotate(360deg)}}
+input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+input[type=number]{-moz-appearance:textfield}
+::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:rgba(0,0,0,.2);border-radius:3px}
+</style>
+</head>
+<body>
+<div id="app">
+
+<nav id="sidebar">
+  <div id="logo-area" onclick="location.href='erp-facturacio.html'">
+    <div class="logo-main">ACR<span class="sep">|</span>Estruch</div>
+    <div class="logo-sub">export &amp; consulting</div>
+  </div>
+  <div id="nav">
+    <div class="nav-section">Mòduls</div>
+    <div class="nav-item" onclick="location.href='erp-facturacio.html'">
+      <span class="ico">🧾</span> Facturació
+    </div>
+    <div class="nav-sub" onclick="location.href='erp-facturacio.html'">Factures emeses</div>
+    <div class="nav-sub" onclick="location.href='erp-factures-rebudes.html'">Factures rebudes</div>
+    <div class="nav-item" onclick="location.href='erp-clients.html'">
+      <span class="ico">👥</span> Clients
+    </div>
+    <div class="nav-item active">
+      <span class="ico">🏭</span> Proveïdors
+    </div>
+    <div class="nav-item" onclick="toast('Pròximament','inf')">
+      <span class="ico">📋</span> Projectes
+    </div>
+    <div class="nav-section" style="margin-top:10px">Comptabilitat</div>
+    <div class="nav-item" onclick="toast('Pròximament','inf')"><span class="ico">📒</span> Major</div>
+    <div class="nav-item" onclick="toast('Pròximament','inf')"><span class="ico">✏️</span> Assentaments</div>
+    <div class="nav-item" onclick="toast('Pròximament','inf')"><span class="ico">🗂️</span> Pla de comptes</div>
+  </div>
+  <div class="nav-footer">ACR Estruch ERP v1.0</div>
+</nav>
+
+<main id="main">
+  <header id="topbar">
+    <h1>Proveïdors</h1>
+    <button class="btn btn-secondary btn-sm" onclick="refreshData()">↻ Actualitzar</button>
+    <button class="btn btn-primary" onclick="openModal(null)">+ Nou proveïdor</button>
+  </header>
+  <div id="content">
+
+    <div class="stats-row">
+      <div class="stat">
+        <div class="stat-label">Total proveïdors</div>
+        <div class="stat-value" id="s-total">—</div>
+        <div class="stat-sub" id="s-sub">registrats</div>
+        <div class="stat-icon">🏭</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Països</div>
+        <div class="stat-value" id="s-paisos">—</div>
+        <div class="stat-sub">orígens</div>
+        <div class="stat-icon">🌍</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Divises</div>
+        <div class="stat-value" id="s-div">—</div>
+        <div class="stat-sub">monedes actives</div>
+        <div class="stat-icon">💱</div>
+      </div>
+    </div>
+
+    <div class="filter-wrap">
+      <div class="filter-bar">
+        <input type="text" id="f-cerca" placeholder="🔍  Cerca nom, NIF, país..." oninput="applyFilters()" style="min-width:220px">
+        <select id="f-pais" onchange="applyFilters()">
+          <option value="">Tots els països</option>
+        </select>
+        <button class="btn btn-secondary btn-sm" onclick="clearFilters()">✕ Netejar</button>
+        <span id="f-count" style="margin-left:auto;font-size:12px;color:var(--muted)"></span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="tbl-wrap">
+        <table class="main-tbl">
+          <thead>
+            <tr>
+              <th>Codi</th>
+              <th>Nom</th>
+              <th>Sinònim</th>
+              <th>NIF / VAT</th>
+              <th>País</th>
+              <th>Tel / Email</th>
+              <th>IVA %</th>
+              <th>Divisa</th>
+              <th>Forma pag.</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="tbl-body">
+            <tr><td colspan="10"><div class="empty"><div class="eico">🔄</div><p>Carregant...</p></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</main>
+</div>
+
+<!-- MODAL -->
+<div class="overlay" id="overlay" onclick="if(event.target===this)closeModal()">
+<div class="modal">
+  <div class="modal-hdr">
+    <h3 id="m-title">Nou proveïdor</h3>
+    <button class="modal-close" onclick="closeModal()">✕</button>
+  </div>
+  <div class="tabs">
+    <button class="tab on" data-tab="tp-gen">Dades generals</button>
+    <button class="tab" data-tab="tp-con">Contacte</button>
+    <button class="tab" data-tab="tp-fin">Financer</button>
+    <button class="tab" data-tab="tp-not">Notes</button>
+  </div>
+  <div class="modal-body">
+
+    <div class="tab-panel on" id="tp-gen">
+      <div class="grid3">
+        <div class="sec">Identificació</div>
+        <div class="fg full">
+          <label>Nom *</label>
+          <input type="text" id="m-nom" placeholder="Nom del proveïdor">
+        </div>
+        <div class="fg">
+          <label>Sinònim / Curt</label>
+          <input type="text" id="m-sin">
+        </div>
+        <div class="fg">
+          <label>Codi intern</label>
+          <input type="text" id="m-codi">
+        </div>
+        <div class="fg">
+          <label>NIF / VAT</label>
+          <input type="text" id="m-nif">
+        </div>
+        <div class="sec">Adreça</div>
+        <div class="fg full">
+          <label>Adreça</label>
+          <input type="text" id="m-adr">
+        </div>
+        <div class="fg">
+          <label>CP</label>
+          <input type="text" id="m-cp">
+        </div>
+        <div class="fg">
+          <label>Ciutat</label>
+          <input type="text" id="m-ciu">
+        </div>
+        <div class="fg">
+          <label>País</label>
+          <input type="text" id="m-pais" oninput="this.value=this.value.toUpperCase()">
+        </div>
+      </div>
+    </div>
+
+    <div class="tab-panel" id="tp-con">
+      <div class="grid3">
+        <div class="sec">Telèfon i web</div>
+        <div class="fg">
+          <label>Telèfon</label>
+          <input type="text" id="m-tel">
+        </div>
+        <div class="fg">
+          <label>Email</label>
+          <input type="email" id="m-email">
+        </div>
+        <div class="fg">
+          <label>Web</label>
+          <input type="text" id="m-web">
+        </div>
+        <div class="sec">Persona de contacte</div>
+        <div class="fg">
+          <label>Nom</label>
+          <input type="text" id="m-cnt-nom">
+        </div>
+        <div class="fg">
+          <label>Cognoms</label>
+          <input type="text" id="m-cnt-cog">
+        </div>
+        <div class="fg">
+          <label>Email contacte</label>
+          <input type="email" id="m-cnt-email">
+        </div>
+      </div>
+    </div>
+
+    <div class="tab-panel" id="tp-fin">
+      <div class="grid3">
+        <div class="sec">Condicions de pagament</div>
+        <div class="fg">
+          <label>Forma de pagament</label>
+          <select id="m-fpag">
+            <option>Transferència</option>
+            <option>Rebut domiciliat</option>
+            <option>Efectiu</option>
+            <option>Xec</option>
+          </select>
+        </div>
+        <div class="fg">
+          <label>Dies de pagament</label>
+          <input type="number" id="m-dies" value="30" min="0">
+        </div>
+        <div class="fg">
+          <label>Divisa habitual</label>
+          <select id="m-div">
+            <option value="EUR">EUR</option>
+            <option value="USD">USD</option>
+            <option value="GBP">GBP</option>
+            <option value="MXN">MXN</option>
+          </select>
+        </div>
+        <div class="sec">Fiscalitat</div>
+        <div class="fg">
+          <label>% IVA per defecte</label>
+          <input type="number" id="m-iva" value="21" min="0" max="100" step="0.1">
+        </div>
+        <div class="fg"><!-- spacer --></div>
+        <div class="fg"><!-- spacer --></div>
+        <div class="sec">Dades bancàries</div>
+        <div class="fg">
+          <label>Banc</label>
+          <input type="text" id="m-banc">
+        </div>
+        <div class="fg full">
+          <label>IBAN / BIC / SWIFT</label>
+          <input type="text" id="m-iban">
+        </div>
+      </div>
+    </div>
+
+    <div class="tab-panel" id="tp-not">
+      <div class="grid2">
+        <div class="fg full">
+          <label>Notes</label>
+          <textarea id="m-notes" rows="5"></textarea>
+        </div>
+      </div>
+    </div>
+
+  </div>
+  <div class="modal-ftr">
+    <button class="btn btn-secondary" onclick="closeModal()">Cancel·lar</button>
+    <button class="btn btn-primary" id="btn-save" onclick="saveProv()">💾 Guardar</button>
+  </div>
+</div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+const SB_URL='https://ftuaeaghnnlusigqtoqv.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ0dWFlYWdobm5sdXNpZ3F0b3F2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAxNjI0MjIsImV4cCI6MjA5NTczODQyMn0.9n1gWnq_QfrLIWU7sIBReXgQAGA-NPFOpsdDp-jbDW8';
+const HDR={'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Prefer':'return=representation'};
+
+async function sbGet(t,q=''){const r=await fetch(`${SB_URL}/rest/v1/${t}?${q}`,{headers:HDR});if(!r.ok)throw new Error(await r.text());return r.json()}
+async function sbPost(t,d){const r=await fetch(`${SB_URL}/rest/v1/${t}`,{method:'POST',headers:HDR,body:JSON.stringify(d)});if(!r.ok)throw new Error(await r.text());return r.json()}
+async function sbPatch(t,id,d){const r=await fetch(`${SB_URL}/rest/v1/${t}?id=eq.${id}`,{method:'PATCH',headers:HDR,body:JSON.stringify(d)});if(!r.ok)throw new Error(await r.text());return r.json()}
+async function sbDel(t,id){const r=await fetch(`${SB_URL}/rest/v1/${t}?id=eq.${id}`,{method:'DELETE',headers:HDR});if(!r.ok)throw new Error(await r.text())}
+
+let allProv=[], curId=null;
+
+async function init(){ await loadProveidors(); }
+
+async function loadProveidors(){
+  try{
+    allProv=await sbGet('proveidors','select=*&order=nom');
+    renderStats(); renderTable(allProv); populatePaisFilter();
+  }catch(e){ toast('Error: '+e.message,'err'); allProv=[]; renderTable([]); }
+}
+
+async function refreshData(){ toast('Actualitzant...','inf'); await loadProveidors(); toast('Actualitzat','ok'); }
+
+function renderStats(){
+  const total=allProv.length;
+  const paisos=new Set(allProv.map(p=>p.pais).filter(Boolean)).size;
+  const divises=new Set(allProv.map(p=>p.divisa).filter(Boolean)).size;
+  document.getElementById('s-total').textContent=total;
+  document.getElementById('s-sub').textContent=total===1?'proveïdor':'proveïdors';
+  document.getElementById('s-paisos').textContent=paisos;
+  document.getElementById('s-div').textContent=divises;
+}
+
+function populatePaisFilter(){
+  const sel=document.getElementById('f-pais');
+  const cur=sel.value;
+  const paisos=[...new Set(allProv.map(p=>p.pais).filter(Boolean))].sort();
+  sel.innerHTML='<option value="">Tots els països</option>';
+  paisos.forEach(p=>{const o=document.createElement('option');o.value=p;o.textContent=p;if(p===cur)o.selected=true;sel.appendChild(o);});
+}
+
+function renderTable(rows){
+  document.getElementById('f-count').textContent=rows.length+' proveïdors';
+  const tbody=document.getElementById('tbl-body');
+  if(!rows.length){
+    tbody.innerHTML=`<tr><td colspan="10"><div class="empty"><div class="eico">🏭</div><p>Cap proveïdor trobat.</p><button class="btn btn-primary" onclick="openModal(null)">+ Nou proveïdor</button></div></td></tr>`;
+    return;
+  }
+  tbody.innerHTML=rows.map(p=>`<tr onclick="openModal(${p.id})">
+    <td><span class="tag">${p.codi||'—'}</span></td>
+    <td><span class="prov-nom">${p.nom}</span></td>
+    <td style="color:var(--muted)">${p.sinonim||'—'}</td>
+    <td style="font-size:12px">${p.nif_vat||'—'}</td>
+    <td>${p.pais||'—'}</td>
+    <td style="font-size:12px">${[p.tel,p.email].filter(Boolean).join(' · ')||'—'}</td>
+    <td style="text-align:right">${p.tipus_iva??21}%</td>
+    <td>${p.divisa||'EUR'}</td>
+    <td>${p.forma_pag||'—'}</td>
+    <td onclick="event.stopPropagation()" style="white-space:nowrap">
+      <button class="btn btn-secondary btn-xs" onclick="openModal(${p.id})">✏️</button>
+      <button class="btn btn-xs btn-danger" style="margin-left:4px" onclick="confirmDel(${p.id})" title="Eliminar">✕</button>
+    </td>
+  </tr>`).join('');
+}
+
+function applyFilters(){
+  const cerca=document.getElementById('f-cerca').value.toLowerCase().trim();
+  const pais=document.getElementById('f-pais').value;
+  const res=allProv.filter(p=>{
+    const mc=!cerca||(p.nom||'').toLowerCase().includes(cerca)||(p.sinonim||'').toLowerCase().includes(cerca)||(p.nif_vat||'').toLowerCase().includes(cerca)||(p.codi||'').toLowerCase().includes(cerca);
+    const mp=!pais||p.pais===pais;
+    return mc&&mp;
+  });
+  renderTable(res);
+}
+function clearFilters(){ document.getElementById('f-cerca').value=''; document.getElementById('f-pais').value=''; renderTable(allProv); }
+
+function openModal(id){
+  curId=id; showTab('tp-gen');
+  if(id){
+    const p=allProv.find(x=>x.id===id);
+    if(!p) return;
+    document.getElementById('m-title').textContent=p.nom;
+    fillForm(p);
+  } else {
+    document.getElementById('m-title').textContent='Nou proveïdor';
+    resetForm();
+  }
+  document.getElementById('overlay').classList.add('open');
+}
+function closeModal(){ document.getElementById('overlay').classList.remove('open'); curId=null; }
+
+function fillForm(p){
+  const s=(id,v)=>{const el=document.getElementById(id);if(el)el.value=(v??'')};
+  s('m-nom',p.nom); s('m-sin',p.sinonim); s('m-codi',p.codi); s('m-nif',p.nif_vat);
+  s('m-adr',p.adreca); s('m-cp',p.cp); s('m-ciu',p.ciutat); s('m-pais',p.pais);
+  s('m-tel',p.tel); s('m-email',p.email); s('m-web',p.web);
+  s('m-cnt-nom',p.cont_nom); s('m-cnt-cog',p.cont_cognom);
+  s('m-fpag',p.forma_pag||'Transferència');
+  s('m-dies',p.dies_pag??30);
+  s('m-div',p.divisa||'EUR');
+  s('m-iva',p.tipus_iva??21);
+  s('m-banc',p.banc); s('m-iban',p.iban_bic);
+  s('m-notes',p.notes);
+}
+
+function resetForm(){
+  ['m-nom','m-sin','m-codi','m-nif','m-adr','m-cp','m-ciu','m-pais',
+   'm-tel','m-email','m-web','m-cnt-nom','m-cnt-cog','m-banc','m-iban','m-notes']
+  .forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  document.getElementById('m-fpag').value='Transferència';
+  document.getElementById('m-dies').value=30;
+  document.getElementById('m-div').value='EUR';
+  document.getElementById('m-iva').value=21;
+}
+
+async function saveProv(){
+  const nom=document.getElementById('m-nom').value.trim();
+  if(!nom){ toast('El nom és obligatori','err'); return; }
+  const data={
+    nom, sinonim:document.getElementById('m-sin').value||null,
+    codi:document.getElementById('m-codi').value||null,
+    nif_vat:document.getElementById('m-nif').value||null,
+    adreca:document.getElementById('m-adr').value||null,
+    cp:document.getElementById('m-cp').value||null,
+    ciutat:document.getElementById('m-ciu').value||null,
+    pais:document.getElementById('m-pais').value||null,
+    tel:document.getElementById('m-tel').value||null,
+    email:document.getElementById('m-email').value||null,
+    web:document.getElementById('m-web').value||null,
+    cont_nom:document.getElementById('m-cnt-nom').value||null,
+    cont_cognom:document.getElementById('m-cnt-cog').value||null,
+    forma_pag:document.getElementById('m-fpag').value,
+    dies_pag:parseInt(document.getElementById('m-dies').value)||30,
+    divisa:document.getElementById('m-div').value,
+    tipus_iva:parseFloat(document.getElementById('m-iva').value)||0,
+    banc:document.getElementById('m-banc').value||null,
+    iban_bic:document.getElementById('m-iban').value||null,
+    notes:document.getElementById('m-notes').value||null,
+  };
+  const btn=document.getElementById('btn-save');
+  btn.disabled=true; btn.innerHTML='<span class="spin"></span> Guardant...';
+  try{
+    if(curId){ await sbPatch('proveidors',curId,data); }
+    else { await sbPost('proveidors',data); }
+    toast('Proveïdor guardat','ok');
+    await loadProveidors(); closeModal();
+  }catch(e){ toast('Error: '+e.message,'err'); }
+  finally{ btn.disabled=false; btn.innerHTML='💾 Guardar'; }
+}
+
+async function confirmDel(id){
+  const p=allProv.find(x=>x.id===id);
+  if(!p||!confirm(`Eliminar "${p.nom}"?`)) return;
+  try{ await sbDel('proveidors',id); toast('Eliminat','ok'); await loadProveidors(); }
+  catch(e){ toast('Error: '+e.message,'err'); }
+}
+
+function showTab(tabId){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('on',t.dataset.tab===tabId));
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.toggle('on',p.id===tabId));
+}
+document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>showTab(t.dataset.tab)));
+
+function toast(msg,type='inf'){
+  const el=document.createElement('div');el.className=`toast ${type}`;el.textContent=msg;
+  document.getElementById('toast').appendChild(el);setTimeout(()=>el.remove(),3500);
+}
+
+init();
+</script>
+</body>
+</html>

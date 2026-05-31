@@ -435,6 +435,7 @@ input[type=number]{-moz-appearance:textfield}
         <table class="main-tbl" id="tbl">
           <thead>
             <tr>
+              <th>IdIN</th>
               <th>Nº Factura</th>
               <th>Data Fra.</th>
               <th>Venciment</th>
@@ -448,7 +449,7 @@ input[type=number]{-moz-appearance:textfield}
             </tr>
           </thead>
           <tbody id="tbl-body">
-            <tr><td colspan="10"><div class="empty"><div class="eico">🔄</div><p>Carregant dades...</p></div></td></tr>
+            <tr><td colspan="11"><div class="empty"><div class="eico">🔄</div><p>Carregant dades...</p></div></td></tr>
           </tbody>
         </table>
       </div>
@@ -878,7 +879,7 @@ async function loadInvoices(demo){
   if(demo){ allInvoices = demoInvoices(); }
   else {
     try{
-      allInvoices = await sbGet('factures','select=*,clients(rao_social,sinonim)&order=no_factura.desc');
+      allInvoices = await sbGet('factures','select=*,clients(rao_social,sinonim)&order=id_in.desc.nullslast,no_factura.desc');
     }catch(e){
       console.error(e);
       toast('Error carregant factures: ' + e.message, 'err');
@@ -953,7 +954,7 @@ function renderTable(rows){
   document.getElementById('f-count').textContent = rows.length + ' factures';
   const tbody = document.getElementById('tbl-body');
   if(!rows.length){
-    tbody.innerHTML = `<tr><td colspan="10"><div class="empty">
+    tbody.innerHTML = `<tr><td colspan="11"><div class="empty">
       <div class="eico">📄</div>
       <p>Cap factura amb els filtres actuals.</p>
       <button class="btn btn-primary" onclick="openModal(null)">+ Nova factura</button>
@@ -967,6 +968,7 @@ function renderTable(rows){
     const tot = (inv.total_factura||0);
     const cli = inv.clients?.rao_social || '—';
     return `<tr onclick="openModal(${inv.id})">
+      <td style="font-variant-numeric:tabular-nums;color:var(--muted);font-size:12px">${inv.id_in||'—'}</td>
       <td><span class="no-fra">${inv.no_factura}</span></td>
       <td>${fd(inv.data_fra)}</td>
       <td>${fd(inv.data_venciment)}</td>

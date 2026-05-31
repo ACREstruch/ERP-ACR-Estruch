@@ -1,0 +1,1468 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ERP ACR Estruch — Facturació</title>
+
+<!--
+  ╔══════════════════════════════════════════════════════════════╗
+  ║  ERP ACR ESTRUCH — Mòdul Facturació                         ║
+  ║  Versió 1.0 — 2026-05-30                                    ║
+  ╠══════════════════════════════════════════════════════════════╣
+  ║  SQL SUPABASE — executar a SQL Editor de Supabase:          ║
+  ║                                                              ║
+  ║  CREATE TABLE clients (                                      ║
+  ║    id BIGSERIAL PRIMARY KEY,                                 ║
+  ║    codi TEXT UNIQUE,                                         ║
+  ║    rao_social TEXT NOT NULL,                                 ║
+  ║    sinonim TEXT,                                             ║
+  ║    nif_vat TEXT,                                             ║
+  ║    adreca TEXT,                                              ║
+  ║    cp TEXT, ciutat TEXT, pais TEXT,                          ║
+  ║    tel TEXT, email TEXT, web TEXT,                           ║
+  ║    cont_nom TEXT, cont_cognom TEXT,                          ║
+  ║    forma_pag TEXT DEFAULT 'Transferència',                   ║
+  ║    dies_pag INTEGER DEFAULT 30,                              ║
+  ║    tipus_iva DECIMAL(5,2) DEFAULT 21,                        ║
+  ║    tipus_irpf DECIMAL(5,2) DEFAULT 0,                        ║
+  ║    divisa TEXT DEFAULT 'EUR',                                ║
+  ║    banc TEXT, iban_bic TEXT,                                 ║
+  ║    notes TEXT,                                               ║
+  ║    created_at TIMESTAMPTZ DEFAULT NOW()                      ║
+  ║  );                                                          ║
+  ║                                                              ║
+  ║  CREATE TABLE factures (                                     ║
+  ║    id BIGSERIAL PRIMARY KEY,                                 ║
+  ║    no_factura TEXT UNIQUE NOT NULL,                          ║
+  ║    id_client BIGINT REFERENCES clients(id),                  ║
+  ║    id_projecte TEXT,                                         ║
+  ║    data_fra DATE NOT NULL,                                   ║
+  ║    data_venciment DATE,                                      ║
+  ║    data_cob DATE,                                            ║
+  ║    forma_pag TEXT DEFAULT 'Transferència',                   ║
+  ║    divisa TEXT DEFAULT 'EUR',                                ║
+  ║    tipus_iva DECIMAL(5,2) DEFAULT 21,                        ║
+  ║    tipus_irpf DECIMAL(5,2) DEFAULT 0,                        ║
+  ║    base_imposable DECIMAL(12,2) DEFAULT 0,                   ║
+  ║    import_iva DECIMAL(12,2) DEFAULT 0,                       ║
+  ║    import_irpf DECIMAL(12,2) DEFAULT 0,                      ║
+  ║    total_factura DECIMAL(12,2) DEFAULT 0,                    ║
+  ║    estat TEXT DEFAULT 'PENDENT',                             ║
+  ║    import_cobrat DECIMAL(12,2) DEFAULT 0,                    ║
+  ║    despeses_banc DECIMAL(12,2) DEFAULT 0,                    ║
+  ║    n_ref TEXT, s_ref TEXT,                                   ║
+  ║    banc TEXT, banc_ag TEXT,                                  ║
+  ║    iban_bic TEXT, swift TEXT,                                ║
+  ║    en_pc DECIMAL(5,2) DEFAULT 0,                             ║
+  ║    en_c DECIMAL(12,2) DEFAULT 0,                             ║
+  ║    dg_pc DECIMAL(5,2) DEFAULT 0,                             ║
+  ║    dg_c DECIMAL(12,2) DEFAULT 0,                             ║
+  ║    cb_pc DECIMAL(5,2) DEFAULT 0,                             ║
+  ║    cb_c DECIMAL(12,2) DEFAULT 0,                             ║
+  ║    tr_pf DECIMAL(12,2) DEFAULT 0,                            ║
+  ║    acr_pnl DECIMAL(12,2) DEFAULT 0,                          ║
+  ║    acr_pc DECIMAL(5,2) DEFAULT 0,                            ║
+  ║    liquidada BOOLEAN DEFAULT FALSE,                          ║
+  ║    notes_liquidacio TEXT,                                    ║
+  ║    compte_client TEXT DEFAULT '430',                         ║
+  ║    compte_vendes TEXT DEFAULT '700',                         ║
+  ║    compte_iva TEXT DEFAULT '477',                            ║
+  ║    compte_irpf TEXT DEFAULT '4751',                          ║
+  ║    assentat BOOLEAN DEFAULT FALSE,                           ║
+  ║    import_suplerts DECIMAL(12,2) DEFAULT 0,                  ║
+  ║    suplerts TEXT,                                            ║
+  ║    classe_fra TEXT DEFAULT 'Normal',                         ║
+  ║    notes TEXT,                                               ║
+  ║    notes_privades TEXT,                                      ║
+  ║    created_at TIMESTAMPTZ DEFAULT NOW(),                     ║
+  ║    updated_at TIMESTAMPTZ DEFAULT NOW()                      ║
+  ║  );                                                          ║
+  ║                                                              ║
+  ║  CREATE TABLE factura_lines (                                ║
+  ║    id BIGSERIAL PRIMARY KEY,                                 ║
+  ║    no_factura TEXT REFERENCES factures(no_factura)           ║
+  ║      ON DELETE CASCADE,                                      ║
+  ║    ordre INTEGER DEFAULT 1,                                  ║
+  ║    descripcio TEXT,                                          ║
+  ║    quantitat DECIMAL(12,3) DEFAULT 1,                        ║
+  ║    preu_unitari DECIMAL(12,2) DEFAULT 0,                     ║
+  ║    descompte DECIMAL(5,2) DEFAULT 0,                         ║
+  ║    import_linia DECIMAL(12,2) DEFAULT 0,                     ║
+  ║    created_at TIMESTAMPTZ DEFAULT NOW()                      ║
+  ║  );                                                          ║
+  ╚══════════════════════════════════════════════════════════════╝
+-->
+
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root{
+  --blue:#00387C;
+  --blue-mid:#1a54a0;
+  --blue-light:#e8f0fb;
+  --blue-dim:#d0e0f5;
+  --brown:#5B281A;
+  --link:#0563C1;
+
+  --green:#1a8c42;
+  --green-bg:#d4edda;
+  --green-txt:#155724;
+  --yellow:#c79500;
+  --yellow-bg:#fff3cd;
+  --yellow-txt:#856404;
+  --amber:#c96a10;
+  --amber-bg:#ffe5d0;
+  --amber-txt:#7c3d0f;
+  --red:#c0392b;
+  --red-bg:#f8d7da;
+  --red-txt:#721c24;
+  --grey:#6c757d;
+  --grey-bg:#e9ecef;
+  --grey-txt:#495057;
+
+  --bg:#f0f4f8;
+  --white:#ffffff;
+  --border:#dee2e6;
+  --border-light:#eaeef2;
+  --text:#212529;
+  --muted:#6c757d;
+
+  --sidebar:220px;
+  --topbar:58px;
+  --r:6px;
+  --shadow:0 1px 4px rgba(0,0,0,.1),0 4px 12px rgba(0,0,0,.06);
+}
+
+body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;font-size:14px;background:var(--bg);color:var(--text);height:100vh;overflow:hidden}
+
+/* ── LAYOUT ── */
+#app{display:flex;height:100vh}
+
+/* ── SIDEBAR ── */
+#sidebar{width:var(--sidebar);background:var(--blue);display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto}
+#logo-area{padding:18px 16px 16px;border-bottom:1px solid rgba(255,255,255,.15);cursor:default}
+.logo-main{font-size:19px;font-weight:800;color:#fff;letter-spacing:-.4px;line-height:1.1}
+.logo-main .sep{color:rgba(255,255,255,.5);font-weight:300;margin:0 1px}
+.logo-sub{font-size:10.5px;color:rgba(255,255,255,.6);margin-top:3px;letter-spacing:.3px;font-style:italic}
+#nav{padding:10px 0;flex:1}
+.nav-section{padding:10px 14px 3px;font-size:10px;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:1.2px;font-weight:600}
+.nav-item{display:flex;align-items:center;gap:9px;padding:9px 16px;color:rgba(255,255,255,.78);cursor:pointer;border-left:3px solid transparent;transition:all .15s;font-size:13px;user-select:none}
+.nav-item:hover{background:rgba(255,255,255,.1);color:#fff}
+.nav-item.active{background:rgba(255,255,255,.16);color:#fff;border-left-color:#fff;font-weight:600}
+.nav-item .ico{font-size:15px;width:19px;text-align:center;flex-shrink:0}
+.nav-sub{padding:6px 16px 6px 44px;color:rgba(255,255,255,.6);cursor:pointer;font-size:12px;transition:all .15s;border-left:3px solid transparent;user-select:none}
+.nav-sub:hover{color:#fff;background:rgba(255,255,255,.07)}
+.nav-sub.active{color:#fff;font-weight:600;border-left-color:rgba(255,255,255,.4)}
+.nav-footer{padding:12px 14px;border-top:1px solid rgba(255,255,255,.12);font-size:11px;color:rgba(255,255,255,.4)}
+
+/* ── MAIN ── */
+#main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+
+/* ── TOPBAR ── */
+#topbar{height:var(--topbar);background:var(--white);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 22px;gap:12px;flex-shrink:0;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+#topbar h1{font-size:17px;font-weight:700;color:var(--blue);flex:1}
+.topbar-sub{font-size:12px;color:var(--muted);font-weight:400;margin-left:8px}
+
+/* ── BUTTONS ── */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 15px;border-radius:var(--r);border:none;cursor:pointer;font-size:13px;font-weight:500;transition:all .15s;white-space:nowrap}
+.btn-primary{background:var(--blue);color:#fff}
+.btn-primary:hover{background:var(--blue-mid)}
+.btn-secondary{background:#fff;color:var(--blue);border:1.5px solid var(--blue)}
+.btn-secondary:hover{background:var(--blue-light)}
+.btn-danger{background:var(--red-bg);color:var(--red-txt);border:1px solid #f5c6cb}
+.btn-danger:hover{background:#f5c6cb}
+.btn-sm{padding:5px 10px;font-size:12px}
+.btn-xs{padding:3px 8px;font-size:11px}
+.btn:disabled{opacity:.5;cursor:default}
+
+/* ── CONTENT ── */
+#content{flex:1;overflow-y:auto;padding:18px 22px}
+
+/* ── DEMO BANNER ── */
+#demo-banner{background:linear-gradient(135deg,#5B281A,#7a3820);color:#fff;padding:10px 20px;font-size:12.5px;text-align:center;display:none}
+#demo-banner.show{display:block}
+
+/* ── STATS ── */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:16px}
+.stat{background:var(--white);border-radius:var(--r);box-shadow:var(--shadow);padding:14px 18px;border-top:3px solid var(--blue);position:relative;overflow:hidden}
+.stat.g{border-top-color:var(--green)}
+.stat.y{border-top-color:var(--yellow)}
+.stat.a{border-top-color:var(--amber)}
+.stat.r{border-top-color:var(--red)}
+.stat-label{font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;font-weight:600;margin-bottom:5px}
+.stat-value{font-size:24px;font-weight:800;color:var(--text);line-height:1}
+.stat-sub{font-size:11px;color:var(--muted);margin-top:4px}
+.stat-icon{position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:28px;opacity:.12}
+
+/* ── FILTER BAR ── */
+.filter-wrap{background:var(--white);border-radius:var(--r);box-shadow:var(--shadow);padding:12px 18px;margin-bottom:14px}
+.filter-bar{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.filter-bar input,.filter-bar select{padding:6px 10px;border:1.5px solid var(--border);border-radius:var(--r);font-size:13px;background:#fff;color:var(--text);transition:border-color .15s}
+.filter-bar input:focus,.filter-bar select:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(0,56,124,.08)}
+.filter-bar .f-search{min-width:200px}
+
+/* ── CARD ── */
+.card{background:var(--white);border-radius:var(--r);box-shadow:var(--shadow);margin-bottom:16px}
+.card-header{padding:12px 18px;border-bottom:1px solid var(--border-light);display:flex;align-items:center;gap:10px}
+.card-header h2{font-size:14px;font-weight:600;color:var(--text);flex:1}
+.card-body{padding:18px}
+
+/* ── TABLE ── */
+.tbl-wrap{overflow-x:auto}
+table.main-tbl{width:100%;border-collapse:collapse;font-size:13px}
+.main-tbl th{padding:9px 14px;text-align:left;font-size:10.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;border-bottom:2px solid var(--border);white-space:nowrap;background:#fafbfc}
+.main-tbl td{padding:11px 14px;border-bottom:1px solid var(--border-light);vertical-align:middle}
+.main-tbl tbody tr:hover td{background:var(--blue-light);cursor:pointer}
+.main-tbl tbody tr:last-child td{border-bottom:none}
+.no-fra{font-weight:700;color:var(--blue)}
+td.amt{text-align:right;font-variant-numeric:tabular-nums;font-weight:500}
+th.amt{text-align:right}
+
+/* ── BADGES ── */
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.2px;white-space:nowrap}
+.badge::before{content:'';width:6px;height:6px;border-radius:50%;background:currentColor;opacity:.7}
+.bg{background:var(--green-bg);color:var(--green-txt)}
+.by{background:var(--yellow-bg);color:var(--yellow-txt)}
+.ba{background:var(--amber-bg);color:var(--amber-txt)}
+.br{background:var(--red-bg);color:var(--red-txt)}
+.bx{background:var(--grey-bg);color:var(--grey-txt)}
+
+/* ── EMPTY STATE ── */
+.empty{text-align:center;padding:50px 20px;color:var(--muted)}
+.empty .eico{font-size:42px;margin-bottom:12px;opacity:.5}
+.empty p{margin-bottom:14px;font-size:14px}
+
+/* ── MODAL ── */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:100;align-items:flex-start;justify-content:center;padding:30px 16px;overflow-y:auto}
+.overlay.open{display:flex}
+.modal{background:#fff;border-radius:8px;box-shadow:0 20px 60px rgba(0,0,0,.3);width:100%;max-width:920px;display:flex;flex-direction:column;margin:auto}
+.modal-hdr{padding:14px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;flex-shrink:0}
+.modal-hdr h3{font-size:16px;font-weight:700;color:var(--blue);flex:1}
+.modal-close{background:none;border:none;font-size:22px;cursor:pointer;color:var(--muted);line-height:1;padding:0 4px}
+.modal-close:hover{color:var(--text)}
+.modal-body{flex:1;overflow-y:auto;max-height:calc(90vh - 130px)}
+.modal-ftr{padding:12px 22px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px;flex-shrink:0}
+
+/* ── TABS ── */
+.tabs{display:flex;background:#f8f9fa;border-bottom:2px solid var(--border);padding:0 22px;gap:2px;flex-shrink:0}
+.tab{padding:11px 15px;border:none;background:none;cursor:pointer;font-size:13px;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-2px;font-weight:500;transition:all .15s;white-space:nowrap}
+.tab:hover{color:var(--blue)}
+.tab.on{color:var(--blue);border-bottom-color:var(--blue);font-weight:700}
+
+.tab-panel{display:none;padding:20px 22px}
+.tab-panel.on{display:block}
+
+/* ── FORM ── */
+.fg{display:flex;flex-direction:column;gap:4px}
+.fg label{font-size:10.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px}
+.fg input,.fg select,.fg textarea{padding:7px 10px;border:1.5px solid var(--border);border-radius:var(--r);font-size:13px;background:#fff;color:var(--text);transition:border-color .15s;font-family:inherit}
+.fg input:focus,.fg select:focus,.fg textarea:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(0,56,124,.08)}
+.fg input[readonly]{background:#f8f9fa;color:var(--muted)}
+.fg input.bold-val{font-weight:700;color:var(--blue);background:#f0f4f8}
+.fg textarea{resize:vertical;min-height:60px}
+
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+.grid4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:14px}
+.full{grid-column:1/-1}
+.sec{grid-column:1/-1;font-size:11px;font-weight:800;color:var(--blue);text-transform:uppercase;letter-spacing:.8px;padding:4px 0 2px;border-bottom:1.5px solid var(--blue-dim);margin-bottom:2px}
+
+/* ── LINES TABLE ── */
+table.ltbl{width:100%;border-collapse:collapse}
+.ltbl th{padding:7px 10px;font-size:10.5px;color:var(--muted);text-transform:uppercase;font-weight:700;border-bottom:2px solid var(--border);background:#f8f9fa}
+.ltbl td{padding:5px 8px;border-bottom:1px solid var(--border-light)}
+.ltbl input{width:100%;border:1.5px solid transparent;padding:5px 7px;border-radius:4px;background:transparent;font-size:13px;font-family:inherit;transition:border-color .12s}
+.ltbl input:focus{border-color:var(--blue);background:#fff;outline:none}
+.ltbl .w80{width:80px}.ltbl .w70{width:70px}.ltbl .w50{width:50px}
+.ltbl .rgt{text-align:right}
+.ltbl .del-btn{background:none;border:none;cursor:pointer;color:var(--red);font-size:16px;padding:2px 4px;opacity:.6}
+.ltbl .del-btn:hover{opacity:1}
+
+/* ── TOTALS ── */
+.totals-box{background:#f8f9fa;border:1.5px solid var(--border);border-radius:var(--r);padding:12px 16px;margin-top:12px;max-width:340px;margin-left:auto}
+.tot-row{display:flex;align-items:center;gap:8px;padding:3px 0;font-size:13px}
+.tot-row .tl{flex:1;color:var(--muted)}
+.tot-row .pct-inp{width:48px;border:1.5px solid var(--border);border-radius:4px;padding:3px 5px;font-size:12px;text-align:right;background:#fff}
+.tot-row .pct-inp:focus{outline:none;border-color:var(--blue)}
+.tot-row .tv{text-align:right;min-width:90px;font-variant-numeric:tabular-nums}
+.tot-row .tv.neg{color:var(--red)}
+.tot-total{border-top:2px solid var(--border);margin-top:4px;padding-top:8px;font-size:15px;font-weight:800;color:var(--blue)}
+
+/* ── ASSENTAMENT PREVIEW ── */
+.ass-tbl{width:100%;border-collapse:collapse;font-size:13px}
+.ass-tbl th{padding:8px 10px;font-size:10.5px;color:var(--muted);text-transform:uppercase;font-weight:700;border-bottom:2px solid var(--border);background:#f8f9fa}
+.ass-tbl td{padding:8px 10px;border-bottom:1px solid var(--border-light)}
+.ass-tbl .compte{font-weight:700;color:var(--blue);font-size:12px}
+.ass-tbl .rgt{text-align:right;font-variant-numeric:tabular-nums;font-weight:600}
+.ass-tbl .deure{color:var(--green)}
+.ass-tbl .haver{color:var(--red-txt)}
+
+/* ── TOAST ── */
+#toast{position:fixed;bottom:22px;right:22px;z-index:999;display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.toast{padding:11px 18px;border-radius:var(--r);font-size:13px;font-weight:600;color:#fff;box-shadow:0 4px 16px rgba(0,0,0,.25);animation:tin .3s ease;pointer-events:auto}
+.toast.ok{background:var(--green)}
+.toast.err{background:var(--red)}
+.toast.inf{background:var(--blue)}
+@keyframes tin{from{transform:translateX(110%);opacity:0}to{transform:translateX(0);opacity:1}}
+
+/* ── SPINNER ── */
+.spin{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:rot .6s linear infinite}
+@keyframes rot{to{transform:rotate(360deg)}}
+
+/* ── ELIMINAR FLETXES INPUTS NUMÈRICS ── */
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+input[type=number]{-moz-appearance:textfield}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(0,0,0,.2);border-radius:3px}
+</style>
+</head>
+<body>
+
+<div id="app">
+
+<!-- ══════════════════ SIDEBAR ══════════════════ -->
+<nav id="sidebar">
+  <div id="logo-area">
+    <div class="logo-main">ACR<span class="sep">|</span>Estruch</div>
+    <div class="logo-sub">export &amp; consulting</div>
+  </div>
+  <div id="nav">
+    <div class="nav-section">Mòduls</div>
+    <div class="nav-item active" id="nav-fact" onclick="navSection('facturacio')">
+      <span class="ico">🧾</span> Facturació
+    </div>
+    <div class="nav-sub active" id="nav-emeses" onclick="navSub('emeses')">Factures emeses</div>
+    <div class="nav-sub" id="nav-rebudes" onclick="navSub('rebudes')">Factures rebudes</div>
+    <div class="nav-item" id="nav-cli" onclick="location.href='erp-clients.html'">
+      <span class="ico">👥</span> Clients
+    </div>
+    <div class="nav-item" id="nav-pj" onclick="navSection('projectes')">
+      <span class="ico">📋</span> Projectes
+    </div>
+    <div class="nav-section" style="margin-top:10px">Comptabilitat</div>
+    <div class="nav-item" id="nav-major" onclick="navSection('major')">
+      <span class="ico">📒</span> Major
+    </div>
+    <div class="nav-item" id="nav-ass" onclick="navSection('assentaments')">
+      <span class="ico">✏️</span> Assentaments
+    </div>
+    <div class="nav-item" id="nav-pla" onclick="navSection('pla')">
+      <span class="ico">🗂️</span> Pla de comptes
+    </div>
+  </div>
+  <div class="nav-footer">ACR Estruch ERP v1.0</div>
+</nav>
+
+<!-- ══════════════════ MAIN ══════════════════ -->
+<main id="main">
+
+  <!-- Demo banner -->
+  <div id="demo-banner">
+    ⚠️ Mode DEMO — Connecta Supabase: obre el fitxer i substitueix <code>TU_SUPABASE_URL</code> i <code>TU_SUPABASE_KEY</code>
+  </div>
+
+  <!-- Topbar -->
+  <header id="topbar">
+    <h1 id="page-title">Factures emeses <span class="topbar-sub" id="page-sub"></span></h1>
+    <button class="btn btn-secondary btn-sm" onclick="refreshData()">↻ Actualitzar</button>
+    <button class="btn btn-primary" id="btn-nova" onclick="openModal(null)">+ Nova factura</button>
+  </header>
+
+  <!-- Content -->
+  <div id="content">
+
+    <!-- Stats -->
+    <div class="stats-row">
+      <div class="stat g">
+        <div class="stat-label">Cobrades</div>
+        <div class="stat-value" id="s-cob">—</div>
+        <div class="stat-sub" id="s-cob-e">—</div>
+        <div class="stat-icon">✅</div>
+      </div>
+      <div class="stat y">
+        <div class="stat-label">Pendents</div>
+        <div class="stat-value" id="s-pen">—</div>
+        <div class="stat-sub" id="s-pen-e">—</div>
+        <div class="stat-icon">🕐</div>
+      </div>
+      <div class="stat a">
+        <div class="stat-label">Venç en &lt;7 dies</div>
+        <div class="stat-value" id="s-prx">—</div>
+        <div class="stat-sub" id="s-prx-e">—</div>
+        <div class="stat-icon">⏰</div>
+      </div>
+      <div class="stat r">
+        <div class="stat-label">Vençudes</div>
+        <div class="stat-value" id="s-ven">—</div>
+        <div class="stat-sub" id="s-ven-e">—</div>
+        <div class="stat-icon">⚠️</div>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="filter-wrap">
+      <div class="filter-bar">
+        <input class="f-search" type="text" id="f-cerca" placeholder="🔍  Cerca factura, client, projecte..." oninput="applyFilters()">
+        <select id="f-estat" onchange="applyFilters()">
+          <option value="">Tots els estats</option>
+          <option value="COBRAT">Cobrat</option>
+          <option value="PENDENT">Pendent</option>
+          <option value="PROXIM">Proper venciment</option>
+          <option value="VENCUDA">Vençuda</option>
+          <option value="RECTIFICATIVA">Rectificativa</option>
+        </select>
+        <input type="date" id="f-de" onchange="applyFilters()" title="Des de (data factura)">
+        <input type="date" id="f-fins" onchange="applyFilters()" title="Fins a (data factura)">
+        <button class="btn btn-secondary btn-sm" onclick="clearFilters()">✕ Netejar</button>
+        <span id="f-count" style="margin-left:auto;font-size:12px;color:var(--muted)"></span>
+      </div>
+    </div>
+
+    <!-- Table -->
+    <div class="card">
+      <div class="tbl-wrap">
+        <table class="main-tbl" id="tbl">
+          <thead>
+            <tr>
+              <th>Nº Factura</th>
+              <th>Data Fra.</th>
+              <th>Venciment</th>
+              <th>Client</th>
+              <th>N/Ref (Projecte)</th>
+              <th class="amt">Base imp.</th>
+              <th class="amt">Total</th>
+              <th class="amt">Cobrat</th>
+              <th>Estat</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="tbl-body">
+            <tr><td colspan="10"><div class="empty"><div class="eico">🔄</div><p>Carregant dades...</p></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</main>
+
+</div><!-- /app -->
+
+<!-- ══════════════════ MODAL FACTURA ══════════════════ -->
+<div class="overlay" id="overlay" onclick="if(event.target===this)closeModal()">
+<div class="modal">
+
+  <div class="modal-hdr">
+    <h3 id="m-title">Nova factura</h3>
+    <span id="m-badge"></span>
+    <button class="modal-close" onclick="closeModal()">✕</button>
+  </div>
+
+  <div class="tabs">
+    <button class="tab on" data-tab="tp-fra">Factura</button>
+    <button class="tab" data-tab="tp-fin">Financer</button>
+    <button class="tab" data-tab="tp-liq">Liquidació</button>
+    <button class="tab" data-tab="tp-cpt">Comptabilitat</button>
+    <button class="tab" data-tab="tp-not">Notes</button>
+  </div>
+
+  <div class="modal-body">
+
+    <!-- ── TAB FACTURA ── -->
+    <div class="tab-panel on" id="tp-fra">
+      <div class="grid4">
+        <div class="sec">Capçalera</div>
+
+        <div class="fg">
+          <label>Nº Factura *</label>
+          <input type="text" id="m-no" placeholder="26001" oninput="updatePreview()">
+        </div>
+        <div class="fg">
+          <label>Data factura *</label>
+          <input type="date" id="m-data">
+        </div>
+        <div class="fg">
+          <label>Data venciment</label>
+          <input type="date" id="m-venc">
+        </div>
+        <div class="fg">
+          <label>Estat</label>
+          <select id="m-estat" onchange="updateBadge()">
+            <option value="PENDENT">Pendent</option>
+            <option value="COBRAT">Cobrat</option>
+            <option value="VENCUDA">Vençuda</option>
+            <option value="RECTIFICATIVA">Rectificativa</option>
+          </select>
+        </div>
+
+        <div class="sec">Client i Projecte</div>
+
+        <div class="fg full">
+          <label>Client *</label>
+          <select id="m-client" onchange="onClientChange()">
+            <option value="">— Selecciona client —</option>
+          </select>
+        </div>
+        <div class="fg">
+          <label>N/Ref (nostre projecte)</label>
+          <input type="text" id="m-nref" placeholder="PJ26087500">
+        </div>
+        <div class="fg">
+          <label>S/Ref (referència client)</label>
+          <input type="text" id="m-sref">
+        </div>
+        <div class="fg">
+          <label>Forma de pagament</label>
+          <select id="m-fpag">
+            <option>Transferència</option>
+            <option>Rebut domiciliat</option>
+            <option>Efectiu</option>
+            <option>Xec</option>
+          </select>
+        </div>
+        <div class="fg">
+          <label>Divisa</label>
+          <select id="m-div">
+            <option value="EUR">EUR</option>
+            <option value="USD">USD</option>
+            <option value="GBP">GBP</option>
+            <option value="MXN">MXN</option>
+          </select>
+        </div>
+
+        <div class="sec">Línies de factura</div>
+      </div>
+
+      <!-- Lines -->
+      <table class="ltbl">
+        <thead>
+          <tr>
+            <th>Descripció del servei</th>
+            <th class="rgt w80">Quantitat</th>
+            <th class="rgt w80">Preu unit.</th>
+            <th class="rgt w50">Dte %</th>
+            <th class="rgt w80">Import</th>
+            <th class="w50"></th>
+          </tr>
+        </thead>
+        <tbody id="lines-body"></tbody>
+      </table>
+      <button class="btn btn-secondary btn-xs" style="margin-top:8px" onclick="addLine()">+ Afegir línia</button>
+
+      <!-- Totals -->
+      <div class="totals-box">
+        <div class="tot-row">
+          <span class="tl">Base Imposable</span>
+          <span class="tv" id="t-bi">0,00 EUR</span>
+        </div>
+        <div class="tot-row">
+          <span class="tl">I.V.A.</span>
+          <input class="pct-inp" type="number" id="m-iva" value="21" min="0" max="100" step="0.1" onchange="recalc()"> %
+          <span class="tv" id="t-iva">0,00 EUR</span>
+        </div>
+        <div class="tot-row">
+          <span class="tl">I.R.P.F.</span>
+          <input class="pct-inp" type="number" id="m-irpf" value="0" min="0" max="100" step="0.1" onchange="recalc()"> %
+          <span class="tv neg" id="t-irpf">0,00 EUR</span>
+        </div>
+        <div class="tot-row tot-total">
+          <span class="tl">Total Factura</span>
+          <span class="tv" id="t-tot">0,00 EUR</span>
+        </div>
+      </div>
+    </div><!-- /tp-fra -->
+
+    <!-- ── TAB FINANCER ── -->
+    <div class="tab-panel" id="tp-fin">
+      <div class="grid3">
+        <div class="sec">Cobrament</div>
+        <div class="fg">
+          <label>Import cobrat (EUR)</label>
+          <input type="number" id="m-cobrat" step="0.01" value="0" onchange="recalcCob()">
+        </div>
+        <div class="fg">
+          <label>Data cobrament</label>
+          <input type="date" id="m-dcob">
+        </div>
+        <div class="fg">
+          <label>Despeses bancàries</label>
+          <input type="number" id="m-desp" step="0.01" value="0">
+        </div>
+        <div class="fg">
+          <label>Pendent de cobrar</label>
+          <input type="text" id="m-pendent" readonly class="bold-val">
+        </div>
+
+        <div class="sec">Dades bancàries de cobrament</div>
+        <div class="fg">
+          <label>Banc</label>
+          <input type="text" id="m-banc" placeholder="BBVA">
+        </div>
+        <div class="fg">
+          <label>Sucursal / Ag.</label>
+          <input type="text" id="m-bancag">
+        </div>
+        <div class="fg">
+          <label>IBAN / BIC</label>
+          <input type="text" id="m-iban" placeholder="ES31 0182 ...">
+        </div>
+        <div class="fg">
+          <label>SWIFT</label>
+          <input type="text" id="m-swift" placeholder="BBVAESMMXXX">
+        </div>
+      </div>
+    </div><!-- /tp-fin -->
+
+    <!-- ── TAB LIQUIDACIÓ ── -->
+    <div class="tab-panel" id="tp-liq">
+      <div class="grid4">
+        <div class="sec">Comissions</div>
+        <div class="fg">
+          <label>EN %</label>
+          <input type="number" id="m-en-pc" step="0.01" value="0" onchange="recalcLiq()">
+        </div>
+        <div class="fg">
+          <label>EN Import</label>
+          <input type="text" id="m-en-c" readonly class="bold-val">
+        </div>
+        <div class="fg">
+          <label>DG %</label>
+          <input type="number" id="m-dg-pc" step="0.01" value="0" onchange="recalcLiq()">
+        </div>
+        <div class="fg">
+          <label>DG Import</label>
+          <input type="text" id="m-dg-c" readonly class="bold-val">
+        </div>
+        <div class="fg">
+          <label>CB %</label>
+          <input type="number" id="m-cb-pc" step="0.01" value="0" onchange="recalcLiq()">
+        </div>
+        <div class="fg">
+          <label>CB Import</label>
+          <input type="text" id="m-cb-c" readonly class="bold-val">
+        </div>
+        <div class="fg">
+          <label>TR Prima Fixa</label>
+          <input type="number" id="m-tr" step="0.01" value="0" onchange="recalcLiq()">
+        </div>
+        <div class="fg"><!-- spacer --></div>
+
+        <div class="sec">ACR P&amp;L</div>
+        <div class="fg">
+          <label>ACR P&amp;L Import</label>
+          <input type="text" id="m-acr-pnl" readonly class="bold-val">
+        </div>
+        <div class="fg">
+          <label>ACR %</label>
+          <input type="text" id="m-acr-pc" readonly class="bold-val">
+        </div>
+        <div class="fg">
+          <label>Liquidada</label>
+          <select id="m-liq">
+            <option value="false">No</option>
+            <option value="true">Sí</option>
+          </select>
+        </div>
+        <div class="fg"><!-- spacer --></div>
+
+        <div class="sec">Notes liquidació</div>
+        <div class="fg full">
+          <label>Notes</label>
+          <textarea id="m-notes-liq" rows="3"></textarea>
+        </div>
+      </div>
+    </div><!-- /tp-liq -->
+
+    <!-- ── TAB COMPTABILITAT ── -->
+    <div class="tab-panel" id="tp-cpt">
+      <div class="grid3">
+        <div class="sec">Comptes PGC (Plan General Contable)</div>
+        <div class="fg">
+          <label>Compte client (430x)</label>
+          <input type="text" id="m-cte-cli" placeholder="430" value="430">
+        </div>
+        <div class="fg">
+          <label>Compte vendes (700x)</label>
+          <input type="text" id="m-cte-ven" placeholder="700" value="700">
+        </div>
+        <div class="fg">
+          <label>IVA repercutit (477)</label>
+          <input type="text" id="m-cte-iva" placeholder="477" value="477">
+        </div>
+        <div class="fg">
+          <label>IRPF retingut (4751)</label>
+          <input type="text" id="m-cte-irpf" placeholder="4751" value="4751">
+        </div>
+        <div class="fg">
+          <label>Assentat</label>
+          <select id="m-assentat">
+            <option value="false">No</option>
+            <option value="true">Sí</option>
+          </select>
+        </div>
+      </div>
+
+      <div style="margin-top:22px">
+        <div class="sec" style="border:none;margin-bottom:10px">Assentament comptable (previsió)</div>
+        <table class="ass-tbl">
+          <thead>
+            <tr>
+              <th style="width:100px">Compte</th>
+              <th>Concepte</th>
+              <th class="rgt" style="width:120px">Deure</th>
+              <th class="rgt" style="width:120px">Haver</th>
+            </tr>
+          </thead>
+          <tbody id="ass-body"></tbody>
+        </table>
+        <div style="margin-top:10px;font-size:12px;color:var(--muted)">
+          ℹ️ L'assentament real es genera quan marquis <strong>Assentat = Sí</strong> i guardis la factura.
+        </div>
+      </div>
+    </div><!-- /tp-cpt -->
+
+    <!-- ── TAB NOTES ── -->
+    <div class="tab-panel" id="tp-not">
+      <div class="grid2">
+        <div class="fg full">
+          <label>Suplerts (despeses per compte del client)</label>
+          <textarea id="m-suplerts" rows="3" placeholder="Descripció dels suplerts..."></textarea>
+        </div>
+        <div class="fg">
+          <label>Import suplerts (EUR)</label>
+          <input type="number" id="m-imp-sup" step="0.01" value="0">
+        </div>
+        <div class="fg">
+          <label>Classe factura</label>
+          <select id="m-classe">
+            <option>Normal</option>
+            <option>Rectificativa</option>
+            <option>Abono</option>
+          </select>
+        </div>
+        <div class="fg full">
+          <label>Notes (s'imprimeixen a la factura)</label>
+          <textarea id="m-notes" rows="4"></textarea>
+        </div>
+        <div class="fg full">
+          <label>Notes privades (no s'imprimeixen)</label>
+          <textarea id="m-notes-priv" rows="3"></textarea>
+        </div>
+      </div>
+    </div><!-- /tp-not -->
+
+  </div><!-- /modal-body -->
+
+  <div class="modal-ftr">
+    <button class="btn btn-secondary" onclick="closeModal()">Cancel·lar</button>
+    <button class="btn btn-primary" id="btn-save" onclick="saveInvoice()">💾 Guardar</button>
+  </div>
+
+</div><!-- /modal -->
+</div><!-- /overlay -->
+
+<!-- Toast -->
+<div id="toast"></div>
+
+<script>
+// ════════════════════════════════════════════════
+// CONFIGURACIÓ SUPABASE
+// ════════════════════════════════════════════════
+const SB_URL = 'https://ftuaeaghnnlusigqtoqv.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ0dWFlYWdobm5sdXNpZ3F0b3F2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAxNjI0MjIsImV4cCI6MjA5NTczODQyMn0.9n1gWnq_QfrLIWU7sIBReXgQAGA-NPFOpsdDp-jbDW8';
+
+const HDR = {
+  'Content-Type':'application/json',
+  'apikey': SB_KEY,
+  'Authorization': 'Bearer ' + SB_KEY,
+  'Prefer': 'return=representation'
+};
+
+// ════════════════════════════════════════════════
+// HELPERS SUPABASE
+// ════════════════════════════════════════════════
+async function sbGet(table, qs=''){
+  const r = await fetch(`${SB_URL}/rest/v1/${table}?${qs}`, {headers:HDR});
+  if(!r.ok) throw new Error(await r.text());
+  return r.json();
+}
+async function sbPost(table, data){
+  const r = await fetch(`${SB_URL}/rest/v1/${table}`, {method:'POST', headers:HDR, body:JSON.stringify(data)});
+  if(!r.ok) throw new Error(await r.text());
+  return r.json();
+}
+async function sbPatch(table, id, data){
+  const r = await fetch(`${SB_URL}/rest/v1/${table}?id=eq.${id}`, {method:'PATCH', headers:HDR, body:JSON.stringify(data)});
+  if(!r.ok) throw new Error(await r.text());
+  return r.json();
+}
+async function sbDel(table, id){
+  const r = await fetch(`${SB_URL}/rest/v1/${table}?id=eq.${id}`, {method:'DELETE', headers:HDR});
+  if(!r.ok) throw new Error(await r.text());
+}
+async function sbDelWhere(table, col, val){
+  const r = await fetch(`${SB_URL}/rest/v1/${table}?${col}=eq.${encodeURIComponent(val)}`, {method:'DELETE', headers:HDR});
+  if(!r.ok) throw new Error(await r.text());
+}
+
+// ════════════════════════════════════════════════
+// ESTAT
+// ════════════════════════════════════════════════
+let allInvoices = [];
+let allClients  = [];
+let curId       = null;   // invoice id being edited
+let curLines    = [];     // lines in modal
+let curBi       = 0;      // base imposable calculada
+
+// ════════════════════════════════════════════════
+// INIT
+// ════════════════════════════════════════════════
+async function init(){
+  const demo = SB_URL === 'TU_SUPABASE_URL';
+  if(demo) document.getElementById('demo-banner').classList.add('show');
+
+  await loadClients(demo);
+  await loadInvoices(demo);
+}
+
+// ════════════════════════════════════════════════
+// CARREGAR CLIENTS
+// ════════════════════════════════════════════════
+async function loadClients(demo){
+  if(demo){ allClients = demoClients(); }
+  else {
+    try{
+      allClients = await sbGet('clients','select=id,rao_social,sinonim,nif_vat,tipus_iva,tipus_irpf,forma_pag,banc,iban_bic&order=rao_social');
+    }catch(e){ console.error(e); allClients = []; }
+  }
+  const sel = document.getElementById('m-client');
+  sel.innerHTML = '<option value="">— Selecciona client —</option>';
+  allClients.forEach(c=>{
+    const o = document.createElement('option');
+    o.value = c.id;
+    o.textContent = c.rao_social + (c.sinonim ? ` (${c.sinonim})` : '');
+    o.dataset.iva      = c.tipus_iva ?? 21;
+    o.dataset.irpf     = c.tipus_irpf ?? 0;
+    o.dataset.banc     = c.banc || '';
+    o.dataset.iban     = c.iban_bic || '';
+    o.dataset.formapag = c.forma_pag || '';
+    sel.appendChild(o);
+  });
+}
+
+function onClientChange(){
+  const opt = document.getElementById('m-client').selectedOptions[0];
+  if(!opt || !opt.value) return;
+  document.getElementById('m-iva').value  = opt.dataset.iva;
+  document.getElementById('m-irpf').value = opt.dataset.irpf;
+  if(opt.dataset.banc)     document.getElementById('m-banc').value = opt.dataset.banc;
+  if(opt.dataset.iban)     document.getElementById('m-iban').value = opt.dataset.iban;
+  if(opt.dataset.formapag) document.getElementById('m-fpag').value = opt.dataset.formapag;
+  recalc();
+}
+
+// ════════════════════════════════════════════════
+// CARREGAR FACTURES
+// ════════════════════════════════════════════════
+async function loadInvoices(demo){
+  if(demo){ allInvoices = demoInvoices(); }
+  else {
+    try{
+      allInvoices = await sbGet('factures','select=*,clients(rao_social,sinonim)&order=no_factura.desc');
+    }catch(e){
+      console.error(e);
+      toast('Error carregant factures: ' + e.message, 'err');
+      allInvoices = [];
+    }
+  }
+  renderStats();
+  renderTable(allInvoices);
+}
+
+async function refreshData(){
+  toast('Actualitzant...','inf');
+  await loadInvoices(SB_URL==='TU_SUPABASE_URL');
+  toast('Dades actualitzades','ok');
+}
+
+// ════════════════════════════════════════════════
+// ESTAT SEMÀFOR
+// ════════════════════════════════════════════════
+function getEstat(inv){
+  if(inv.estat === 'COBRAT')        return 'COBRAT';
+  if(inv.estat === 'RECTIFICATIVA') return 'RECTIFICATIVA';
+  const today = new Date(); today.setHours(0,0,0,0);
+  if(!inv.data_venciment)           return 'PENDENT';
+  const venc = new Date(inv.data_venciment + 'T00:00:00');
+  if(venc < today)                  return 'VENCUDA';
+  const dies = (venc - today) / 864e5;
+  if(dies <= 7)                     return 'PROXIM';
+  return 'PENDENT';
+}
+
+const ESTAT_MAP = {
+  COBRAT:       ['bg','Cobrat'],
+  PENDENT:      ['by','Pendent'],
+  PROXIM:       ['ba','Proper venc.'],
+  VENCUDA:      ['br','Vençuda'],
+  RECTIFICATIVA:['bx','Rectificativa'],
+};
+
+function badgeHtml(inv){
+  const [cls, lbl] = ESTAT_MAP[getEstat(inv)] || ['bx', inv.estat];
+  return `<span class="badge ${cls}">${lbl}</span>`;
+}
+
+// ════════════════════════════════════════════════
+// STATS
+// ════════════════════════════════════════════════
+function renderStats(){
+  let n={COBRAT:0,PENDENT:0,PROXIM:0,VENCUDA:0};
+  let e={COBRAT:0,PENDENT:0,PROXIM:0,VENCUDA:0};
+  allInvoices.forEach(inv=>{
+    const s = getEstat(inv);
+    const k = s==='RECTIFICATIVA' ? null : s;
+    if(!k) return;
+    n[k]++; e[k]+=(inv.total_factura||0);
+  });
+  const f = v => v.toLocaleString('ca-ES',{minimumFractionDigits:2})+' €';
+  document.getElementById('s-cob').textContent = n.COBRAT;
+  document.getElementById('s-cob-e').textContent = f(e.COBRAT);
+  document.getElementById('s-pen').textContent = n.PENDENT;
+  document.getElementById('s-pen-e').textContent = f(e.PENDENT);
+  document.getElementById('s-prx').textContent = n.PROXIM;
+  document.getElementById('s-prx-e').textContent = f(e.PROXIM);
+  document.getElementById('s-ven').textContent = n.VENCUDA;
+  document.getElementById('s-ven-e').textContent = f(e.VENCUDA);
+}
+
+// ════════════════════════════════════════════════
+// TAULA
+// ════════════════════════════════════════════════
+function renderTable(rows){
+  document.getElementById('f-count').textContent = rows.length + ' factures';
+  const tbody = document.getElementById('tbl-body');
+  if(!rows.length){
+    tbody.innerHTML = `<tr><td colspan="10"><div class="empty">
+      <div class="eico">📄</div>
+      <p>Cap factura amb els filtres actuals.</p>
+      <button class="btn btn-primary" onclick="openModal(null)">+ Nova factura</button>
+    </div></td></tr>`;
+    return;
+  }
+  const fd = d => d ? new Date(d+'T00:00:00').toLocaleDateString('ca-ES',{day:'2-digit',month:'2-digit',year:'numeric'}) : '—';
+  const fe = (n,d=2) => (n||0).toLocaleString('ca-ES',{minimumFractionDigits:d});
+  tbody.innerHTML = rows.map(inv=>{
+    const cob = (inv.import_cobrat||0);
+    const tot = (inv.total_factura||0);
+    const cli = inv.clients?.rao_social || '—';
+    return `<tr onclick="openModal(${inv.id})">
+      <td><span class="no-fra">${inv.no_factura}</span></td>
+      <td>${fd(inv.data_fra)}</td>
+      <td>${fd(inv.data_venciment)}</td>
+      <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${cli}">${cli}</td>
+      <td style="color:var(--muted);font-size:12px">${inv.id_projecte||'—'}</td>
+      <td class="amt">${fe(inv.base_imposable)}</td>
+      <td class="amt" style="font-weight:700">${fe(tot)}</td>
+      <td class="amt" style="color:${cob>=tot&&tot>0?'var(--green)':'var(--muted)'}">${fe(cob)}</td>
+      <td>${badgeHtml(inv)}</td>
+      <td onclick="event.stopPropagation()" style="white-space:nowrap">
+        <button class="btn btn-secondary btn-xs" onclick="openModal(${inv.id})">✏️</button>
+        <button class="btn btn-xs btn-danger" style="margin-left:4px" onclick="confirmDel(${inv.id})" title="Eliminar">✕</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+// ════════════════════════════════════════════════
+// FILTRES
+// ════════════════════════════════════════════════
+function applyFilters(){
+  const cerca = document.getElementById('f-cerca').value.toLowerCase().trim();
+  const est   = document.getElementById('f-estat').value;
+  const de    = document.getElementById('f-de').value;
+  const fins  = document.getElementById('f-fins').value;
+  const res = allInvoices.filter(inv=>{
+    const cnom = inv.clients?.rao_social||'';
+    const mc = !cerca || inv.no_factura.toLowerCase().includes(cerca)
+                      || cnom.toLowerCase().includes(cerca)
+                      || (inv.id_projecte||'').toLowerCase().includes(cerca);
+    const me = !est || getEstat(inv)===est || inv.estat===est;
+    const md = !de   || (inv.data_fra >= de);
+    const mf = !fins || (inv.data_fra <= fins);
+    return mc&&me&&md&&mf;
+  });
+  renderTable(res);
+}
+
+function clearFilters(){
+  ['f-cerca','f-de','f-fins'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('f-estat').value='';
+  renderTable(allInvoices);
+}
+
+// ════════════════════════════════════════════════
+// MODAL
+// ════════════════════════════════════════════════
+async function openModal(id){
+  curId = id;
+  showTab('tp-fra');
+  if(id){
+    const inv = allInvoices.find(i=>i.id===id);
+    if(!inv) return;
+    document.getElementById('m-title').textContent = 'Factura ' + inv.no_factura;
+    fillForm(inv);
+    await loadLines(inv.no_factura);
+  } else {
+    document.getElementById('m-title').textContent = 'Nova factura';
+    resetForm();
+    curLines = [{ordre:1,descripcio:'',quantitat:1,preu_unitari:0,descompte:0,import_linia:0}];
+    renderLines();
+  }
+  document.getElementById('overlay').classList.add('open');
+}
+
+function closeModal(){
+  document.getElementById('overlay').classList.remove('open');
+  curId = null; curLines = [];
+}
+
+function fillForm(inv){
+  const s = (id,v) => { const el=document.getElementById(id); if(el) el.value=(v??''); };
+  s('m-no', inv.no_factura);
+  s('m-data', inv.data_fra);
+  s('m-venc', inv.data_venciment);
+  s('m-estat', inv.estat);
+  s('m-client', inv.id_client);
+  s('m-nref', inv.n_ref || inv.id_projecte);
+  s('m-sref', inv.s_ref);
+  s('m-fpag', inv.forma_pag);
+  s('m-div', inv.divisa||'EUR');
+  s('m-iva', inv.tipus_iva??21);
+  s('m-irpf', inv.tipus_irpf??0);
+  s('m-cobrat', inv.import_cobrat??0);
+  s('m-dcob', inv.data_cob);
+  s('m-desp', inv.despeses_banc??0);
+  s('m-banc', inv.banc);
+  s('m-bancag', inv.banc_ag);
+  s('m-iban', inv.iban_bic);
+  s('m-swift', inv.swift);
+  s('m-en-pc', inv.en_pc??0);
+  s('m-dg-pc', inv.dg_pc??0);
+  s('m-cb-pc', inv.cb_pc??0);
+  s('m-tr', inv.tr_pf??0);
+  s('m-liq', inv.liquidada?'true':'false');
+  s('m-notes-liq', inv.notes_liquidacio);
+  s('m-cte-cli', inv.compte_client||'430');
+  s('m-cte-ven', inv.compte_vendes||'700');
+  s('m-cte-iva', inv.compte_iva||'477');
+  s('m-cte-irpf', inv.compte_irpf||'4751');
+  s('m-assentat', inv.assentat?'true':'false');
+  s('m-suplerts', inv.suplerts);
+  s('m-imp-sup', inv.import_suplerts??0);
+  s('m-classe', inv.classe_fra||'Normal');
+  s('m-notes', inv.notes);
+  s('m-notes-priv', inv.notes_privades);
+  updateBadge();
+}
+
+function resetForm(){
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('m-no').value='';
+  document.getElementById('m-data').value=today;
+  document.getElementById('m-venc').value='';
+  document.getElementById('m-estat').value='PENDENT';
+  document.getElementById('m-client').value='';
+  document.getElementById('m-nref').value='';
+  document.getElementById('m-sref').value='';
+  document.getElementById('m-fpag').value='Transferència';
+  document.getElementById('m-div').value='EUR';
+  document.getElementById('m-iva').value=21;
+  document.getElementById('m-irpf').value=0;
+  document.getElementById('m-cobrat').value=0;
+  document.getElementById('m-dcob').value='';
+  document.getElementById('m-desp').value=0;
+  document.getElementById('m-banc').value='';
+  document.getElementById('m-bancag').value='';
+  document.getElementById('m-iban').value='';
+  document.getElementById('m-swift').value='';
+  document.getElementById('m-en-pc').value=0;
+  document.getElementById('m-dg-pc').value=0;
+  document.getElementById('m-cb-pc').value=0;
+  document.getElementById('m-tr').value=0;
+  document.getElementById('m-liq').value='false';
+  document.getElementById('m-notes-liq').value='';
+  document.getElementById('m-cte-cli').value='430';
+  document.getElementById('m-cte-ven').value='700';
+  document.getElementById('m-cte-iva').value='477';
+  document.getElementById('m-cte-irpf').value='4751';
+  document.getElementById('m-assentat').value='false';
+  document.getElementById('m-suplerts').value='';
+  document.getElementById('m-imp-sup').value=0;
+  document.getElementById('m-classe').value='Normal';
+  document.getElementById('m-notes').value='';
+  document.getElementById('m-notes-priv').value='';
+  curBi=0;
+  updateBadge();
+  recalc();
+}
+
+function updateBadge(){
+  const e = document.getElementById('m-estat').value;
+  const [cls,lbl] = ESTAT_MAP[e]||['bx',e];
+  document.getElementById('m-badge').innerHTML = `<span class="badge ${cls}">${lbl}</span>`;
+}
+
+// ════════════════════════════════════════════════
+// LÍNIES
+// ════════════════════════════════════════════════
+async function loadLines(noFra){
+  try{
+    const demo = SB_URL==='TU_SUPABASE_URL';
+    if(demo){
+      curLines = demoLines(noFra);
+    } else {
+      curLines = await sbGet('factura_lines',`no_factura=eq.${encodeURIComponent(noFra)}&order=ordre`);
+    }
+  }catch{ curLines=[]; }
+  if(!curLines.length)
+    curLines=[{ordre:1,descripcio:'',quantitat:1,preu_unitari:0,descompte:0,import_linia:0}];
+  renderLines();
+}
+
+function renderLines(){
+  const fe = (n,d=2)=>(n||0).toLocaleString('ca-ES',{minimumFractionDigits:d});
+  document.getElementById('lines-body').innerHTML = curLines.map((l,i)=>`
+    <tr>
+      <td><textarea placeholder="Descripció del servei..." rows="2"
+          style="width:100%;resize:vertical;border:1.5px solid transparent;padding:5px 7px;border-radius:4px;background:transparent;font-size:13px;font-family:inherit;line-height:1.4"
+          onfocus="this.style.borderColor='var(--blue)';this.style.background='#fff'"
+          onblur="this.style.borderColor='transparent';this.style.background='transparent'"
+          onchange="upLine(${i},'descripcio',this.value)"
+          >${escHtml(l.descripcio||'')}</textarea></td>
+      <td class="rgt w80"><input type="number" value="${(l.quantitat??1).toFixed(2)}" step="0.01" style="text-align:right;width:100%"
+          onchange="upLine(${i},'quantitat',this.value)"></td>
+      <td class="rgt w80"><input type="number" value="${(l.preu_unitari??0).toFixed(2)}" step="0.01" style="text-align:right;width:100%"
+          onchange="upLine(${i},'preu_unitari',this.value)"></td>
+      <td class="rgt w70"><input type="number" value="${(l.descompte??0).toFixed(2)}" step="0.01" min="0" max="100" style="text-align:right;width:100%"
+          onchange="upLine(${i},'descompte',this.value)"></td>
+      <td class="rgt w80" style="font-weight:600">${fe(l.import_linia)}</td>
+      <td><button class="del-btn" onclick="delLine(${i})" title="Eliminar línia">✕</button></td>
+    </tr>`).join('');
+  recalc();
+}
+
+function upLine(i,field,val){
+  curLines[i][field] = field==='descripcio' ? val : parseFloat(val)||0;
+  const l = curLines[i];
+  const dte = Math.max(0, Math.min(100, l.descompte||0));
+  l.import_linia = Math.round((l.quantitat||1) * (l.preu_unitari||0) * (1 - dte/100) * 100) / 100;
+  renderLines();
+}
+
+function addLine(){
+  curLines.push({ordre:curLines.length+1,descripcio:'',quantitat:1,preu_unitari:0,descompte:0,import_linia:0});
+  renderLines();
+}
+
+function delLine(i){
+  if(curLines.length<=1){
+    curLines=[{ordre:1,descripcio:'',quantitat:1,preu_unitari:0,descompte:0,import_linia:0}];
+  } else { curLines.splice(i,1); }
+  renderLines();
+}
+
+function escHtml(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+// ════════════════════════════════════════════════
+// CÀLCULS
+// ════════════════════════════════════════════════
+function recalc(){
+  curBi = curLines.reduce((s,l)=>s+(l.import_linia||0),0);
+  const ivaPc  = parseFloat(document.getElementById('m-iva').value)||0;
+  const irpfPc = parseFloat(document.getElementById('m-irpf').value)||0;
+  const iva    = curBi * ivaPc / 100;
+  const irpf   = curBi * irpfPc / 100;
+  const tot    = curBi + iva - irpf;
+
+  const fe = (n,d=2,sfx='')=>n.toLocaleString('ca-ES',{minimumFractionDigits:d,maximumFractionDigits:d})+(sfx?' '+sfx:'');
+  document.getElementById('t-bi').textContent   = fe(curBi,2,'EUR');
+  document.getElementById('t-iva').textContent  = fe(iva,2,'EUR');
+  document.getElementById('t-irpf').textContent = fe(irpf,2,'EUR');
+  document.getElementById('t-tot').textContent  = fe(tot,2,'EUR');
+
+  recalcCob();
+  recalcLiq();
+  updatePreview();
+}
+
+function recalcCob(){
+  const ivaPc  = parseFloat(document.getElementById('m-iva').value)||0;
+  const irpfPc = parseFloat(document.getElementById('m-irpf').value)||0;
+  const iva  = curBi * ivaPc/100;
+  const irpf = curBi * irpfPc/100;
+  const tot  = curBi + iva - irpf;
+  const cob  = parseFloat(document.getElementById('m-cobrat').value)||0;
+  const pend = tot - cob;
+  document.getElementById('m-pendent').value = pend.toLocaleString('ca-ES',{minimumFractionDigits:2}) + ' EUR';
+}
+
+function recalcLiq(){
+  const bi    = curBi;
+  const enPc  = parseFloat(document.getElementById('m-en-pc').value)||0;
+  const dgPc  = parseFloat(document.getElementById('m-dg-pc').value)||0;
+  const cbPc  = parseFloat(document.getElementById('m-cb-pc').value)||0;
+  const tr    = parseFloat(document.getElementById('m-tr').value)||0;
+  const enC   = bi * enPc/100;
+  const dgC   = bi * dgPc/100;
+  const cbC   = bi * cbPc/100;
+  const acrPnl = bi - enC - dgC - cbC - tr;
+  const acrPc  = bi>0 ? acrPnl/bi*100 : 0;
+  const fe = n=>n.toLocaleString('ca-ES',{minimumFractionDigits:2})+' EUR';
+  document.getElementById('m-en-c').value   = fe(enC);
+  document.getElementById('m-dg-c').value   = fe(dgC);
+  document.getElementById('m-cb-c').value   = fe(cbC);
+  document.getElementById('m-acr-pnl').value = fe(acrPnl);
+  document.getElementById('m-acr-pc').value  = acrPc.toFixed(2) + ' %';
+}
+
+function updatePreview(){
+  const bi    = curBi;
+  const ivaPc = parseFloat(document.getElementById('m-iva').value)||0;
+  const irpfPc= parseFloat(document.getElementById('m-irpf').value)||0;
+  const iva   = bi * ivaPc/100;
+  const irpf  = bi * irpfPc/100;
+  const tot   = bi + iva - irpf;
+  const noFra = document.getElementById('m-no').value || 'Factura';
+  const cCli  = document.getElementById('m-cte-cli')?.value  || '430';
+  const cVen  = document.getElementById('m-cte-ven')?.value  || '700';
+  const cIva  = document.getElementById('m-cte-iva')?.value  || '477';
+  const cIrpf = document.getElementById('m-cte-irpf')?.value || '4751';
+  const fe = n=>n.toLocaleString('ca-ES',{minimumFractionDigits:2});
+
+  const rows = [
+    {c:cCli,  desc:`Client — Fra. ${noFra}`,       dr:tot,  hr:0},
+    {c:cVen,  desc:`Vendes — ${noFra}`,             dr:0,    hr:bi},
+  ];
+  if(iva>0)  rows.push({c:cIva,  desc:`IVA repercutit ${ivaPc}%`,   dr:0,    hr:iva});
+  if(irpf>0) rows.push({c:cIrpf, desc:`Retenció IRPF ${irpfPc}%`,  dr:irpf, hr:0});
+
+  const body = document.getElementById('ass-body');
+  if(body) body.innerHTML = rows.map(r=>`<tr>
+    <td class="compte">${r.c}</td>
+    <td>${r.desc}</td>
+    <td class="rgt deure">${r.dr>0?fe(r.dr):''}</td>
+    <td class="rgt haver">${r.hr>0?fe(r.hr):''}</td>
+  </tr>`).join('');
+}
+
+// ════════════════════════════════════════════════
+// GUARDAR
+// ════════════════════════════════════════════════
+async function saveInvoice(){
+  const noFra  = document.getElementById('m-no').value.trim();
+  const dataFra= document.getElementById('m-data').value;
+  if(!noFra || !dataFra){ toast('Número de factura i data són obligatoris','err'); return; }
+
+  const ivaPc  = parseFloat(document.getElementById('m-iva').value)||0;
+  const irpfPc = parseFloat(document.getElementById('m-irpf').value)||0;
+  const iva    = curBi * ivaPc/100;
+  const irpf   = curBi * irpfPc/100;
+  const tot    = curBi + iva - irpf;
+  const idCli  = document.getElementById('m-client').value;
+
+  const data = {
+    no_factura:     noFra,
+    id_client:      idCli ? parseInt(idCli) : null,
+    id_projecte:    document.getElementById('m-nref').value || null,
+    data_fra:       dataFra,
+    data_venciment: document.getElementById('m-venc').value  || null,
+    data_cob:       document.getElementById('m-dcob').value  || null,
+    forma_pag:      document.getElementById('m-fpag').value,
+    divisa:         document.getElementById('m-div').value,
+    tipus_iva:      ivaPc,
+    tipus_irpf:     irpfPc,
+    base_imposable: curBi,
+    import_iva:     iva,
+    import_irpf:    irpf,
+    total_factura:  tot,
+    estat:          document.getElementById('m-estat').value,
+    import_cobrat:  parseFloat(document.getElementById('m-cobrat').value)||0,
+    despeses_banc:  parseFloat(document.getElementById('m-desp').value)||0,
+    n_ref:          document.getElementById('m-nref').value,
+    s_ref:          document.getElementById('m-sref').value,
+    banc:           document.getElementById('m-banc').value,
+    banc_ag:        document.getElementById('m-bancag').value,
+    iban_bic:       document.getElementById('m-iban').value,
+    swift:          document.getElementById('m-swift').value,
+    en_pc:  parseFloat(document.getElementById('m-en-pc').value)||0,
+    en_c:   curBi * (parseFloat(document.getElementById('m-en-pc').value)||0)/100,
+    dg_pc:  parseFloat(document.getElementById('m-dg-pc').value)||0,
+    dg_c:   curBi * (parseFloat(document.getElementById('m-dg-pc').value)||0)/100,
+    cb_pc:  parseFloat(document.getElementById('m-cb-pc').value)||0,
+    cb_c:   curBi * (parseFloat(document.getElementById('m-cb-pc').value)||0)/100,
+    tr_pf:  parseFloat(document.getElementById('m-tr').value)||0,
+    acr_pnl: curBi - curBi*(parseFloat(document.getElementById('m-en-pc').value)||0)/100
+                   - curBi*(parseFloat(document.getElementById('m-dg-pc').value)||0)/100
+                   - curBi*(parseFloat(document.getElementById('m-cb-pc').value)||0)/100
+                   - (parseFloat(document.getElementById('m-tr').value)||0),
+    acr_pc:  0,
+    liquidada:   document.getElementById('m-liq').value==='true',
+    notes_liquidacio: document.getElementById('m-notes-liq').value,
+    compte_client: document.getElementById('m-cte-cli').value,
+    compte_vendes: document.getElementById('m-cte-ven').value,
+    compte_iva:    document.getElementById('m-cte-iva').value,
+    compte_irpf:   document.getElementById('m-cte-irpf').value,
+    assentat:      document.getElementById('m-assentat').value==='true',
+    import_suplerts: parseFloat(document.getElementById('m-imp-sup').value)||0,
+    suplerts:     document.getElementById('m-suplerts').value,
+    classe_fra:   document.getElementById('m-classe').value,
+    notes:        document.getElementById('m-notes').value,
+    notes_privades: document.getElementById('m-notes-priv').value,
+    updated_at:   new Date().toISOString(),
+  };
+  // acr_pc
+  data.acr_pc = curBi>0 ? data.acr_pnl/curBi*100 : 0;
+
+  if(SB_URL==='TU_SUPABASE_URL'){
+    toast('Mode demo — connecta Supabase per guardar','inf'); return;
+  }
+
+  const btn = document.getElementById('btn-save');
+  btn.disabled=true; btn.innerHTML='<span class="spin"></span> Guardant...';
+
+  try{
+    if(curId){
+      await sbPatch('factures', curId, data);
+    } else {
+      const res = await sbPost('factures', data);
+      curId = res[0]?.id;
+    }
+    await saveLines(noFra);
+    toast('Factura guardada correctament','ok');
+    await loadInvoices(false);
+    closeModal();
+  } catch(e){
+    toast('Error: '+e.message,'err');
+  } finally {
+    btn.disabled=false; btn.innerHTML='💾 Guardar';
+  }
+}
+
+async function saveLines(noFra){
+  await sbDelWhere('factura_lines','no_factura', noFra);
+  const lines = curLines
+    .filter(l=>l.descripcio && l.descripcio.trim())
+    .map((l,i)=>({
+      no_factura: noFra,
+      ordre: i+1,
+      descripcio: l.descripcio,
+      quantitat:  l.quantitat||1,
+      preu_unitari: l.preu_unitari||0,
+      descompte:  l.descompte||0,
+      import_linia: l.import_linia||0,
+    }));
+  if(lines.length) await sbPost('factura_lines', lines);
+}
+
+// ════════════════════════════════════════════════
+// ELIMINAR
+// ════════════════════════════════════════════════
+async function confirmDel(id){
+  const inv = allInvoices.find(i=>i.id===id);
+  if(!inv) return;
+  if(!confirm(`Eliminar la factura ${inv.no_factura}?\nAquesta acció no es pot desfer.`)) return;
+  if(SB_URL==='TU_SUPABASE_URL'){ toast('Mode demo','inf'); return; }
+  try{
+    await sbDel('factures', id);
+    toast('Factura eliminada','ok');
+    await loadInvoices(false);
+  } catch(e){ toast('Error: '+e.message,'err'); }
+}
+
+// ════════════════════════════════════════════════
+// PESTANYES
+// ════════════════════════════════════════════════
+function showTab(tabId){
+  document.querySelectorAll('.tab').forEach(t=>{
+    t.classList.toggle('on', t.dataset.tab===tabId);
+  });
+  document.querySelectorAll('.tab-panel').forEach(p=>{
+    p.classList.toggle('on', p.id===tabId);
+  });
+  if(tabId==='tp-cpt') updatePreview();
+}
+
+document.querySelectorAll('.tab').forEach(t=>{
+  t.addEventListener('click',()=>showTab(t.dataset.tab));
+});
+
+// ════════════════════════════════════════════════
+// NAVEGACIÓ (placeholder per altres mòduls)
+// ════════════════════════════════════════════════
+function navSection(s){
+  if(s==='facturacio') return;
+  toast(`Mòdul "${s}" — pròximament`,'inf');
+}
+function navSub(s){
+  if(s==='emeses') return;
+  toast(`Factures rebudes — pròximament`,'inf');
+}
+
+// ════════════════════════════════════════════════
+// TOAST
+// ════════════════════════════════════════════════
+function toast(msg, type='inf'){
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  el.textContent = msg;
+  document.getElementById('toast').appendChild(el);
+  setTimeout(()=>el.remove(), 3500);
+}
+
+// ════════════════════════════════════════════════
+// DEMO DATA
+// ════════════════════════════════════════════════
+function demoClients(){
+  return [
+    {id:1,rao_social:'CLICKSOFT, SA DE CV',sinonim:'CLICK',nif_vat:'CLI190226CI8',tipus_iva:0,tipus_irpf:0,forma_pag:'Transferència',banc:'Wise',iban_bic:''},
+    {id:2,rao_social:'ACME CORP SL',sinonim:'ACME',nif_vat:'B12345678',tipus_iva:21,tipus_irpf:15,forma_pag:'Transferència',banc:'BBVA',iban_bic:'ES31 0182 0269 ...'},
+    {id:3,rao_social:'DELTA TRADE LTD',sinonim:'DELTA',nif_vat:'GB123456789',tipus_iva:0,tipus_irpf:0,forma_pag:'Transferència',banc:'',iban_bic:''},
+  ];
+}
+
+function demoInvoices(){
+  const today = new Date();
+  const d = (n)=>{ const r=new Date(today); r.setDate(r.getDate()+n); return r.toISOString().split('T')[0]; };
+  return [
+    {id:1,no_factura:'26016',data_fra:d(-5), data_venciment:d(25), estat:'COBRAT',     base_imposable:250,   import_iva:0,   import_irpf:0,   total_factura:250,   import_cobrat:250,  id_client:1, id_projecte:'PJ26087500', clients:{rao_social:'CLICKSOFT, SA DE CV'}},
+    {id:2,no_factura:'26015',data_fra:d(-20),data_venciment:d(10), estat:'PENDENT',    base_imposable:1200,  import_iva:252, import_irpf:180, total_factura:1272,  import_cobrat:0,    id_client:2, id_projecte:'PJ26080100', clients:{rao_social:'ACME CORP SL'}},
+    {id:3,no_factura:'26014',data_fra:d(-60),data_venciment:d(-15),estat:'PENDENT',    base_imposable:3500,  import_iva:0,   import_irpf:0,   total_factura:3500,  import_cobrat:0,    id_client:3, id_projecte:'PJ25120500', clients:{rao_social:'DELTA TRADE LTD'}},
+    {id:4,no_factura:'26013',data_fra:d(-10),data_venciment:d(5),  estat:'PENDENT',    base_imposable:800,   import_iva:168, import_irpf:0,   total_factura:968,   import_cobrat:0,    id_client:2, id_projecte:'PJ26060200', clients:{rao_social:'ACME CORP SL'}},
+    {id:5,no_factura:'26012',data_fra:d(-45),data_venciment:d(-5), estat:'COBRAT',     base_imposable:2100,  import_iva:441, import_irpf:315, total_factura:2226,  import_cobrat:2226, id_client:1, id_projecte:'PJ26040100', clients:{rao_social:'CLICKSOFT, SA DE CV'}},
+    {id:6,no_factura:'26011',data_fra:d(-90),data_venciment:d(-45),estat:'RECTIFICATIVA',base_imposable:-500, import_iva:0,  import_irpf:0,   total_factura:-500,  import_cobrat:0,    id_client:3, id_projecte:'PJ25110300', clients:{rao_social:'DELTA TRADE LTD'}},
+  ];
+}
+
+function demoLines(noFra){
+  const map = {
+    '26016':[{ordre:1,descripcio:'TMI Agenda para reuniones virtuales, sector TIC. Primer tramo.\nImporte correspondiente al 50% inicial.',quantitat:1,preu_unitari:250,descompte:0,import_linia:250}],
+    '26015':[{ordre:1,descripcio:'Servei de consultoria internacionalització Q1 2026',quantitat:1,preu_unitari:1000,descompte:0,import_linia:1000},{ordre:2,descripcio:'Estudi de mercat — sector alimentació',quantitat:1,preu_unitari:200,descompte:0,import_linia:200}],
+    '26014':[{ordre:1,descripcio:'Intermediació comercial Fira ISM 2025 — comissió tramitació',quantitat:1,preu_unitari:3500,descompte:0,import_linia:3500}],
+    '26013':[{ordre:1,descripcio:'Consultoria estratègica export — fase 2',quantitat:2,preu_unitari:400,descompte:0,import_linia:800}],
+  };
+  return map[noFra] || [{ordre:1,descripcio:'',quantitat:1,preu_unitari:0,descompte:0,import_linia:0}];
+}
+
+// ════════════════════════════════════════════════
+// ARRENCADA
+// ════════════════════════════════════════════════
+init();
+</script>
+</body>
+</html>

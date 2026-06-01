@@ -903,7 +903,7 @@ async function loadInvoices(demo){
   if(demo){ allInvoices = demoInvoices(); }
   else {
     try{
-      allInvoices = await sbGet('factures','select=*,clients(rao_social,sinonim)&order=id_in.desc.nullslast,no_factura.desc');
+      allInvoices = await sbGet('factures','select=*,clients(rao_social,sinonim)&order=no_factura.desc');
     }catch(e){
       console.error(e);
       toast('Error carregant factures: ' + e.message, 'err');
@@ -1021,7 +1021,7 @@ function renderTable(rows){
       const tot = (inv.total_factura||0);
       const cli = inv.clients?.rao_social || '—';
       html += `<tr data-yr="${yr}" style="${collapsed?'display:none':''}" onclick="openModal(${inv.id})">
-        <td style="color:var(--muted);font-size:11px">${inv.id_in||'—'}</td>
+        <td style="color:var(--muted);font-size:11px">${inv.id_in||''}</td>
         <td><span class="no-fra">${inv.no_factura}</span></td>
         <td>${fd(inv.data_fra)}</td>
         <td>${fd(inv.data_venciment)}</td>

@@ -903,7 +903,7 @@ async function loadInvoices(demo){
   if(demo){ allInvoices = demoInvoices(); }
   else {
     try{
-      allInvoices = await sbGet('factures','select=*,clients(rao_social,sinonim)&order=no_factura.desc');
+      allInvoices = await sbGet('factures','select=*,clients(rao_social,sinonim)&order=id_in.desc.nullslast,no_factura.desc');
     }catch(e){
       console.error(e);
       toast('Error carregant factures: ' + e.message, 'err');
@@ -1372,6 +1372,13 @@ function updatePreview(){
 // ════════════════════════════════════════════════
 // GUARDAR
 // ════════════════════════════════════════════════
+async function nextIdIn(){
+  try{
+    const res = await sbGet('factures','select=id_in&order=id_in.desc&limit=1&id_in=not.is.null');
+    return res.length ? (res[0].id_in + 1) : 1;
+  }catch{ return null; }
+}
+
 async function saveInvoice(){
   const noFra  = document.getElementById('m-no').value.trim();
   const dataFra= document.getElementById('m-data').value;
@@ -1448,6 +1455,7 @@ async function saveInvoice(){
     if(curId){
       await sbPatch('factures', curId, data);
     } else {
+      data.id_in = await nextIdIn();
       const res = await sbPost('factures', data);
       curId = res[0]?.id;
     }

@@ -1033,7 +1033,10 @@ function renderTable(rows){
         <td class="amt" style="color:${cob>=tot&&tot>0?'var(--green)':'var(--muted)'}">${fe(cob)}</td>
         <td>${badgeHtml(inv)}</td>
         <td onclick="event.stopPropagation()" style="white-space:nowrap">
-          <button class="btn btn-secondary btn-xs" onclick="openModal(${inv.id})">✏️</button>
+          ${['COBRAT','RECTIFICATIVA'].includes(inv.estat)
+            ? `<button class="btn btn-xs" style="background:#e9ecef;color:#adb5bd;border:1px solid #dee2e6" onclick="editProtected(${inv.id})" title="Factura cobrada — edició protegida per PIN">✏️</button>`
+            : `<button class="btn btn-secondary btn-xs" onclick="openModal(${inv.id})">✏️</button>`
+          }
           ${['COBRAT','RECTIFICATIVA'].includes(inv.estat)
             ? `<button class="btn btn-xs" style="margin-left:4px;background:var(--grey-bg);color:var(--grey);border:1px solid var(--border);cursor:default" title="No es pot eliminar" disabled>✕</button>`
             : `<button class="btn btn-xs btn-danger" style="margin-left:4px" onclick="confirmDel(${inv.id})" title="Eliminar">✕</button>`
@@ -1075,6 +1078,15 @@ function clearFilters(){
 // ════════════════════════════════════════════════
 // MODAL
 // ════════════════════════════════════════════════
+const EDIT_PIN = '0511';
+
+function editProtected(id){
+  const pin = prompt('Factura cobrada — introdueix el PIN per editar:');
+  if(pin === null) return;
+  if(pin === EDIT_PIN) openModal(id);
+  else toast('PIN incorrecte','err');
+}
+
 async function openModal(id){
   curId = id;
   showTab('tp-fra');

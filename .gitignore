@@ -1,0 +1,11 @@
+*.accdb
+*.accde
+*.mdb
+*.ai
+resized_*
+small_*
+tiny_*
+Captura de pantalla*
+format factura.pdf
+ACR Estruch2_logo*
+migracio/

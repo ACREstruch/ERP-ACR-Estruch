@@ -65,7 +65,7 @@ table.main-tbl{width:100%;border-collapse:collapse;font-size:13px}
 .main-tbl td{padding:11px 14px;border-bottom:1px solid var(--border-light);vertical-align:middle}
 .main-tbl tbody tr:hover td{background:var(--blue-light);cursor:pointer}
 .main-tbl tbody tr:last-child td{border-bottom:none}
-.no-fra{font-weight:700;color:var(--blue)}
+.no-fra{font-weight:400;color:var(--blue)}
 td.amt{text-align:right;font-variant-numeric:tabular-nums;font-weight:500}
 th.amt{text-align:right}
 .badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.2px;white-space:nowrap}
@@ -242,11 +242,11 @@ input[type=number]{-moz-appearance:textfield}
           <thead>
             <tr>
               <th>IdINSP</th>
-              <th>Nº Fra. interna</th>
+              <th>SÈRIE</th>
               <th>Nº Fra. proveïdor</th>
               <th>Data Fra.</th>
               <th>Termini</th>
-              <th>Proveïdor</th>
+              <th>Rebudes</th>
               <th>Concepte</th>
               <th class="amt">Base imp.</th>
               <th class="amt">Total</th>
@@ -286,12 +286,12 @@ input[type=number]{-moz-appearance:textfield}
       <div class="grid3">
         <div class="sec">Identificació</div>
         <div class="fg">
-          <label>Nº Fra. interna *</label>
-          <input type="text" id="m-no" placeholder="FR-2026-001">
+          <label>SÈRIE *</label>
+          <input type="text" id="m-no" placeholder="26001" readonly>
         </div>
         <div class="fg">
           <label>Nº Fra. proveïdor</label>
-          <input type="text" id="m-no-prov" placeholder="Núm. factura del proveïdor">
+          <input type="text" id="m-no-prov" placeholder="Núm. factura del proveïdor" style="font-size:1.15em">
         </div>
         <div class="fg">
           <label>Estat</label>
@@ -312,7 +312,7 @@ input[type=number]{-moz-appearance:textfield}
         </div>
         <div class="fg">
           <label>Data factura *</label>
-          <input type="date" id="m-data">
+          <input type="date" id="m-data" onchange="onDataFraChange(this.value)">
         </div>
         <div class="fg">
           <label>Data entrada</label>
@@ -521,6 +521,36 @@ async function loadFactures(){
 
 async function refreshData(){ toast('Actualitzant...','inf'); await loadFactures(); toast('Actualitzat','ok'); }
 
+// ── SÈRIE AUTOMÀTICA ──
+function getNextSerie(year){
+  const yy = String(year).slice(-2);
+  const usedSeqs = new Set();
+  (allFra || []).forEach(fr => {
+    const d = fr.data_fra || fr.data_entrada;
+    if (!d) return;
+    const y = new Date(d + 'T00:00:00').getFullYear();
+    if (y !== year) return;
+    const no = String(fr.no_factura || '');
+    if (!no.startsWith(yy)) return;
+    const seq = parseInt(no.slice(2), 10);
+    if (!isNaN(seq)) usedSeqs.add(seq);
+  });
+  let seq = 1;
+  while (usedSeqs.has(seq)) seq++;
+  return yy + String(seq).padStart(3, '0');
+}
+
+function onDataFraChange(val) {
+  if (curId) return; // only for new invoices
+  if (!val) return;
+  const year = new Date(val + 'T00:00:00').getFullYear();
+  document.getElementById('m-no').value = getNextSerie(year);
+}
+
+function formatSerie(fr) {
+  if (!fr || !fr.no_factura) return fr?.no_factura || '';
+  return String(fr.no_factura);
+}
 
 let collapsedYears = new Set();
 let _grpsInit = false;
@@ -627,8 +657,8 @@ function renderTable(rows){
       const pagat=fr.import_pagat||0; const tot=fr.total_factura||0;
       html+=`<tr data-yr="${yr}" style="${collapsed?'display:none':''}" onclick="openModal(${fr.id})">
         <td style="color:var(--muted);font-size:11px">${fr.id_insp||'—'}</td>
-        <td><span class="no-fra">${fr.no_factura}</span></td>
-        <td style="color:var(--muted);font-size:11px">${fr.no_fra_prov||'—'}</td>
+        <td><span class="no-fra">${formatSerie(fr)}</span></td>
+        <td style="color:var(--muted);font-size:13px;font-weight:600">${fr.no_fra_prov||'—'}</td>
         <td>${fd(fr.data_fra)}</td>
         <td>${fd(fr.data_termini)}</td>
         <td style="font-weight:600">${pnom}</td>
@@ -679,7 +709,7 @@ async function openModal(id){
   if(id){
     const fr=allFra.find(x=>x.id===id);
     if(!fr) return;
-    document.getElementById('m-title').textContent='Fra. '+fr.no_factura;
+    document.getElementById('m-title').textContent='Fra. '+formatSerie(fr);
     fillForm(fr);
     await loadPagaments(id);
   } else {
@@ -706,7 +736,8 @@ function fillForm(fr){
 
 function resetForm(){
   const today=new Date().toISOString().split('T')[0];
-  document.getElementById('m-no').value='';
+  const year=new Date().getFullYear();
+  document.getElementById('m-no').value = getNextSerie(year);
   document.getElementById('m-no-prov').value='';
   document.getElementById('m-estat').value='PENDENT';
   document.getElementById('m-prov').value='';
@@ -877,8 +908,12 @@ function updateAssentament(){
 
 // ── GUARDAR ──
 async function saveFactura(){
-  const noFra=document.getElementById('m-no').value.trim();
+  let noFra=document.getElementById('m-no').value.trim();
   const dataFra=document.getElementById('m-data').value;
+  if (!noFra && dataFra) {
+    const year = new Date(dataFra + 'T00:00:00').getFullYear();
+    noFra = getNextSerie(year);
+  }
   if(!noFra||!dataFra){ toast('Número i data obligatoris','err'); return; }
   const ivaPc=parseFloat(document.getElementById('m-iva').value)||0;
   const iva=Math.round(curBi*ivaPc/100*100)/100;

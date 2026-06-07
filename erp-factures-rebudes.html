@@ -658,7 +658,7 @@ function renderTable(rows){
       html+=`<tr data-yr="${yr}" style="${collapsed?'display:none':''}" onclick="openModal(${fr.id})">
         <td style="color:var(--muted);font-size:11px">${fr.id_insp||'—'}</td>
         <td><span class="no-fra">${formatSerie(fr)}</span></td>
-        <td style="color:var(--muted);font-size:13px;font-weight:600">${fr.no_fra_prov||'—'}</td>
+        <td style="color:var(--muted)">${fr.no_fra_prov||'—'}</td>
         <td>${fd(fr.data_fra)}</td>
         <td>${fd(fr.data_termini)}</td>
         <td style="font-weight:600">${pnom}</td>

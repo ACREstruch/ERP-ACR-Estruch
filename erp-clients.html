@@ -500,7 +500,7 @@ function renderTable(rows){
   }
   tbody.innerHTML = rows.map(c=>`<tr onclick="openModal(${c.id})">
     <td>${sitBadge(c.situacio)}</td>
-    <td><span class="tag">${c.codi||'—'}</span></td>
+    <td style="color:var(--blue);font-weight:600">${c.codi||'—'}</td>
     <td><span class="client-nom">${c.rao_social}</span></td>
     <td style="color:var(--muted)">${c.sinonim||'—'}</td>
     <td style="font-size:12px">${c.nif_vat||'—'}</td>

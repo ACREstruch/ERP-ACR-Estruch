@@ -1057,12 +1057,12 @@ function showTab(tabId){
 document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>showTab(t.dataset.tab)));
 
 function checkDuplicatNoFraProv(){
-  const val = document.getElementById('m-no-prov').value.trim();
+  const val = document.getElementById('m-no-prov').value.trim().toUpperCase();
   const msg = document.getElementById('msg-no-prov');
   if(!val){ msg.textContent=''; return; }
-  const duplicat = allFra.find(x => x.no_fra_prov === val && x.id !== curId);
+  const duplicat = allFra.find(x => x.no_fra_prov && x.no_fra_prov.trim().toUpperCase() === val && x.id !== curId);
   if(duplicat){
-    msg.textContent = '⚠️ Aquest número ja existeix';
+    msg.textContent = '⚠️ Aquest número ja existeix (ID ' + duplicat.id_insp + ')';
     msg.style.color = 'var(--red)';
   } else {
     msg.textContent = '✓ Número disponible';

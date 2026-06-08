@@ -225,7 +225,7 @@ input[type=number]{-moz-appearance:textfield}
           <input type="text" id="m-sin">
         </div>
         <div class="fg">
-          <label>Codi intern</label>
+          <label>Id Proveïdor</label>
           <input type="text" id="m-codi">
         </div>
         <div class="fg">
@@ -312,8 +312,8 @@ input[type=number]{-moz-appearance:textfield}
         <div class="fg">
           <label>Règim fiscal <span style="color:var(--red)">*</span></label>
           <select id="m-cnce" onchange="onCNCEChange()">
-            <option value="CN">CN — Nacional</option>
-            <option value="CE">CE — Comunitari (UE)</option>
+            <option value="PN">PN — Nacional</option>
+            <option value="PE">PE — Comunitari (UE)</option>
             <option value="EX">EX — Exportació (fora UE)</option>
           </select>
         </div>
@@ -477,7 +477,7 @@ function fillForm(p){
   s('m-dies',p.dies_pag??30);
   s('m-div',p.divisa||'EUR');
   const cnceEl = document.getElementById('m-cnce');
-  if(cnceEl) cnceEl.value = p.cnce||'CN';
+  if(cnceEl) cnceEl.value = p.cnce||'PN';
   s('m-iva',p.tipus_iva??21);
   s('m-banc',p.banc); s('m-iban',p.iban_bic);
   s('m-notes',p.notes);
@@ -490,13 +490,13 @@ function resetForm(){
   document.getElementById('m-fpag').value='Transferència';
   document.getElementById('m-dies').value=30;
   document.getElementById('m-div').value='EUR';
-  document.getElementById('m-cnce').value='CN';
+  document.getElementById('m-cnce').value='PN';
   document.getElementById('m-iva').value=21;
 }
 
 function onCNCEChange(){
   const cnce = document.getElementById('m-cnce').value;
-  if(cnce === 'CE' || cnce === 'EX'){
+  if(cnce === 'PE' || cnce === 'EX'){
     document.getElementById('m-iva').value = 0;
   } else {
     document.getElementById('m-iva').value = 21;

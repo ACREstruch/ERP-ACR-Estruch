@@ -291,7 +291,8 @@ input[type=number]{-moz-appearance:textfield}
         </div>
         <div class="fg">
           <label>Nº Fra. proveïdor</label>
-          <input type="text" id="m-no-prov" placeholder="Núm. factura del proveïdor" style="font-size:1.15em">
+          <input type="text" id="m-no-prov" placeholder="Núm. factura del proveïdor" style="font-size:1.15em" oninput="checkDuplicatNoFraProv()">
+          <span id="msg-no-prov" style="font-size:11px;font-weight:600;margin-top:2px;display:block"></span>
         </div>
         <div class="fg">
           <label>Estat</label>
@@ -977,9 +978,7 @@ async function saveFactura(){
     noFra = getNextSerie(year);
   }
   if(!noFra||!dataFra){ toast('Número i data obligatoris','err'); return; }
-  // Validació: número de factura duplicat
-  const duplicat = allFra.find(x => x.no_factura === noFra && x.id !== curId);
-  if(duplicat){ toast('❌ Aquest número de factura ja existeix (' + noFra + ')','err'); return; }
+
   const ivaPc=parseFloat(document.getElementById('m-iva').value)||0;
   const iva=Math.round(curBi*ivaPc/100*100)/100;
   const tot=Math.round((curBi+iva)*100)/100;
@@ -1056,6 +1055,20 @@ function showTab(tabId){
   if(tabId==='tp-pag') updatePagResum();
 }
 document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>showTab(t.dataset.tab)));
+
+function checkDuplicatNoFraProv(){
+  const val = document.getElementById('m-no-prov').value.trim();
+  const msg = document.getElementById('msg-no-prov');
+  if(!val){ msg.textContent=''; return; }
+  const duplicat = allFra.find(x => x.no_fra_prov === val && x.id !== curId);
+  if(duplicat){
+    msg.textContent = '⚠️ Aquest número ja existeix';
+    msg.style.color = 'var(--red)';
+  } else {
+    msg.textContent = '✓ Número disponible';
+    msg.style.color = 'var(--green)';
+  }
+}
 
 function toast(msg,type='inf'){
   const el=document.createElement('div');

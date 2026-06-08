@@ -948,10 +948,18 @@ async function saveFactura(){
   btn.disabled=true; btn.innerHTML='<span class="spin"></span> Guardant...';
   try{
     let newId=curId;
-    if(curId){ await sbPatch('factures_rebudes',curId,data); }
-    else {
+    const existing = curId ? allFra.find(x=>x.id===curId) : null;
+    if(curId){
+      if(!existing?.id_insp){ data.id_insp = curId; }
+      await sbPatch('factures_rebudes',curId,data);
+    } else {
       const res=await sbPost('factures_rebudes',data);
       newId=res[0]?.id;
+      if(newId){
+        const assignedId = res[0]?.id_insp || newId;
+        await sbPatch('factures_rebudes',newId,{id_insp:assignedId});
+        data.id_insp = assignedId;
+      }
     }
     // Guardar pagaments pendents (nova factura)
     if(!curId && curPagaments.length && newId){

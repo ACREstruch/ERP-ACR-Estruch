@@ -18,7 +18,7 @@
   --sidebar:220px;--topbar:58px;--r:6px;
   --shadow:0 1px 4px rgba(0,0,0,.1),0 4px 12px rgba(0,0,0,.06);
 }
-body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;font-size:14px;background:var(--bg);color:var(--text);height:100vh;overflow:hidden}
+body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;font-size:14px;background:var(--bg);color:var(--text);height:100vh;overflow:hidden;overflow-x:auto}
 #app{display:flex;height:100vh}
 #sidebar{width:var(--sidebar);background:#fff;border-right:1px solid #EDE9E4;display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto}
 #logo-area{padding:14px 16px 12px;border-bottom:1px solid #EDE9E4;cursor:pointer}
@@ -34,7 +34,7 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;font-size:14px;ba
 .nav-sub{padding:6px 16px 6px 44px;color:#6b7280;cursor:pointer;font-size:12px;transition:all .15s;border-left:3px solid transparent;user-select:none}
 .nav-sub:hover{color:#374151;background:#f3f4f6}
 .nav-footer{padding:12px 14px;border-top:1px solid #EDE9E4;font-size:11px;color:#9ca3af}
-#main{flex:1;display:flex;flex-direction:column;overflow:hidden;overflow-x:auto;min-width:0}
+#main{flex:1;display:flex;flex-direction:column;min-width:0}
 #topbar{height:var(--topbar);background:var(--white);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 22px;gap:12px;flex-shrink:0;box-shadow:0 1px 3px rgba(0,0,0,.06)}
 #topbar h1{font-size:17px;font-weight:700;color:var(--blue);flex:1}
 .btn{display:inline-flex;align-items:center;gap:6px;padding:7px 15px;border-radius:var(--r);border:none;cursor:pointer;font-size:13px;font-weight:500;transition:all .15s;white-space:nowrap}
@@ -58,7 +58,7 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;font-size:14px;ba
 .filter-bar input:focus,.filter-bar select:focus{outline:none;border-color:var(--blue)}
 .card{background:var(--white);border-radius:var(--r);box-shadow:var(--shadow);margin-bottom:16px}
 .tbl-wrap{overflow-x:auto}
-table.main-tbl{width:100%;border-collapse:collapse;font-size:13px}
+table.main-tbl{width:100%;min-width:900px;border-collapse:collapse;font-size:13px}
 .main-tbl th{padding:9px 14px;text-align:left;font-size:10.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;border-bottom:2px solid var(--border);white-space:nowrap;background:#fafbfc}
 .main-tbl td{padding:11px 14px;border-bottom:1px solid var(--border-light);vertical-align:middle}
 .main-tbl tbody tr:hover td{background:var(--blue-light);cursor:pointer}

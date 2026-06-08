@@ -540,18 +540,25 @@ function clearFilters(){
 }
 
 function openModal(id){
-  curId=id;
-  showTab('tp-gen');
   if(id){
-    const c = allClients.find(x=>x.id===id);
-    if(!c) return;
-    document.getElementById('m-title').textContent = c.rao_social;
-    fillForm(c);
+    // Editar un client existent → demanar PIN
+    demanarPIN(() => {
+      curId=id;
+      showTab('tp-gen');
+      const c = allClients.find(x=>x.id===id);
+      if(!c) return;
+      document.getElementById('m-title').textContent = c.rao_social;
+      fillForm(c);
+      document.getElementById('overlay').classList.add('open');
+    });
   } else {
+    // Nou client → sense PIN
+    curId=null;
+    showTab('tp-gen');
     document.getElementById('m-title').textContent = 'Nou client';
     resetForm();
+    document.getElementById('overlay').classList.add('open');
   }
-  document.getElementById('overlay').classList.add('open');
 }
 
 function closeModal(){
@@ -633,15 +640,30 @@ async function saveClient(){
   }
 }
 
+// ── PIN de protecció ──────────────────────────────────────────
+const PIN_CORRECTE = '1234';
+
+function demanarPIN(callback){
+  const pin = prompt('🔒 Introdueix el PIN per continuar:');
+  if(pin === null) return; // cancel·lat
+  if(pin === PIN_CORRECTE){
+    callback();
+  } else {
+    toast('PIN incorrecte','err');
+  }
+}
+
 async function confirmDel(id){
   const c = allClients.find(x=>x.id===id);
   if(!c) return;
-  if(!confirm(`Eliminar el client "${c.rao_social}"?\nAquesta acció no es pot desfer.`)) return;
-  try{
-    await sbDel('clients',id);
-    toast('Client eliminat','ok');
-    await loadClients();
-  } catch(e){ toast('Error: '+e.message,'err'); }
+  demanarPIN(async () => {
+    if(!confirm(`Eliminar el client "${c.rao_social}"?\nAquesta acció no es pot desfer.`)) return;
+    try{
+      await sbDel('clients',id);
+      toast('Client eliminat','ok');
+      await loadClients();
+    } catch(e){ toast('Error: '+e.message,'err'); }
+  });
 }
 
 function showTab(tabId){

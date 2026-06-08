@@ -427,18 +427,35 @@ function applyFilters(){
 }
 function clearFilters(){ document.getElementById('f-cerca').value=''; document.getElementById('f-pais').value=''; renderTable(allProv); }
 
-function openModal(id){
-  curId=id; showTab('tp-gen');
-  if(id){
-    const p=allProv.find(x=>x.id===id);
-    if(!p) return;
-    document.getElementById('m-title').textContent=p.nom;
-    fillForm(p);
+// ── PIN de protecció ──────────────────────────────────────────
+const PIN_CORRECTE = '1234';
+
+function demanarPIN(callback){
+  const pin = prompt('🔒 Introdueix el PIN per continuar:');
+  if(pin === null) return;
+  if(pin === PIN_CORRECTE){
+    callback();
   } else {
+    toast('PIN incorrecte','err');
+  }
+}
+
+function openModal(id){
+  if(id){
+    demanarPIN(() => {
+      curId=id; showTab('tp-gen');
+      const p=allProv.find(x=>x.id===id);
+      if(!p) return;
+      document.getElementById('m-title').textContent=p.nom;
+      fillForm(p);
+      document.getElementById('overlay').classList.add('open');
+    });
+  } else {
+    curId=null; showTab('tp-gen');
     document.getElementById('m-title').textContent='Nou proveïdor';
     resetForm();
+    document.getElementById('overlay').classList.add('open');
   }
-  document.getElementById('overlay').classList.add('open');
 }
 function closeModal(){ document.getElementById('overlay').classList.remove('open'); curId=null; }
 
@@ -503,9 +520,12 @@ async function saveProv(){
 
 async function confirmDel(id){
   const p=allProv.find(x=>x.id===id);
-  if(!p||!confirm(`Eliminar "${p.nom}"?`)) return;
-  try{ await sbDel('proveidors',id); toast('Eliminat','ok'); await loadProveidors(); }
-  catch(e){ toast('Error: '+e.message,'err'); }
+  if(!p) return;
+  demanarPIN(async () => {
+    if(!confirm(`Eliminar "${p.nom}"?`)) return;
+    try{ await sbDel('proveidors',id); toast('Eliminat','ok'); await loadProveidors(); }
+    catch(e){ toast('Error: '+e.message,'err'); }
+  });
 }
 
 function showTab(tabId){

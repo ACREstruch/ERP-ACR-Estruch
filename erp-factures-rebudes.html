@@ -482,6 +482,7 @@ input[type=number]{-moz-appearance:textfield}
 <script>
 const SB_URL = 'https://ftuaeaghnnlusigqtoqv.supabase.co';
 const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ0dWFlYWdobm5sdXNpZ3F0b3F2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAxNjI0MjIsImV4cCI6MjA5NTczODQyMn0.9n1gWnq_QfrLIWU7sIBReXgQAGA-NPFOpsdDp-jbDW8';
+const PIN_DEFAULT = '1234';
 function getSession(){try{const s=localStorage.getItem('erp_session');if(!s)return null;const sess=JSON.parse(s);if(Date.now()/1000>sess.expires_at-60){localStorage.removeItem('erp_session');return null;}return sess;}catch(e){return null;}}
 function getHDR(){const s=getSession();const tok=s&&s.access_token?s.access_token:SB_KEY;return{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+tok,'Prefer':'return=representation'};}
 function requireAuth(){if(!getSession()){location.replace('login.html');return false;}const el=document.getElementById('user-email');if(el){const s=getSession();el.textContent=s&&s.user?s.user.email:'';}return true;}
@@ -491,6 +492,61 @@ async function sbGet(t,q=''){const r=await fetch(`${SB_URL}/rest/v1/${t}?${q}`,{
 async function sbPost(t,d){const r=await fetch(`${SB_URL}/rest/v1/${t}`,{method:'POST',headers:getHDR(),body:JSON.stringify(d)});if(!r.ok)throw new Error(await r.text());return r.json()}
 async function sbPatch(t,id,d){const r=await fetch(`${SB_URL}/rest/v1/${t}?id=eq.${id}`,{method:'PATCH',headers:getHDR(),body:JSON.stringify(d)});if(!r.ok)throw new Error(await r.text());return r.json()}
 async function sbDel(t,id){const r=await fetch(`${SB_URL}/rest/v1/${t}?id=eq.${id}`,{method:'DELETE',headers:getHDR()});if(!r.ok)throw new Error(await r.text())}
+
+function getCurrentUserEmail(){const s=getSession();return s?.user?.email||null;}
+function getCurrentUserId(){const s=getSession();return s?.user?.id||null;}
+async function getCurrentUserPin(){
+  const email = getCurrentUserEmail();
+  if(!email) return PIN_DEFAULT;
+  try{
+    const rows = await sbGet('usuaris', `select=pin,email,id&email=eq.${encodeURIComponent(email)}`);
+    return rows?.[0]?.pin || PIN_DEFAULT;
+  }catch(e){
+    return PIN_DEFAULT;
+  }
+}
+async function openProtectedModal(id){
+  const pin = prompt('Introdueix el PIN per editar aquesta factura');
+  if(pin===null) return;
+  const expected = await getCurrentUserPin();
+  if(pin !== expected){ toast('PIN incorrecte','err'); return; }
+  openModal(id);
+}
+function getAuditUser(){
+  const email = getCurrentUserEmail();
+  return email || getCurrentUserId() || 'desconegut';
+}
+function getModifiedFields(existing, data){
+  const keys = ['no_factura','no_fra_prov','id_prov','data_fra','data_entrada','data_termini','forma_pag','divisa','tc_divisa','base_imposable','tipus_iva','import_iva','total_factura','estat','import_pagat','concepte','compte_prov','compte_despeses','compte_iva_sup','assentat','notes'];
+  const changes = [];
+  const details = {};
+  keys.forEach(key => {
+    const oldV = existing?.[key] ?? null;
+    const newV = data?.[key] ?? null;
+    if(String(oldV) !== String(newV)){
+      changes.push(key);
+      details[key] = {old: oldV, new: newV};
+    }
+  });
+  return {changes, details};
+}
+async function logAuditChange(existing, data){
+  if(!existing) return;
+  const {changes, details} = getModifiedFields(existing, data);
+  if(!changes.length) return;
+  try{
+    await sbPost('audit_log',{
+      user_email: getAuditUser(),
+      user_id: getCurrentUserId(),
+      id_insp: existing.id_insp || existing.id || curId,
+      changed_fields: changes.join(','),
+      change_details: JSON.stringify(details),
+      created_at: new Date().toISOString(),
+    });
+  }catch(e){
+    console.warn('Audit log error', e);
+  }
+}
 
 let allFra=[], allProv=[], curId=null, curPagaments=[], curBi=0;
 
@@ -655,7 +711,12 @@ function renderTable(rows){
     grpRows.forEach(fr=>{
       const pnom=fr.proveidors?.nom||'—';
       const pagat=fr.import_pagat||0; const tot=fr.total_factura||0;
-      html+=`<tr data-yr="${yr}" style="${collapsed?'display:none':''}" onclick="openModal(${fr.id})">
+      const isPagat = getEstat(fr) === 'PAGAT';
+      const rowAction = isPagat ? `openProtectedModal(${fr.id})` : `openModal(${fr.id})`;
+      const editButton = isPagat
+        ? `<button class="btn btn-secondary btn-xs" style="background:var(--grey-bg);color:var(--grey);border:1px solid var(--border);cursor:default" title="Edita amb PIN" disabled>✏️</button>`
+        : `<button class="btn btn-secondary btn-xs" onclick="openModal(${fr.id})">✏️</button>`;
+      html+=`<tr data-yr="${yr}" style="${collapsed?'display:none':''}" onclick="${rowAction}">
         <td style="color:var(--muted);font-size:11px">${fr.id_insp||'—'}</td>
         <td><span class="no-fra">${formatSerie(fr)}</span></td>
         <td style="color:var(--muted)">${fr.no_fra_prov||'—'}</td>
@@ -668,7 +729,8 @@ function renderTable(rows){
         <td class="amt" style="color:${pagat>=tot&&tot>0?'var(--green)':'var(--muted)'}">${fe(pagat)}</td>
         <td>${badgeHtml(fr)}</td>
         <td onclick="event.stopPropagation()" style="white-space:nowrap">
-          <button class="btn btn-secondary btn-xs" onclick="openModal(${fr.id})">✏️</button>
+          ${editButton}
+          ${isPagat ? `<button class="btn btn-secondary btn-xs" style="margin-left:4px" onclick="openProtectedModal(${fr.id})" title="Edita amb PIN">🔒</button>` : ''}
           ${['PAGAT','RECTIFICATIVA'].includes(fr.estat)
             ? `<button class="btn btn-xs" style="margin-left:4px;background:var(--grey-bg);color:var(--grey);border:1px solid var(--border);cursor:default" title="No es pot eliminar" disabled>✕</button>`
             : `<button class="btn btn-xs btn-danger" style="margin-left:4px" onclick="confirmDel(${fr.id})" title="Eliminar">✕</button>`
@@ -952,6 +1014,9 @@ async function saveFactura(){
     if(curId){
       if(!existing?.id_insp){ data.id_insp = curId; }
       await sbPatch('factures_rebudes',curId,data);
+      if(existing && getEstat(existing) === 'PAGAT'){
+        await logAuditChange(existing, data);
+      }
     } else {
       const res=await sbPost('factures_rebudes',data);
       newId=res[0]?.id;

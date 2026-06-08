@@ -399,7 +399,7 @@ function renderTable(rows){
     return;
   }
   tbody.innerHTML=rows.map(p=>`<tr onclick="openModal(${p.id})">
-    <td><span class="tag">${p.codi||'—'}</span></td>
+    <td style="color:var(--blue);font-weight:600">${p.codi||'—'}</td>
     <td><span class="prov-nom">${p.nom}</span></td>
     <td style="color:var(--muted)">${p.sinonim||'—'}</td>
     <td style="font-size:12px">${p.nif_vat||'—'}</td>

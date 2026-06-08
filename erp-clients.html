@@ -549,18 +549,14 @@ function clearFilters(){
 
 function openModal(id){
   if(id){
-    // Editar un client existent → demanar PIN
-    demanarPIN(() => {
-      curId=id;
-      showTab('tp-gen');
-      const c = allClients.find(x=>x.id===id);
-      if(!c) return;
-      document.getElementById('m-title').textContent = c.rao_social;
-      fillForm(c);
-      document.getElementById('overlay').classList.add('open');
-    });
+    curId=id;
+    showTab('tp-gen');
+    const c = allClients.find(x=>x.id===id);
+    if(!c) return;
+    document.getElementById('m-title').textContent = c.rao_social;
+    fillForm(c);
+    document.getElementById('overlay').classList.add('open');
   } else {
-    // Nou client → sense PIN
     curId=null;
     showTab('tp-gen');
     document.getElementById('m-title').textContent = 'Nou client';
@@ -617,6 +613,10 @@ function onCNCEChange(){
 async function saveClient(){
   const rao = document.getElementById('m-rao').value.trim();
   if(!rao){ toast('El camp Clients és obligatori','err'); return; }
+  // PIN de protecció al guardar
+  const pin = prompt('🔒 Introdueix el PIN per guardar:');
+  if(pin === null) return;
+  if(pin !== PIN_CORRECTE){ toast('PIN incorrecte','err'); return; }
 
   const data = {
     rao_social:  rao,

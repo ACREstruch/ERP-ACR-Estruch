@@ -151,17 +151,20 @@ input[type=number]{-moz-appearance:textfield}
     <div class="nav-item active">
       <span class="ico">👥</span> Clients
     </div>
-    <div class="nav-item" onclick="toast('Pròximament','inf')">
+    <div class="nav-item" onclick="location.href='erp-proveidors.html'">
+      <span class="ico">🏭</span> Proveïdors
+    </div>
+    <div class="nav-item" onclick="location.href='erp-projectes.html'">
       <span class="ico">📋</span> Projectes
     </div>
     <div class="nav-section" style="margin-top:10px">Comptabilitat</div>
-    <div class="nav-item" onclick="toast('Pròximament','inf')">
+    <div class="nav-item" onclick="location.href='erp-major.html'">
       <span class="ico">📒</span> Major
     </div>
-    <div class="nav-item" onclick="toast('Pròximament','inf')">
+    <div class="nav-item" onclick="location.href='erp-assentaments.html'">
       <span class="ico">✏️</span> Assentaments
     </div>
-    <div class="nav-item" onclick="toast('Pròximament','inf')">
+    <div class="nav-item" onclick="location.href='erp-pla-comptes.html'">
       <span class="ico">🗂️</span> Pla de comptes
     </div>
   </div>
@@ -227,7 +230,7 @@ input[type=number]{-moz-appearance:textfield}
             <tr>
               <th>Situació</th>
               <th>ID Client</th>
-              <th>Raó Social</th>
+              <th>Clients</th>
               <th>Sinònim</th>
               <th>NIF / VAT</th>
               <th>País</th>
@@ -269,7 +272,7 @@ input[type=number]{-moz-appearance:textfield}
       <div class="grid3">
         <div class="sec">Identificació</div>
         <div class="fg full">
-          <label>Raó Social *</label>
+          <label>Clients *</label>
           <input type="text" id="m-rao" placeholder="CLICKSOFT, SA DE CV">
         </div>
         <div class="fg">
@@ -584,7 +587,7 @@ function resetForm(){
 
 async function saveClient(){
   const rao = document.getElementById('m-rao').value.trim();
-  if(!rao){ toast('La Raó Social és obligatòria','err'); return; }
+  if(!rao){ toast('El camp Clients és obligatori','err'); return; }
 
   const data = {
     rao_social:  rao,

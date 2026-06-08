@@ -115,10 +115,10 @@ input[type=number]{-moz-appearance:textfield}
     <div class="nav-item" onclick="location.href='erp-clients.html'">
       <span class="ico">👥</span> Clients
     </div>
-    <div class="nav-item active">
+    <div class="nav-item active" onclick="location.href='erp-proveidors.html'">
       <span class="ico">🏭</span> Proveïdors
     </div>
-    <div class="nav-item" onclick="toast('Pròximament','inf')">
+    <div class="nav-item" onclick="location.href='erp-projectes.html'">
       <span class="ico">📋</span> Projectes
     </div>
     <div class="nav-section" style="margin-top:10px">Comptabilitat</div>
@@ -164,7 +164,7 @@ input[type=number]{-moz-appearance:textfield}
       <div class="filter-bar">
         <input type="text" id="f-cerca" placeholder="🔍  Cerca nom, NIF, país..." oninput="applyFilters()" style="min-width:220px">
         <select id="f-pais" onchange="applyFilters()">
-          <option value="">Tots els països</option>
+          <option value="">TOTS els països</option>
         </select>
         <button class="btn btn-secondary btn-sm" onclick="clearFilters()">✕ Netejar</button>
         <span id="f-count" style="margin-left:auto;font-size:12px;color:var(--muted)"></span>

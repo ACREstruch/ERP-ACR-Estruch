@@ -977,6 +977,9 @@ async function saveFactura(){
     noFra = getNextSerie(year);
   }
   if(!noFra||!dataFra){ toast('Número i data obligatoris','err'); return; }
+  // Validació: número de factura duplicat
+  const duplicat = allFra.find(x => x.no_factura === noFra && x.id !== curId);
+  if(duplicat){ toast('❌ Aquest número de factura ja existeix (' + noFra + ')','err'); return; }
   const ivaPc=parseFloat(document.getElementById('m-iva').value)||0;
   const iva=Math.round(curBi*ivaPc/100*100)/100;
   const tot=Math.round((curBi+iva)*100)/100;

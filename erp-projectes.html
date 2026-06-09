@@ -523,6 +523,10 @@ async function saveProjecte(){
   const codi=document.getElementById('m-codi').value.trim();
   const nom=document.getElementById('m-nom').value.trim();
   if(!nom){ toast('El nom és obligatori','err'); return; }
+  // PIN de protecció al guardar
+  const pin = prompt('🔒 Introdueix el PIN per guardar:');
+  if(pin === null) return;
+  if(pin !== PIN_CORRECTE){ toast('PIN incorrecte','err'); return; }
   const imp=parseFloat(document.getElementById('m-import').value)||0;
   const enPc=parseFloat(document.getElementById('m-en-pc').value)||0;
   const dgPc=parseFloat(document.getElementById('m-dg-pc').value)||0;
@@ -561,7 +565,11 @@ async function saveProjecte(){
 
 async function confirmDel(id){
   const p=allPJ.find(x=>x.id===id);
-  if(!p||!confirm(`Eliminar el projecte "${p.nom}"?`)) return;
+  if(!p) return;
+  const pin = prompt('🔒 Introdueix el PIN per eliminar:');
+  if(pin === null) return;
+  if(pin !== PIN_CORRECTE){ toast('PIN incorrecte','err'); return; }
+  if(!confirm(`Eliminar el projecte "${p.nom}"?`)) return;
   try{ await sbDel('projectes',id); toast('Eliminat','ok'); await loadProjectes(); }
   catch(e){ toast('Error: '+e.message,'err'); }
 }
@@ -571,6 +579,15 @@ function showTab(tabId){
   document.querySelectorAll('.tab-panel').forEach(p=>p.classList.toggle('on',p.id===tabId));
 }
 document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>showTab(t.dataset.tab)));
+
+const PIN_CORRECTE = '1234';
+
+function demanarPIN(callback){
+  const pin = prompt('🔒 Introdueix el PIN per continuar:');
+  if(pin === null) return;
+  if(pin === PIN_CORRECTE){ callback(); }
+  else { toast('PIN incorrecte','err'); }
+}
 
 function toast(msg,type='inf'){
   const el=document.createElement('div');el.className=`toast ${type}`;el.textContent=msg;

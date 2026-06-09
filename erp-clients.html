@@ -79,10 +79,10 @@ table.main-tbl{width:100%;border-collapse:collapse;font-size:13px}
 .main-tbl tbody tr:last-child td{border-bottom:none}
 .client-nom{font-weight:700;color:var(--blue)}
 .tag{display:inline-block;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600;background:var(--blue-light);color:var(--blue)}
-.sit{display:inline-block;padding:2px 9px;border-radius:12px;font-size:11px;font-weight:600;white-space:nowrap}
-.sit-act{background:#d4edda;color:#155724}
-.sit-na{background:#e9ecef;color:#495057}
-.sit-nul{background:#f8d7da;color:#721c24}
+.sit{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;font-size:13px}
+.sit-act{background:#0B7906;color:#fff}
+.sit-na{background:#FFBE2D;color:#fff}
+.sit-nul{background:#F12839;color:#fff}
 
 /* EMPTY */
 .empty{text-align:center;padding:50px 20px;color:var(--muted)}
@@ -290,11 +290,11 @@ input[type=number]{-moz-appearance:textfield}
         </div>
         <div class="fg">
           <label>Situació</label>
-          <select id="m-sit">
+          <div style="display:flex;align-items:center;gap:8px"><select id="m-sit" onchange="updateSitIcon()" style="flex:1">
             <option value="ACT">ACT — Actiu</option>
             <option value="N/A">N/A</option>
             <option value="NUL">NUL — Anul·lat</option>
-          </select>
+          </select><span id="sit-icon" class="sit sit-act">✓</span></div>
         </div>
         <div class="fg">
           <label>NIF / VAT</label>
@@ -495,9 +495,17 @@ function populatePaisFilter(){
 }
 
 function sitBadge(s){
-  const map={ACT:['sit-act','ACT'],'N/A':['sit-na','N/A'],NUL:['sit-nul','NUL']};
-  const [cls,lbl]=map[s]||['sit-na',s||'ACT'];
-  return `<span class="sit ${cls}">${lbl}</span>`;
+  const map={ACT:['sit-act','✓'],'N/A':['sit-na','—'],NUL:['sit-nul','✕']};
+  const [cls,ico]=map[s]||['sit-na','—'];
+  return `<span class="sit ${cls}" title="${s||'ACT'}">${ico}</span>`;
+}
+
+function updateSitIcon(){
+  const val = document.getElementById('m-sit').value;
+  const map={ACT:['sit-act','✓'],'N/A':['sit-na','—'],NUL:['sit-nul','✕']};
+  const [cls,ico]=map[val]||['sit-na','—'];
+  const el = document.getElementById('sit-icon');
+  if(el){ el.className='sit '+cls; el.textContent=ico; }
 }
 
 function renderTable(rows){
@@ -578,6 +586,7 @@ function closeModal(){
 function fillForm(c){
   const s=(id,v)=>{const el=document.getElementById(id);if(el)el.value=(v??'')};
   s('m-rao',c.rao_social); s('m-sin',c.sinonim); s('m-codi',c.codi); s('m-sit',c.situacio||'ACT'); s('m-nif',c.nif_vat);
+  updateSitIcon();
   s('m-adr',c.adreca); s('m-cp',c.cp); s('m-ciu',c.ciutat); s('m-pais',c.pais);
   s('m-tel',c.tel); s('m-email',c.email); s('m-web',c.web);
   s('m-cnt-nom',c.cont_nom); s('m-cnt-cog',c.cont_cognom); s('m-cnt-email',c.cont_email);

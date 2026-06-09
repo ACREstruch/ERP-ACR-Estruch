@@ -75,7 +75,7 @@ th.amt{text-align:right}
 .br{background:var(--red-bg);color:var(--red-txt)}
 .bx{background:var(--grey-bg);color:var(--grey-txt)}
 .bb{background:#e3f2fd;color:#1565c0}
-.sit{display:inline-flex;align-items:center;justify-content:center;width:11px;height:11px;border-radius:50%;font-size:8px}
+.sit{display:inline-flex;align-items:center;justify-content:center;width:13px;height:13px;border-radius:50%;font-size:9px}
 .sit-act{background:#0B7906;color:#fff}
 .sit-pau{background:#FFBE2D;color:#fff}
 .sit-com{background:#1565C0;color:#fff}
@@ -288,12 +288,13 @@ input[type=number]{-moz-appearance:textfield}
         </div>
         <div class="fg">
           <label>Estat</label>
-          <select id="m-estat" onchange="updateBadge()">
+          <div style="display:flex;align-items:center;gap:8px">
+          <select id="m-estat" onchange="updateBadge()" style="flex:1">
             <option value="ACTIU">Actiu</option>
             <option value="COMPLETAT">Completat</option>
             <option value="PAUSAT">Pausat</option>
             <option value="CANCEL·LAT">Cancel·lat</option>
-          </select>
+          </select><span id="sit-icon" class="sit sit-act">✓</span></div>
         </div>
 
         <div class="sec">Valor</div>
@@ -512,6 +513,10 @@ function resetForm(){
 function updateBadge(){
   const e=document.getElementById('m-estat').value;
   document.getElementById('m-badge').innerHTML=badgeHtml(e);
+  const map={'ACTIU':'sit-act','COMPLETAT':'sit-com','PAUSAT':'sit-pau','CANCEL·LAT':'sit-can'};
+  const ico={'ACTIU':'✓','COMPLETAT':'✓','PAUSAT':'—','CANCEL·LAT':'✕'};
+  const el=document.getElementById('sit-icon');
+  if(el){ el.className='sit '+(map[e]||'sit-can'); el.textContent=ico[e]||'—'; }
 }
 
 function recalcComm(){

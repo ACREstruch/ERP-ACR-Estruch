@@ -75,6 +75,11 @@ th.amt{text-align:right}
 .br{background:var(--red-bg);color:var(--red-txt)}
 .bx{background:var(--grey-bg);color:var(--grey-txt)}
 .bb{background:#e3f2fd;color:#1565c0}
+.sit{display:inline-flex;align-items:center;justify-content:center;width:11px;height:11px;border-radius:50%;font-size:8px}
+.sit-act{background:#0B7906;color:#fff}
+.sit-pau{background:#FFBE2D;color:#fff}
+.sit-com{background:#1565C0;color:#fff}
+.sit-can{background:#F12839;color:#fff}
 .empty{text-align:center;padding:50px 20px;color:var(--muted)}
 .empty .eico{font-size:42px;margin-bottom:12px;opacity:.5}
 .empty p{margin-bottom:14px;font-size:14px}
@@ -212,6 +217,7 @@ input[type=number]{-moz-appearance:textfield}
         <table class="main-tbl">
           <thead>
             <tr>
+              <th>Estat</th>
               <th>Codi</th>
               <th>NOM</th>
               <th>Client</th>
@@ -220,7 +226,6 @@ input[type=number]{-moz-appearance:textfield}
               <th class="amt">Import</th>
               <th class="amt">ACR %</th>
               <th class="amt">ACR Import</th>
-              <th>Estat</th>
               <th></th>
             </tr>
           </thead>
@@ -407,8 +412,10 @@ const ESTAT_MAP={
 };
 
 function badgeHtml(estat){
-  const [cls,lbl]=ESTAT_MAP[estat]||['bx',estat];
-  return `<span class="badge ${cls}">${lbl}</span>`;
+  const map={'ACTIU':'sit-act','COMPLETAT':'sit-com','PAUSAT':'sit-pau','CANCEL·LAT':'sit-can'};
+  const ico={'ACTIU':'✓','COMPLETAT':'✓','PAUSAT':'—','CANCEL·LAT':'✕'};
+  const cls=map[estat]||'sit-can';
+  return `<span class="sit ${cls}" title="${estat}">${ico[estat]||'—'}</span>`;
 }
 
 function renderStats(){
@@ -436,6 +443,7 @@ function renderTable(rows){
     return;
   }
   tbody.innerHTML=rows.map(p=>`<tr onclick="openModal(${p.id})">
+    <td>${badgeHtml(p.estat)}</td>
     <td><span class="pj-codi">${p.codi||'—'}</span></td>
     <td style="font-weight:600;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${p.nom}">${p.nom}</td>
     <td style="color:var(--muted);font-size:12px">${p.clients?.rao_social||'—'}</td>
@@ -444,7 +452,6 @@ function renderTable(rows){
     <td class="amt">${fe(p.import)}</td>
     <td class="amt">${fe(p.acr_pc,2)}%</td>
     <td class="amt" style="color:var(--green);font-weight:700">${fe(p.acr_import)}</td>
-    <td>${badgeHtml(p.estat)}</td>
     <td onclick="event.stopPropagation()" style="white-space:nowrap">
       <button class="btn btn-secondary btn-xs" onclick="openModal(${p.id})">✏️</button>
       <button class="btn btn-xs btn-danger" style="margin-left:4px" onclick="confirmDel(${p.id})" title="Eliminar">✕</button>
@@ -504,8 +511,7 @@ function resetForm(){
 
 function updateBadge(){
   const e=document.getElementById('m-estat').value;
-  const [cls,lbl]=ESTAT_MAP[e]||['bx',e];
-  document.getElementById('m-badge').innerHTML=`<span class="badge ${cls}">${lbl}</span>`;
+  document.getElementById('m-badge').innerHTML=badgeHtml(e);
 }
 
 function recalcComm(){

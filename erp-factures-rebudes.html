@@ -858,12 +858,14 @@ function recalc(){
   const ivaPc=parseFloat(document.getElementById('m-iva').value)||0;
   const irpfPc=parseFloat(document.getElementById('m-irpf')?.value)||0;
   document.getElementById('t-iva-pct').value=ivaPc;
+  document.getElementById('t-irpf-pct').value=irpfPc;
   const iva=Math.round(curBi*ivaPc/100*100)/100;
   const irpf=Math.round(curBi*irpfPc/100*100)/100;
   const tot=Math.round((curBi+iva-irpf)*100)/100;
   const fe=n=>n.toLocaleString('ca-ES',{minimumFractionDigits:2,maximumFractionDigits:2})+' EUR';
   document.getElementById('t-bi').textContent=fe(curBi);
   document.getElementById('t-iva').textContent=fe(iva);
+  document.getElementById('t-irpf').textContent=fe(irpf);
   document.getElementById('t-tot').textContent=fe(tot);
   updateAssentament();
   updatePagResum();

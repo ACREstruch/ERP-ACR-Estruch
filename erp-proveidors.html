@@ -55,6 +55,11 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;font-size:14px;ba
 .card{background:var(--white);border-radius:var(--r);box-shadow:var(--shadow);margin-bottom:16px}
 .tbl-wrap{overflow-x:auto}
 table.main-tbl{width:100%;border-collapse:collapse;font-size:13px}
+.th-sort{cursor:pointer;user-select:none}
+.th-sort:hover{color:var(--blue)}
+.th-sort::after{content:' ⇅';opacity:0.4;font-size:10px}
+.th-sort.asc::after{content:' ↑';opacity:1}
+.th-sort.desc::after{content:' ↓';opacity:1}
 .main-tbl th{padding:9px 14px;text-align:left;font-size:10.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;border-bottom:2px solid var(--border);white-space:nowrap;background:#fafbfc;position:sticky;top:0;z-index:2}
 .main-tbl td{padding:11px 14px;border-bottom:1px solid var(--border-light);vertical-align:middle}
 .main-tbl tbody tr:hover td{background:var(--blue-light);cursor:pointer}
@@ -176,8 +181,8 @@ input[type=number]{-moz-appearance:textfield}
         <table class="main-tbl">
           <thead>
             <tr>
-              <th>Codi</th>
-              <th>Nom</th>
+              <th class="th-sort" onclick="sortTable('codi')">Codi</th>
+              <th class="th-sort" onclick="sortTable('nom')">Nom</th>
               <th>Sinònim</th>
               <th>NIF / VAT</th>
               <th>País</th>
@@ -367,6 +372,30 @@ async function sbPost(t,d){const r=await fetch(`${SB_URL}/rest/v1/${t}`,{method:
 async function sbPatch(t,id,d){const r=await fetch(`${SB_URL}/rest/v1/${t}?id=eq.${id}`,{method:'PATCH',headers:getHDR(),body:JSON.stringify(d)});if(!r.ok)throw new Error(await r.text());return r.json()}
 async function sbDel(t,id){const r=await fetch(`${SB_URL}/rest/v1/${t}?id=eq.${id}`,{method:'DELETE', headers:getHDR()});if(!r.ok)throw new Error(await r.text())}
 
+let sortCol = 'codi';
+let sortDir = 'asc';
+
+function sortTable(col){
+  if(sortCol===col){ sortDir=sortDir==='asc'?'desc':'asc'; }
+  else{ sortCol=col; sortDir='asc'; }
+  document.querySelectorAll('.th-sort').forEach(th=>th.classList.remove('asc','desc'));
+  document.querySelectorAll('.th-sort').forEach(th=>{
+    if(th.getAttribute('onclick').includes("'"+col+"'")) th.classList.add(sortDir);
+  });
+  applyFilters();
+}
+
+function sortRows(rows){
+  return [...rows].sort((a,b)=>{
+    let va=a[sortCol]||''; let vb=b[sortCol]||'';
+    if(!isNaN(va)&&!isNaN(vb)){va=parseFloat(va)||0;vb=parseFloat(vb)||0;}
+    else{va=va.toString().toLowerCase();vb=vb.toString().toLowerCase();}
+    if(va<vb) return sortDir==='asc'?-1:1;
+    if(va>vb) return sortDir==='asc'?1:-1;
+    return 0;
+  });
+}
+
 let allProv=[], curId=null;
 
 async function init(){
@@ -400,6 +429,7 @@ function populatePaisFilter(){
 }
 
 function renderTable(rows){
+  rows=sortRows(rows);
   document.getElementById('f-count').textContent=rows.length+' proveïdors';
   const tbody=document.getElementById('tbl-body');
   if(!rows.length){

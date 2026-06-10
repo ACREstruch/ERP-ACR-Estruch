@@ -188,6 +188,7 @@ input[type=number]{-moz-appearance:textfield}
               <th>País</th>
               <th>Tel / Email</th>
               <th>IVA %</th>
+              <th>IRPF %</th>
               <th>Divisa</th>
               <th>Forma pag.</th>
               <th></th>
@@ -447,6 +448,7 @@ function renderTable(rows){
     <td>${p.pais||'—'}</td>
     <td style="font-size:12px">${[p.tel,p.email].filter(Boolean).join(' · ')||'—'}</td>
     <td style="text-align:right">${p.tipus_iva??21}%</td>
+    <td style="text-align:right">${p.tipus_irpf??0}%</td>
     <td>${p.divisa||'EUR'}</td>
     <td>${p.forma_pag||'—'}</td>
     <td onclick="event.stopPropagation()" style="white-space:nowrap">

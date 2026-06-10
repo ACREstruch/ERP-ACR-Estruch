@@ -75,6 +75,9 @@ th.amt{text-align:right}
 .sit{display:inline-flex;align-items:center;justify-content:center;width:13px;height:13px;border-radius:50%;font-size:9px}
 .sit-pag{background:#0B7906;color:#fff}
 .sit-pend{background:#F12839;color:#fff}
+.sit{display:inline-flex;align-items:center;justify-content:center;width:13px;height:13px;border-radius:50%;font-size:9px}
+.sit-pag{background:#0B7906;color:#fff}
+.sit-pend{background:#F12839;color:#fff}
 .ba{background:var(--amber-bg);color:var(--amber-txt)}
 .br{background:var(--red-bg);color:var(--red-txt)}
 .bp{background:#e8d5f5;color:#6a1b9a}
@@ -487,6 +490,7 @@ input[type=number]{-moz-appearance:textfield}
 const SB_URL = 'https://ftuaeaghnnlusigqtoqv.supabase.co';
 const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ0dWFlYWdobm5sdXNpZ3F0b3F2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAxNjI0MjIsImV4cCI6MjA5NTczODQyMn0.9n1gWnq_QfrLIWU7sIBReXgQAGA-NPFOpsdDp-jbDW8';
 const PIN_DEFAULT = '1234';
+const PIN_CORRECTE = '1234';
 function getSession(){try{const s=localStorage.getItem('erp_session');if(!s)return null;const sess=JSON.parse(s);if(Date.now()/1000>sess.expires_at-60){localStorage.removeItem('erp_session');return null;}return sess;}catch(e){return null;}}
 function getHDR(){const s=getSession();const tok=s&&s.access_token?s.access_token:SB_KEY;return{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+tok,'Prefer':'return=representation'};}
 function requireAuth(){if(!getSession()){location.replace('login.html');return false;}const el=document.getElementById('user-email');if(el){const s=getSession();el.textContent=s&&s.user?s.user.email:'';}return true;}
@@ -724,6 +728,7 @@ function renderTable(rows){
         ? `<button class="btn btn-secondary btn-xs" style="background:var(--grey-bg);color:var(--grey);border:1px solid var(--border);cursor:default" title="Edita amb PIN" disabled>✏️</button>`
         : `<button class="btn btn-secondary btn-xs" onclick="openModal(${fr.id})">✏️</button>`;
       html+=`<tr data-yr="${yr}" style="${collapsed?'display:none':''}" onclick="${rowAction}">
+        <td>${badgeHtml(fr)}</td>
         <td style="color:var(--muted);font-size:11px">${fr.id_insp||'—'}</td>
         <td><span class="no-fra">${formatSerie(fr)}</span></td>
         <td style="color:var(--muted)">${fr.no_fra_prov||'—'}</td>
@@ -734,7 +739,6 @@ function renderTable(rows){
         <td class="amt">${fe(fr.base_imposable)}</td>
         <td class="amt" style="font-weight:700">${fe(tot)}</td>
         <td class="amt" style="color:${pagat>=tot&&tot>0?'var(--green)':'var(--muted)'}">${fe(pagat)}</td>
-        <td>${badgeHtml(fr)}</td>
         <td onclick="event.stopPropagation()" style="white-space:nowrap">
           ${editButton}
           ${isPagat ? `<button class="btn btn-secondary btn-xs" style="margin-left:4px" onclick="openProtectedModal(${fr.id})" title="Edita amb PIN">🔒</button>` : ''}
@@ -984,6 +988,9 @@ async function saveFactura(){
     noFra = getNextSerie(year);
   }
   if(!noFra||!dataFra){ toast('Número i data obligatoris','err'); return; }
+  const pin = prompt('🔒 Introdueix el PIN per guardar:');
+  if(pin === null) return;
+  if(pin !== PIN_CORRECTE){ toast('PIN incorrecte','err'); return; }
 
   const ivaPc=parseFloat(document.getElementById('m-iva').value)||0;
   const iva=Math.round(curBi*ivaPc/100*100)/100;
@@ -1049,6 +1056,9 @@ async function saveFactura(){
 async function confirmDel(id){
   const fr=allFra.find(x=>x.id===id);
   if(!fr) return;
+  const pin = prompt('🔒 Introdueix el PIN per eliminar:');
+  if(pin === null) return;
+  if(pin !== PIN_CORRECTE){ toast('PIN incorrecte','err'); return; }
   if(!confirm(`Eliminar la factura ${fr.no_factura}?`)) return;
   try{ await sbDel('factures_rebudes',id); toast('Eliminada','ok'); await loadFactures(); }
   catch(e){ toast('Error: '+e.message,'err'); }

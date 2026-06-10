@@ -335,30 +335,32 @@ input[type=number]{-moz-appearance:textfield}
           <label>Concepte</label>
           <input type="text" id="m-concepte" placeholder="Descripció del servei o producte...">
         </div>
-        <div class="fg">
-          <label>Base Imposable</label>
-          <input type="number" id="m-bi" step="0.01" value="0" onchange="recalc()">
-        </div>
-        <div class="fg">
-          <label>% IVA suportat</label>
-          <input type="number" id="m-iva" step="0.1" value="21" min="0" max="100" onchange="recalc()">
-        </div>
-        <div class="fg">
-          <label>% IRPF suportat</label>
-          <input type="number" id="m-irpf" step="0.1" value="0" min="-100" max="100" onchange="recalc()">
-        </div>
-        <div class="fg">
-          <label>Divisa</label>
-          <select id="m-div">
-            <option value="EUR">EUR</option>
-            <option value="USD">USD</option>
-            <option value="GBP">GBP</option>
-            <option value="MXN">MXN</option>
-          </select>
-        </div>
-        <div class="fg">
-          <label>Exchange rate</label>
-          <input type="number" id="m-tc" step="0.00001" value="1">
+        <div class="full" style="display:grid;grid-template-columns:1.8fr 1fr 1fr 1fr 1fr;gap:14px">
+          <div class="fg">
+            <label>Base Imposable</label>
+            <input type="number" id="m-bi" step="0.01" value="0" onchange="recalc()">
+          </div>
+          <div class="fg">
+            <label>% IVA suportat</label>
+            <input type="number" id="m-iva" step="0.1" value="21" min="0" max="100" onchange="recalc()">
+          </div>
+          <div class="fg">
+            <label>% IRPF suportat</label>
+            <input type="number" id="m-irpf" step="0.1" value="0" min="-100" max="100" onchange="recalc()">
+          </div>
+          <div class="fg">
+            <label>Divisa</label>
+            <select id="m-div">
+              <option value="EUR">EUR</option>
+              <option value="USD">USD</option>
+              <option value="GBP">GBP</option>
+              <option value="MXN">MXN</option>
+            </select>
+          </div>
+          <div class="fg">
+            <label>Exchange rate</label>
+            <input type="number" id="m-tc" step="0.00001" value="1">
+          </div>
         </div>
       </div>
 

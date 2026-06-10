@@ -72,6 +72,9 @@ th.amt{text-align:right}
 .badge::before{content:'';width:6px;height:6px;border-radius:50%;background:currentColor;opacity:.7}
 .bg{background:var(--green-bg);color:var(--green-txt)}
 .by{background:var(--yellow-bg);color:var(--yellow-txt)}
+.sit{display:inline-flex;align-items:center;justify-content:center;width:13px;height:13px;border-radius:50%;font-size:9px}
+.sit-pag{background:#0B7906;color:#fff}
+.sit-pend{background:#F12839;color:#fff}
 .ba{background:var(--amber-bg);color:var(--amber-txt)}
 .br{background:var(--red-bg);color:var(--red-txt)}
 .bp{background:#e8d5f5;color:#6a1b9a}
@@ -241,6 +244,7 @@ input[type=number]{-moz-appearance:textfield}
         <table class="main-tbl">
           <thead>
             <tr>
+              <th>Estat</th>
               <th>IdINSP</th>
               <th>SÈRIE</th>
               <th>Nº Fra. proveïdor</th>
@@ -251,7 +255,6 @@ input[type=number]{-moz-appearance:textfield}
               <th class="amt">Base imp.</th>
               <th class="amt">Total</th>
               <th class="amt">Pagat</th>
-              <th>Estat</th>
               <th></th>
             </tr>
           </thead>
@@ -641,8 +644,11 @@ const ESTAT_MAP={
   VENCUDA:    ['br','Vençuda'],
 };
 function badgeHtml(fr){
-  const [cls,lbl]=ESTAT_MAP[getEstat(fr)]||['bx',fr.estat];
-  return `<span class="badge ${cls}">${lbl}</span>`;
+  const estat=getEstat(fr);
+  const map={PAGAT:'sit-pag',PENDENT:'sit-pend',PARCIALMENT:'sit-pend',PROXIM:'sit-pend',VENCUDA:'sit-pend'};
+  const ico={PAGAT:'✓',PENDENT:'—',PARCIALMENT:'—',PROXIM:'—',VENCUDA:'—'};
+  const cls=map[estat]||'sit-pend';
+  return `<span class="sit ${cls}" title="${estat}">${ico[estat]||'—'}</span>`;
 }
 
 // ── STATS ──

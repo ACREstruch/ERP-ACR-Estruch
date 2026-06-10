@@ -227,6 +227,9 @@ th.amt{text-align:right}
 .ba{background:var(--amber-bg);color:var(--amber-txt)}
 .br{background:var(--red-bg);color:var(--red-txt)}
 .bx{background:var(--grey-bg);color:var(--grey-txt)}
+.sit{display:inline-flex;align-items:center;justify-content:center;width:13px;height:13px;border-radius:50%;font-size:9px}
+.sit-cob{background:#0B7906;color:#fff}
+.sit-pend{background:#F12839;color:#fff}
 
 /* ── EMPTY STATE ── */
 .empty{text-align:center;padding:50px 20px;color:var(--muted)}
@@ -446,6 +449,7 @@ input[type=number]{-moz-appearance:textfield}
         <table class="main-tbl" id="tbl">
           <thead>
             <tr>
+              <th>Estat</th>
               <th>IdIN</th>
               <th>Nº Factura</th>
               <th>Data Fra.</th>
@@ -455,7 +459,6 @@ input[type=number]{-moz-appearance:textfield}
               <th class="amt">Base imp.</th>
               <th class="amt">Total</th>
               <th class="amt">Cobrat</th>
-              <th>Estat</th>
               <th></th>
             </tr>
           </thead>
@@ -942,8 +945,11 @@ const ESTAT_MAP = {
 };
 
 function badgeHtml(inv){
-  const [cls, lbl] = ESTAT_MAP[getEstat(inv)] || ['bx', inv.estat];
-  return `<span class="badge ${cls}">${lbl}</span>`;
+  const estat = getEstat(inv);
+  const map={COBRAT:'sit-cob',PENDENT:'sit-pend',PROXIM:'sit-pend',RECTIFICATIVA:'sit-pend'};
+  const ico={COBRAT:'✓',PENDENT:'—',PROXIM:'—',RECTIFICATIVA:'—'};
+  const cls=map[estat]||'sit-pend';
+  return `<span class="sit ${cls}" title="${estat}">${ico[estat]||'—'}</span>`;
 }
 
 // ════════════════════════════════════════════════

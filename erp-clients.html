@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ca">
 <head>
@@ -604,12 +603,51 @@ function openModal(id){
     fillForm(c);
     document.getElementById('overlay').classList.add('open');
   } else {
-    curId=null;
-    showTab('tp-gen');
-    document.getElementById('m-title').textContent = 'Nou client';
-    resetForm();
-    document.getElementById('overlay').classList.add('open');
+    // Demanar règim fiscal per assignar ID automàtic
+    showRegimDialog();
   }
+}
+
+function nextCodi(cnce){
+  const prefix = (cnce === 'CN') ? '4300' : '4304';
+  const codis = allClients
+    .map(c => c.codi || '')
+    .filter(c => c.startsWith(prefix))
+    .map(c => parseInt(c) || 0);
+  const max = codis.length ? Math.max(...codis) : parseInt(prefix + '000');
+  return String(max + 1);
+}
+
+function showRegimDialog(){
+  const overlay = document.createElement('div');
+  overlay.id = 'regim-dialog';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;display:flex;align-items:center;justify-content:center';
+  overlay.innerHTML = `
+    <div style="background:#fff;border-radius:8px;padding:28px 32px;min-width:300px;box-shadow:0 8px 32px rgba(0,0,0,.18)">
+      <h3 style="margin:0 0 8px;font-size:16px;color:var(--blue)">Nou client</h3>
+      <p style="margin:0 0 20px;color:var(--muted);font-size:13px">Selecciona el règim fiscal:</p>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <button class="btn btn-primary" onclick="createNewClient('CN')" style="font-size:14px;padding:10px">🇪🇸 CN — Nacional</button>
+        <button class="btn btn-secondary" onclick="createNewClient('CE')" style="font-size:14px;padding:10px">🇪🇺 CE — Comunitari (UE)</button>
+        <button class="btn btn-secondary" onclick="createNewClient('EX')" style="font-size:14px;padding:10px">🌍 EX — Exportació (fora UE)</button>
+      </div>
+      <button class="btn" onclick="document.getElementById('regim-dialog').remove()" style="margin-top:16px;width:100%;color:var(--muted)">Cancel·lar</button>
+    </div>`;
+  document.body.appendChild(overlay);
+}
+
+function createNewClient(cnce){
+  document.getElementById('regim-dialog').remove();
+  curId = null;
+  showTab('tp-gen');
+  document.getElementById('m-title').textContent = 'Nou client';
+  resetForm();
+  // Assignar ID automàtic i cnce
+  const codi = nextCodi(cnce);
+  document.getElementById('m-codi').value = codi;
+  document.getElementById('m-cnce').value = cnce;
+  onCNCEChange();
+  document.getElementById('overlay').classList.add('open');
 }
 
 function closeModal(){

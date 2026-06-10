@@ -513,13 +513,7 @@ async function getCurrentUserPin(){
     return PIN_DEFAULT;
   }
 }
-async function openProtectedModal(id){
-  const pin = prompt('Introdueix el PIN per editar aquesta factura');
-  if(pin===null) return;
-  const expected = await getCurrentUserPin();
-  if(pin !== expected){ toast('PIN incorrecte','err'); return; }
-  openModal(id);
-}
+async function openProtectedModal(id){ openModal(id); }
 function getAuditUser(){
   const email = getCurrentUserEmail();
   return email || getCurrentUserId() || 'desconegut';

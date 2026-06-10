@@ -313,7 +313,7 @@ input[type=number]{-moz-appearance:textfield}
         <div class="sec">Proveïdor i dates</div>
         <div class="fg full">
           <label>Proveïdor</label>
-          <select id="m-prov">
+          <select id="m-prov" onchange="onProvChange()">
             <option value="">— Selecciona proveïdor —</option>
           </select>
         </div>
@@ -344,6 +344,10 @@ input[type=number]{-moz-appearance:textfield}
           <input type="number" id="m-iva" step="0.1" value="21" min="0" max="100" onchange="recalc()">
         </div>
         <div class="fg">
+          <label>% IRPF suportat</label>
+          <input type="number" id="m-irpf" step="0.1" value="0" min="-100" max="100" onchange="recalc()">
+        </div>
+        <div class="fg">
           <label>Divisa</label>
           <select id="m-div">
             <option value="EUR">EUR</option>
@@ -367,6 +371,11 @@ input[type=number]{-moz-appearance:textfield}
           <span class="tl">IVA suportat</span>
           <input class="pct-inp" type="number" id="t-iva-pct" value="21" min="0" max="100" step="0.1" onchange="syncIva()"> %
           <span class="tv" id="t-iva">0,00 EUR</span>
+        </div>
+        <div class="tot-row">
+          <span>I.R.P.F.</span>
+          <input class="pct-inp" type="number" id="t-irpf-pct" value="0" min="0" max="100" step="0.1" onchange="syncIrpf()"> %
+          <span class="tv neg" id="t-irpf">0,00 EUR</span>
         </div>
         <div class="tot-row tot-total">
           <span class="tl">Total Factura</span>
@@ -519,7 +528,7 @@ function getAuditUser(){
   return email || getCurrentUserId() || 'desconegut';
 }
 function getModifiedFields(existing, data){
-  const keys = ['no_factura','no_fra_prov','id_prov','data_fra','data_entrada','data_termini','forma_pag','divisa','tc_divisa','base_imposable','tipus_iva','import_iva','total_factura','estat','import_pagat','concepte','compte_prov','compte_despeses','compte_iva_sup','assentat','notes'];
+  const keys = ['no_factura','no_fra_prov','id_prov','data_fra','data_entrada','data_termini','forma_pag','divisa','tc_divisa','base_imposable','tipus_iva','tipus_irpf','import_iva','import_irpf','total_factura','estat','import_pagat','concepte','compte_prov','compte_despeses','compte_iva_sup','assentat','notes'];
   const changes = [];
   const details = {};
   keys.forEach(key => {
@@ -550,6 +559,14 @@ async function logAuditChange(existing, data){
   }
 }
 
+function onProvChange(){
+  const opt=document.getElementById('m-prov').selectedOptions[0];
+  if(!opt||!opt.value) return;
+  if(opt.dataset.iva !== undefined) document.getElementById('m-iva').value=opt.dataset.iva;
+  if(opt.dataset.irpf !== undefined) document.getElementById('m-irpf').value=opt.dataset.irpf;
+  recalc();
+}
+
 let allFra=[], allProv=[], curId=null, curPagaments=[], curBi=0;
 
 async function init(){
@@ -559,12 +576,14 @@ async function init(){
 
 async function loadProveidors(){
   try{
-    allProv = await sbGet('proveidors','select=id,nom,sinonim&order=nom');
+    allProv = await sbGet('proveidors','select=id,nom,sinonim,tipus_iva,tipus_irpf&order=nom');
     const sel = document.getElementById('m-prov');
     sel.innerHTML = '<option value="">— Selecciona proveïdor —</option>';
     allProv.forEach(p=>{
       const o=document.createElement('option');
       o.value=p.id; o.textContent=p.nom+(p.sinonim?` (${p.sinonim})`:'');
+      o.dataset.iva=p.tipus_iva??21;
+      o.dataset.irpf=p.tipus_irpf??0;
       sel.appendChild(o);
     });
   }catch(e){console.error(e)}
@@ -792,7 +811,7 @@ function fillForm(fr){
   const s=(id,v)=>{const el=document.getElementById(id);if(el)el.value=(v??'')};
   s('m-no',fr.no_factura); s('m-no-prov',fr.no_fra_prov); s('m-estat',fr.estat);
   s('m-prov',fr.id_prov); s('m-data',fr.data_fra); s('m-entrada',fr.data_entrada); s('m-termini',fr.data_termini);
-  s('m-concepte',fr.concepte); s('m-bi',fr.base_imposable??0); s('m-iva',fr.tipus_iva??21);
+  s('m-concepte',fr.concepte); s('m-bi',fr.base_imposable??0); s('m-iva',fr.tipus_iva??21); s('m-irpf',fr.tipus_irpf??0);
   s('m-div',fr.divisa||'EUR'); s('m-tc',fr.tc_divisa??1);
   s('m-cte-prov',fr.compte_prov||'400'); s('m-cte-desp',fr.compte_despeses||'600');
   s('m-cte-iva',fr.compte_iva_sup||'472'); s('m-assentat',fr.assentat?'true':'false');
@@ -814,6 +833,7 @@ function resetForm(){
   document.getElementById('m-concepte').value='';
   document.getElementById('m-bi').value=0;
   document.getElementById('m-iva').value=21;
+  document.getElementById('m-irpf').value=0;
   document.getElementById('m-div').value='EUR';
   document.getElementById('m-tc').value=1;
   document.getElementById('m-cte-prov').value='400';
@@ -834,9 +854,11 @@ function updateBadge(){
 function recalc(){
   curBi=parseFloat(document.getElementById('m-bi').value)||0;
   const ivaPc=parseFloat(document.getElementById('m-iva').value)||0;
+  const irpfPc=parseFloat(document.getElementById('m-irpf')?.value)||0;
   document.getElementById('t-iva-pct').value=ivaPc;
   const iva=Math.round(curBi*ivaPc/100*100)/100;
-  const tot=Math.round((curBi+iva)*100)/100;
+  const irpf=Math.round(curBi*irpfPc/100*100)/100;
+  const tot=Math.round((curBi+iva-irpf)*100)/100;
   const fe=n=>n.toLocaleString('ca-ES',{minimumFractionDigits:2,maximumFractionDigits:2})+' EUR';
   document.getElementById('t-bi').textContent=fe(curBi);
   document.getElementById('t-iva').textContent=fe(iva);
@@ -846,6 +868,10 @@ function recalc(){
 }
 function syncIva(){
   document.getElementById('m-iva').value=document.getElementById('t-iva-pct').value;
+  recalc();
+}
+function syncIrpf(){
+  document.getElementById('m-irpf').value=document.getElementById('t-irpf-pct').value;
   recalc();
 }
 

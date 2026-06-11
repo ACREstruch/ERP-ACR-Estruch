@@ -260,7 +260,7 @@ input[type=number]{-moz-appearance:textfield}
         <div class="sec">Identificació</div>
         <div class="fg">
           <label>Codi *</label>
-          <input type="text" id="m-codi" placeholder="PJ26087500">
+          <input type="text" id="m-codi" placeholder="S'autogenera automàticament">
         </div>
         <div class="fg full" style="grid-column:2/-1">
           <label>NOM / Descripció *</label>
@@ -540,10 +540,12 @@ async function saveProjecte(){
   const codi=document.getElementById('m-codi').value.trim();
   const nom=document.getElementById('m-nom').value.trim();
   if(!nom){ toast('El nom és obligatori','err'); return; }
-  // PIN de protecció al guardar
-  const pin = prompt('🔒 Introdueix el PIN per guardar:');
-  if(pin === null) return;
-  if(pin !== PIN_CORRECTE){ toast('PIN incorrecte','err'); return; }
+  // PIN de protecció només per a edicions
+  if(curId){
+    const pin = prompt('🔒 Introdueix el PIN per guardar:');
+    if(pin === null) return;
+    if(pin !== PIN_CORRECTE){ toast('PIN incorrecte','err'); return; }
+  }
   const imp=parseFloat(document.getElementById('m-import').value)||0;
   const enPc=parseFloat(document.getElementById('m-en-pc').value)||0;
   const dgPc=parseFloat(document.getElementById('m-dg-pc').value)||0;
@@ -584,8 +586,6 @@ async function confirmDel(id){
   const p=allPJ.find(x=>x.id===id);
   if(!p) return;
   const pin = prompt('🔒 Introdueix el PIN per eliminar:');
-  if(pin === null) return;
-  if(pin !== PIN_CORRECTE){ toast('PIN incorrecte','err'); return; }
   if(!confirm(`Eliminar el projecte "${p.nom}"?`)) return;
   try{ await sbDel('projectes',id); toast('Eliminat','ok'); await loadProjectes(); }
   catch(e){ toast('Error: '+e.message,'err'); }
@@ -601,7 +601,6 @@ const PIN_CORRECTE = '1234';
 
 function demanarPIN(callback){
   const pin = prompt('🔒 Introdueix el PIN per continuar:');
-  if(pin === null) return;
   if(pin === PIN_CORRECTE){ callback(); }
   else { toast('PIN incorrecte','err'); }
 }

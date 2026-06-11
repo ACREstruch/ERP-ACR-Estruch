@@ -398,7 +398,7 @@ async function loadClients(){
 
 async function loadProjectes(){
   try{
-    allPJ=await sbGet('projectes','select=*,clients(rao_social)&order=data_inici.desc.nullslast');
+    allPJ=await sbGet('projectes','select=*,clients(rao_social)&order=codi.desc.nullslast');
     renderStats(); renderTable(allPJ);
   }catch(e){ toast('Error: '+e.message,'err'); allPJ=[]; renderTable([]); }
 }
@@ -443,6 +443,7 @@ function renderTable(rows){
     tbody.innerHTML=`<tr><td colspan="10"><div class="empty"><div class="eico">📋</div><p>Cap projecte trobat.</p><button class="btn btn-primary" onclick="openModal(null)">+ Nou projecte</button></div></td></tr>`;
     return;
   }
+  const lastId = allPJ.length > 0 ? allPJ[0].id : null;
   tbody.innerHTML=rows.map(p=>`<tr onclick="openModal(${p.id})">
     <td>${badgeHtml(p.estat)}</td>
     <td><span class="pj-codi">${p.codi||'—'}</span></td>
@@ -455,7 +456,7 @@ function renderTable(rows){
     <td class="amt" style="color:var(--green);font-weight:700">${fe(p.acr_import)}</td>
     <td onclick="event.stopPropagation()" style="white-space:nowrap">
       <button class="btn btn-secondary btn-xs" onclick="openModal(${p.id})">✏️</button>
-      <button class="btn btn-xs btn-danger" style="margin-left:4px" onclick="confirmDel(${p.id})" title="Eliminar">✕</button>
+      ${p.id===lastId ? `<button class="btn btn-xs btn-danger" style="margin-left:4px" onclick="confirmDel(${p.id})" title="Eliminar">✕</button>` : `<button class="btn btn-xs btn-danger" style="margin-left:4px;opacity:.3;cursor:default" disabled title="No eliminable">✕</button>`}
     </td>
   </tr>`).join('');
 }
@@ -473,6 +474,13 @@ function applyFilters(){
 }
 function clearFilters(){ document.getElementById('f-cerca').value=''; document.getElementById('f-estat').value=''; renderTable(allPJ); }
 
+function getNextCodi(){
+  const any = new Date().getFullYear().toString().slice(-2);
+  const codis = allPJ.map(p=>p.codi).filter(c=>c && /^\d{8}$/.test(c));
+  const maxNNNN = codis.length > 0 ? Math.max(...codis.map(c=>parseInt(c.slice(2,6)))) : 0;
+  return any + String(maxNNNN+1).padStart(4,'0') + '00';
+}
+
 function openModal(id){
   curId=id; showTab('tp-gen');
   if(id){
@@ -483,6 +491,7 @@ function openModal(id){
   } else {
     document.getElementById('m-title').textContent='Nou projecte';
     resetForm();
+    document.getElementById('m-codi').value = getNextCodi();
   }
   document.getElementById('overlay').classList.add('open');
 }

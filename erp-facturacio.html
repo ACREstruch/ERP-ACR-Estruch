@@ -1302,12 +1302,13 @@ function recalc(){
   const irpfPc = parseFloat(document.getElementById('m-irpf').value)||0;
   const iva    = curBi * ivaPc / 100;
   const irpf   = curBi * irpfPc / 100;
-  const tot    = curBi + iva - irpf;
+  const tot    = curBi + iva + irpf;
 
   const fe = (n,d=2,sfx='')=>n.toLocaleString('ca-ES',{minimumFractionDigits:d,maximumFractionDigits:d})+(sfx?' '+sfx:'');
+  const feIrpf = v => v ? '('+fe(Math.abs(v),2,'EUR')+')' : fe(0,2,'EUR');
   document.getElementById('t-bi').textContent   = fe(curBi,2,'EUR');
   document.getElementById('t-iva').textContent  = fe(iva,2,'EUR');
-  document.getElementById('t-irpf').textContent = fe(irpf,2,'EUR');
+  document.getElementById('t-irpf').textContent = feIrpf(irpf);
   document.getElementById('t-tot').textContent  = fe(tot,2,'EUR');
 
   recalcCob();
@@ -1320,7 +1321,7 @@ function recalcCob(){
   const irpfPc = parseFloat(document.getElementById('m-irpf').value)||0;
   const iva  = curBi * ivaPc/100;
   const irpf = curBi * irpfPc/100;
-  const tot  = curBi + iva - irpf;
+  const tot  = curBi + iva + irpf;
   const cob  = parseFloat(document.getElementById('m-cobrat').value)||0;
   const pend = tot - cob;
   document.getElementById('m-pendent').value = pend.toLocaleString('ca-ES',{minimumFractionDigits:2}) + ' EUR';
@@ -1351,7 +1352,7 @@ function updatePreview(){
   const irpfPc= parseFloat(document.getElementById('m-irpf').value)||0;
   const iva   = bi * ivaPc/100;
   const irpf  = bi * irpfPc/100;
-  const tot   = bi + iva - irpf;
+  const tot   = bi + iva + irpf;
   const noFra = document.getElementById('m-no').value || 'Factura';
   const cCli  = document.getElementById('m-cte-cli')?.value  || '430';
   const cVen  = document.getElementById('m-cte-ven')?.value  || '700';
@@ -1364,7 +1365,7 @@ function updatePreview(){
     {c:cVen,  desc:`Vendes — ${noFra}`,             dr:0,    hr:bi},
   ];
   if(iva>0)  rows.push({c:cIva,  desc:`IVA repercutit ${ivaPc}%`,   dr:0,    hr:iva});
-  if(irpf>0) rows.push({c:cIrpf, desc:`Retenció IRPF ${irpfPc}%`,  dr:irpf, hr:0});
+  if(irpf<0) rows.push({c:cIrpf, desc:`Retenció IRPF ${Math.abs(irpfPc)}%`, dr:Math.abs(irpf), hr:0});
 
   const body = document.getElementById('ass-body');
   if(body) body.innerHTML = rows.map(r=>`<tr>
@@ -1397,7 +1398,7 @@ async function saveInvoice(){
   const irpfPc = parseFloat(document.getElementById('m-irpf').value)||0;
   const iva    = curBi * ivaPc/100;
   const irpf   = curBi * irpfPc/100;
-  const tot    = curBi + iva - irpf;
+  const tot    = curBi + iva + irpf;
   const idCli  = document.getElementById('m-client').value;
 
   const data = {

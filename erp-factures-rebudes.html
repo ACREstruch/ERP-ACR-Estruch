@@ -131,6 +131,7 @@ th.amt{text-align:right}
 .pct-inp{width:48px;border:1.5px solid var(--border);border-radius:4px;padding:3px 5px;font-size:12px;text-align:right;background:#fff}
 .pct-inp:focus{outline:none;border-color:var(--blue)}
 .tot-row .tv{text-align:right;min-width:90px;font-variant-numeric:tabular-nums}
+.neg{color:#dc3545}
 .tot-total{border-top:2px solid var(--border);margin-top:4px;padding-top:8px;font-size:15px;font-weight:800;color:var(--blue)}
 #toast{position:fixed;bottom:22px;right:22px;z-index:999;display:flex;flex-direction:column;gap:8px;pointer-events:none}
 .toast{padding:11px 18px;border-radius:var(--r);font-size:13px;font-weight:600;color:#fff;box-shadow:0 4px 16px rgba(0,0,0,.25);animation:tin .3s ease;pointer-events:auto}
@@ -858,14 +859,14 @@ function recalc(){
   const ivaPc=parseFloat(document.getElementById('m-iva').value)||0;
   const irpfPc=parseFloat(document.getElementById('m-irpf')?.value)||0;
   document.getElementById('t-iva-pct').value=ivaPc;
-  document.getElementById('t-irpf-pct').value=irpfPc;
+  document.getElementById('t-irpf-pct').value=Math.abs(irpfPc);
   const iva=Math.round(curBi*ivaPc/100*100)/100;
-  const irpf=Math.round(curBi*irpfPc/100*100)/100;
+  const irpf=Math.round(curBi*Math.abs(irpfPc)/100*100)/100;
   const tot=Math.round((curBi+iva-irpf)*100)/100;
   const fe=n=>n.toLocaleString('ca-ES',{minimumFractionDigits:2,maximumFractionDigits:2})+' EUR';
   document.getElementById('t-bi').textContent=fe(curBi);
   document.getElementById('t-iva').textContent=fe(iva);
-  document.getElementById('t-irpf').textContent=fe(irpf);
+  document.getElementById('t-irpf').textContent=irpf?('-'+fe(irpf)):fe(0);
   document.getElementById('t-tot').textContent=fe(tot);
   updateAssentament();
   updatePagResum();
@@ -909,7 +910,9 @@ function renderPagaments(){
 
 function updatePagResum(){
   const ivaPc=parseFloat(document.getElementById('m-iva').value)||0;
-  const tot=Math.round((curBi+curBi*ivaPc/100)*100)/100;
+  const irpfPc=parseFloat(document.getElementById('m-irpf')?.value)||0;
+  const irpf=Math.round(curBi*Math.abs(irpfPc)/100*100)/100;
+  const tot=Math.round((curBi+curBi*ivaPc/100-irpf)*100)/100;
   const pagat=curPagaments.reduce((s,p)=>s+(p.import||0),0);
   const pendent=tot-pagat;
   const fe=n=>n.toLocaleString('ca-ES',{minimumFractionDigits:2,maximumFractionDigits:2})+' €';
@@ -1017,8 +1020,10 @@ async function saveFactura(){
   if(pin !== PIN_CORRECTE){ toast('PIN incorrecte','err'); return; }
 
   const ivaPc=parseFloat(document.getElementById('m-iva').value)||0;
+  const irpfPc=parseFloat(document.getElementById('m-irpf').value)||0;
   const iva=Math.round(curBi*ivaPc/100*100)/100;
-  const tot=Math.round((curBi+iva)*100)/100;
+  const irpf=Math.round(curBi*Math.abs(irpfPc)/100*100)/100;
+  const tot=Math.round((curBi+iva-irpf)*100)/100;
   const pagat=curPagaments.reduce((s,p)=>s+(p.import||0),0);
   const idProv=document.getElementById('m-prov').value;
   const data={
@@ -1034,6 +1039,8 @@ async function saveFactura(){
     base_imposable:curBi,
     tipus_iva:ivaPc,
     import_iva:iva,
+    tipus_irpf:irpfPc,
+    import_irpf:irpf,
     total_factura:tot,
     estat:document.getElementById('m-estat').value,
     import_pagat:pagat,

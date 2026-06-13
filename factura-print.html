@@ -411,7 +411,8 @@ async function loadFactura(noFra){
 
   // Títol
   document.title = `Factura ${noFra}`;
-  document.getElementById('p-doc-type').textContent = inv.classe_fra || 'FACTURA';
+  const classeMap = {'Normal':'FACTURA','Rectificativa':'FACTURA RECTIFICATIVA','Proforma':'FACTURA PROFORMA','Nota de crèdit':'NOTA DE CRÈDIT'};
+  document.getElementById('p-doc-type').textContent = classeMap[inv.classe_fra] || (inv.classe_fra||'FACTURA').toUpperCase();
 
   // Client
   document.getElementById('p-client-code').textContent = cli.codi || '';
@@ -439,8 +440,8 @@ async function loadFactura(noFra){
   let baseImp = 0;
   (lines||[]).forEach(l => {
     const qt = l.quantitat || 0;
-    const pu = l.preu_unit || 0;
-    const dte = l.dte_pc || 0;
+    const pu = l.preu_unitari || 0;
+    const dte = l.descompte || 0;
     const imp = qt === 0 ? (l.import_linia||0) : (qt * pu) * (1 - dte/100);
     baseImp += imp;
     const tr = document.createElement('tr');
@@ -452,9 +453,9 @@ async function loadFactura(noFra){
   // Totals
   const ivaPc = inv.tipus_iva || 0;
   const irpfPc = inv.tipus_irpf || 0;
-  const cnce = cli.cnce || 'CN';
-  const iva = cnce === 'CN' ? Math.round(baseImp * ivaPc / 100 * 100) / 100 : 0;
-  const irpf = cnce === 'CN' ? -Math.round(baseImp * irpfPc / 100 * 100) / 100 : 0;
+  // IVA i IRPF: s'apliquen si el % > 0 (definit a la factura; no cal camp cnce)
+  const iva  = ivaPc  > 0 ? Math.round(baseImp * ivaPc  / 100 * 100) / 100 : 0;
+  const irpf = irpfPc > 0 ? -Math.round(baseImp * irpfPc / 100 * 100) / 100 : 0;
   const tot = baseImp + iva + irpf;
 
   document.getElementById('p-base').textContent = fe(baseImp);

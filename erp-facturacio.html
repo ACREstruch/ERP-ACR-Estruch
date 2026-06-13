@@ -1387,12 +1387,12 @@ async function nextIdIn(){
 }
 
 async function printFactura(){
-  const noFra = document.getElementById('m-no-fra')?.value?.trim();
+  const noFra = document.getElementById('m-no')?.value?.trim();
   if(!noFra){ toast('Primer guarda la factura','err'); return; }
   window.open('factura-print.html?fra='+encodeURIComponent(noFra), '_blank');
 }
 
-function saveInvoice(){
+async function saveInvoice(){
   const noFra  = document.getElementById('m-no').value.trim();
   const dataFra= document.getElementById('m-data').value;
   if(!noFra || !dataFra){ toast('Número de factura i data són obligatoris','err'); return; }

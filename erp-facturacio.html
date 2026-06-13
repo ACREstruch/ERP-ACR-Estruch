@@ -439,8 +439,8 @@ input[type=number]{-moz-appearance:textfield}
           <option value="PROXIM">VENÇ &lt;7 — Proper venciment</option>
           <option value="RECTIFICATIVA">RECTF — Rectificativa</option>
         </select>
-        <input type="date" id="f-de" onchange="applyFilters()" title="Des de (data factura)">
-        <input type="date" id="f-fins" onchange="applyFilters()" title="Fins a (data factura)">
+        <label style="font-size:12px;color:var(--muted);display:flex;align-items:center;gap:4px">Des de <input type="date" id="f-de" onchange="applyFilters()"></label>
+        <label style="font-size:12px;color:var(--muted);display:flex;align-items:center;gap:4px">Fins a <input type="date" id="f-fins" onchange="applyFilters()"></label>
         <button class="btn btn-secondary btn-sm" onclick="clearFilters()">✕ Netejar</button>
         <span id="f-count" style="margin-left:auto;font-size:12px;color:var(--muted)"></span>
       </div>

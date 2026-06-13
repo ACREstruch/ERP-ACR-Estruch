@@ -1,0 +1,901 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ERP ACR Estruch — Despeses</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --blue:#00387C;--blue-mid:#1a54a0;--blue-light:#e8f0fb;--blue-dim:#d0e0f5;
+  --bg:#FAF8F6;--white:#fff;--border:#dee2e6;--border-light:#eaeef2;
+  --text:#212529;--muted:#6c757d;--red:#c0392b;--red-bg:#f8d7da;--red-txt:#721c24;
+  --green:#1a8c42;--green-bg:#d4edda;--green-txt:#155724;
+  --sidebar:220px;--topbar:58px;--r:6px;--shadow:0 1px 4px rgba(0,0,0,.1),0 4px 12px rgba(0,0,0,.06);
+}
+body{font-family:'Segoe UI',system-ui,sans-serif;font-size:14px;background:var(--bg);color:var(--text);height:100vh;overflow:hidden}
+#app{display:flex;height:100vh}
+
+/* SIDEBAR */
+#sidebar{width:var(--sidebar);background:#fff;border-right:1px solid #EDE9E4;display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto}
+#logo-area{padding:18px 16px 16px;border-bottom:1px solid #EDE9E4}
+.logo-main{font-size:19px;font-weight:800;color:var(--blue);letter-spacing:-.4px;line-height:1.1}
+.logo-main .sep{color:#9ca3af;font-weight:300;margin:0 1px}
+.logo-sub{font-size:10.5px;color:#6b7280;margin-top:3px;letter-spacing:.3px;font-style:italic}
+#nav{padding:10px 0;flex:1}
+.nav-section{padding:10px 14px 3px;font-size:10px;color:#9ca3af;text-transform:uppercase;letter-spacing:1.2px;font-weight:600}
+.nav-item{display:flex;align-items:center;gap:9px;padding:9px 16px;color:#374151;cursor:pointer;border-left:3px solid transparent;transition:all .15s;font-size:13px;user-select:none}
+.nav-item:hover{background:#f3f4f6;color:#111827}
+.nav-item.active{background:#eff6ff;color:var(--blue);border-left-color:var(--blue);font-weight:600}
+.nav-item .ico{font-size:15px;width:19px;text-align:center;flex-shrink:0}
+.nav-sub{padding:6px 16px 6px 44px;color:#6b7280;cursor:pointer;font-size:12px;transition:all .15s;border-left:3px solid transparent;user-select:none}
+.nav-sub:hover{color:#374151;background:#f3f4f6}
+.nav-sub.active{color:var(--blue);font-weight:600}
+.nav-footer{padding:12px 14px;border-top:1px solid #EDE9E4;font-size:11px;color:#9ca3af}
+
+/* MAIN */
+#main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+#topbar{height:var(--topbar);background:var(--white);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 22px;gap:12px;flex-shrink:0;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+#topbar h1{font-size:17px;font-weight:700;color:var(--blue);flex:1}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 15px;border-radius:var(--r);border:none;cursor:pointer;font-size:13px;font-weight:500;transition:all .15s;white-space:nowrap}
+.btn-primary{background:var(--blue);color:#fff}.btn-primary:hover{background:var(--blue-mid)}
+.btn-secondary{background:#fff;color:var(--blue);border:1.5px solid var(--blue)}.btn-secondary:hover{background:var(--blue-light)}
+.btn-danger{background:var(--red-bg);color:var(--red-txt);border:1px solid #f5c6cb}.btn-danger:hover{background:#f5c6cb}
+.btn-sm{padding:5px 10px;font-size:12px}.btn-xs{padding:3px 8px;font-size:11px}
+.btn:disabled{opacity:.5;cursor:default}
+
+#content{flex:1;overflow-y:auto;padding:0}
+
+/* MAIN TABS */
+.main-tabs{display:flex;background:#fff;border-bottom:2px solid var(--border);padding:0 22px;gap:2px;flex-shrink:0}
+.main-tab{padding:12px 18px;border:none;background:none;cursor:pointer;font-size:13px;color:var(--muted);border-bottom:3px solid transparent;margin-bottom:-2px;font-weight:500;transition:all .15s;white-space:nowrap}
+.main-tab:hover{color:var(--blue)}
+.main-tab.active{color:var(--blue);border-bottom-color:var(--blue);font-weight:700}
+
+.tab-content{display:none;padding:20px 22px;overflow-y:auto;height:calc(100vh - 120px)}
+.tab-content.active{display:block}
+
+/* LAYOUT 2 COL */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+.three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:16px}
+
+/* CARD */
+.card{background:var(--white);border-radius:var(--r);box-shadow:var(--shadow);margin-bottom:16px}
+.card-header{padding:12px 18px;border-bottom:1px solid var(--border-light);display:flex;align-items:center;gap:10px}
+.card-header h2{font-size:14px;font-weight:600;color:var(--text);flex:1}
+.card-body{padding:18px}
+
+/* FORM */
+.form-grid{display:grid;gap:12px}
+.form-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px}
+.form-group{display:flex;flex-direction:column;gap:4px}
+.form-group label{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.4px}
+.form-group input,.form-group select,.form-group textarea{
+  padding:7px 10px;border:1.5px solid var(--border);border-radius:var(--r);
+  font-size:13px;background:#fff;color:var(--text);transition:border-color .15s;font-family:inherit
+}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{
+  outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(0,56,124,.08)
+}
+.form-group textarea{resize:vertical;min-height:60px}
+
+/* LINES TABLE */
+.lines-wrap{overflow-x:auto;margin-bottom:8px}
+table.lines-tbl{width:100%;border-collapse:collapse;font-size:12.5px}
+.lines-tbl th{padding:7px 8px;text-align:left;font-size:10.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;border-bottom:2px solid var(--border);background:#fafbfc;white-space:nowrap}
+.lines-tbl th.r{text-align:right}
+.lines-tbl td{padding:4px 5px;border-bottom:1px solid var(--border-light);vertical-align:middle}
+.lines-tbl td input{width:100%;padding:5px 7px;border:1px solid var(--border);border-radius:4px;font-size:12px;background:#fff}
+.lines-tbl td input:focus{outline:none;border-color:var(--blue);background:#f0f6ff}
+.lines-tbl td input.r{text-align:right}
+.lines-tbl td.computed{text-align:right;font-weight:600;color:var(--blue);padding-right:8px;white-space:nowrap;font-size:12px}
+.lines-tbl td.del-col{text-align:center;width:32px}
+.del-btn{background:none;border:none;cursor:pointer;color:#ccc;font-size:16px;padding:2px 4px;transition:color .15s}
+.del-btn:hover{color:var(--red)}
+
+/* TOTALS */
+.totals-box{background:#f8f9fa;border:1px solid var(--border);border-radius:var(--r);padding:12px 16px;display:flex;gap:24px;flex-wrap:wrap;align-items:center}
+.tot-item{display:flex;flex-direction:column;gap:2px}
+.tot-item .t-label{font-size:10px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.4px}
+.tot-item .t-val{font-size:16px;font-weight:800;color:var(--blue)}
+.tot-item.final .t-val{font-size:20px;color:var(--blue)}
+
+/* LIST */
+.list-wrap{overflow-x:auto}
+table.main-tbl{width:100%;border-collapse:collapse;font-size:13px}
+.main-tbl th{padding:9px 12px;text-align:left;font-size:10.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;border-bottom:2px solid var(--border);white-space:nowrap;background:#fafbfc}
+.main-tbl td{padding:9px 12px;border-bottom:1px solid var(--border-light);vertical-align:middle}
+.main-tbl tbody tr:hover td{background:var(--blue-light);cursor:pointer}
+.main-tbl td.amt{text-align:right;font-variant-numeric:tabular-nums}
+.main-tbl th.amt{text-align:right}
+
+/* BADGES */
+.badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:700}
+.badge-cn{background:#d4edda;color:#155724}
+.badge-ce{background:#fff3cd;color:#856404}
+.badge-al{background:#e8f0fb;color:#1a3a6b}
+.badge-dp{background:#fde8d8;color:#7c3d0f}
+.badge-sp{background:#f3e8ff;color:#5b21b6}
+
+/* SPIN */
+.spin{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* TOAST */
+#toast{position:fixed;bottom:20px;right:20px;z-index:999;display:flex;flex-direction:column;gap:6px}
+.toast{padding:10px 16px;border-radius:var(--r);font-size:13px;font-weight:500;color:#fff;box-shadow:0 4px 12px rgba(0,0,0,.2);animation:fadeIn .2s}
+.toast.ok{background:#1a8c42}.toast.err{background:#c0392b}.toast.inf{background:#1a54a0}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* OVERLAY MODAL */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:100;align-items:flex-start;justify-content:center;padding:30px 16px;overflow-y:auto}
+.overlay.open{display:flex}
+.modal{background:#fff;border-radius:8px;box-shadow:0 20px 60px rgba(0,0,0,.3);width:100%;max-width:780px;margin:auto}
+.modal-hdr{padding:14px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.modal-hdr h3{font-size:15px;font-weight:700;color:var(--blue);flex:1}
+.modal-close{background:none;border:none;font-size:22px;cursor:pointer;color:var(--muted);padding:0 4px}
+.modal-close:hover{color:var(--text)}
+.modal-body{padding:20px 22px;max-height:calc(90vh - 120px);overflow-y:auto}
+.modal-ftr{padding:12px 22px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px}
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- SIDEBAR -->
+<nav id="sidebar">
+  <div id="logo-area">
+    <div class="logo-main">ACR<span class="sep">|</span>Estruch</div>
+    <div class="logo-sub">export &amp; consulting</div>
+  </div>
+  <div id="nav">
+    <div class="nav-item" onclick="location.href='index.html'"><span class="ico">🏠</span> Dashboard</div>
+    <div class="nav-section">Mòduls</div>
+    <div class="nav-item" onclick="location.href='erp-facturacio.html'"><span class="ico">🧾</span> Facturació</div>
+    <div class="nav-item" onclick="location.href='erp-clients.html'"><span class="ico">👥</span> Clients</div>
+    <div class="nav-item" onclick="location.href='erp-proveidors.html'"><span class="ico">🏭</span> Proveïdors</div>
+    <div class="nav-item" onclick="location.href='erp-projectes.html'"><span class="ico">📋</span> Projectes</div>
+    <div class="nav-item active"><span class="ico">✈️</span> Despeses</div>
+    <div class="nav-sub active" onclick="showTab('tab-viatges')">Despeses Viatge</div>
+    <div class="nav-sub" onclick="showTab('tab-tickets')">Despeses Tickets</div>
+    <div class="nav-section" style="margin-top:10px">Informes</div>
+    <div class="nav-item" onclick="location.href='erp-reports.html'"><span class="ico">📊</span> Reports</div>
+  </div>
+  <div class="nav-footer">ACR Estruch ERP v1.0</div>
+</nav>
+
+<!-- MAIN -->
+<main id="main">
+  <header id="topbar">
+    <h1>Despeses</h1>
+    <button class="btn btn-primary btn-sm" id="btn-nou" onclick="openModal()">+ Nou registre</button>
+    <button class="btn btn-sm" style="background:#f8d7da;color:#721c24;border:1px solid #f5c6cb" onclick="location.href='erp-facturacio.html'">← Facturació</button>
+  </header>
+
+  <div id="content">
+    <div class="main-tabs">
+      <button class="main-tab active" id="mtab-viatges" onclick="showTab('tab-viatges')">✈️ Despeses Viatge</button>
+      <button class="main-tab" id="mtab-tickets" onclick="showTab('tab-tickets')">🧾 Despeses Tickets</button>
+    </div>
+
+    <!-- ══ TAB VIATGES ══ -->
+    <div class="tab-content active" id="tab-viatges">
+      <div class="card">
+        <div class="card-header">
+          <h2>Llistat despeses de viatge</h2>
+          <button class="btn btn-primary btn-sm" onclick="openModalViatge(null)">+ Nova despesa</button>
+        </div>
+        <div class="card-body" style="padding:0">
+          <div class="list-wrap">
+            <table class="main-tbl" id="tbl-viatges">
+              <thead><tr>
+                <th>Ref</th><th>Descripció</th><th>País</th><th>Data</th>
+                <th>Empresa</th><th>PJ</th><th>Divisa</th>
+                <th class="amt">Total EUR</th><th></th>
+              </tr></thead>
+              <tbody id="body-viatges"><tr><td colspan="9" style="text-align:center;padding:30px;color:var(--muted)">Carregant...</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ TAB TICKETS ══ -->
+    <div class="tab-content" id="tab-tickets">
+      <div class="card">
+        <div class="card-header">
+          <h2>Llistat tickets i despeses menors</h2>
+          <div style="display:flex;gap:8px;align-items:center">
+            <input type="date" id="tk-de" style="padding:5px 8px;border:1.5px solid var(--border);border-radius:var(--r);font-size:12px">
+            <input type="date" id="tk-fins" style="padding:5px 8px;border:1.5px solid var(--border);border-radius:var(--r);font-size:12px">
+            <button class="btn btn-secondary btn-sm" onclick="loadTickets()">↻</button>
+            <button class="btn btn-primary btn-sm" onclick="openModalTicket(null)">+ Nou ticket</button>
+          </div>
+        </div>
+        <div class="card-body" style="padding:0">
+          <div class="list-wrap">
+            <table class="main-tbl" id="tbl-tickets">
+              <thead><tr>
+                <th>Data</th><th>Concepte</th><th>Tipus</th><th>CNCE</th><th>PJ</th>
+                <th class="amt">Tiquet</th><th class="amt">Correus</th><th class="amt">Impresos</th>
+                <th class="amt">Locomoció</th><th class="amt">Reparac.</th>
+                <th class="amt">Mat.Ofi.</th><th class="amt">Varis</th><th class="amt">Especial</th>
+                <th class="amt">Total</th><th></th>
+              </tr></thead>
+              <tbody id="body-tickets"><tr><td colspan="15" style="text-align:center;padding:30px;color:var(--muted)">Carregant...</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+</div>
+
+<!-- ══════════════ MODAL VIATGE ══════════════ -->
+<div class="overlay" id="modal-viatge">
+  <div class="modal" style="max-width:900px">
+    <div class="modal-hdr">
+      <h3 id="mv-title">Nova despesa de viatge</h3>
+      <button class="modal-close" onclick="closeModalViatge()">✕</button>
+    </div>
+    <div class="modal-body">
+      <!-- CAPÇALERA -->
+      <div class="form-row" style="margin-bottom:12px">
+        <div class="form-group">
+          <label>Ref. Viatge *</label>
+          <input type="text" id="mv-ref" placeholder="Ex: 221114">
+        </div>
+        <div class="form-group">
+          <label>Data *</label>
+          <input type="date" id="mv-data">
+        </div>
+        <div class="form-group">
+          <label>País</label>
+          <input type="text" id="mv-pais" placeholder="Ex: MEXICO">
+        </div>
+      </div>
+      <div class="form-row" style="margin-bottom:12px">
+        <div class="form-group" style="grid-column:span 2">
+          <label>Descripció</label>
+          <input type="text" id="mv-desc" placeholder="Ex: Despeses viatge Mèxic (MEXFARMA)">
+        </div>
+        <div class="form-group">
+          <label>Empresa Client</label>
+          <select id="mv-empresa">
+            <option value="">— Cap —</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row" style="margin-bottom:12px">
+        <div class="form-group">
+          <label>Projecte (IdPJ)</label>
+          <input type="text" id="mv-pj" placeholder="Ex: 25086900">
+        </div>
+        <div class="form-group">
+          <label>Divisa 1</label>
+          <input type="text" id="mv-divisa" placeholder="Ex: MXN" style="width:80px">
+        </div>
+        <div class="form-group">
+          <label>Canvi Divisa 1</label>
+          <input type="number" id="mv-canvi" placeholder="19.24230" step="0.00001" min="0">
+        </div>
+        <div class="form-group">
+          <label>Divisa 2</label>
+          <input type="text" id="mv-divisa2" placeholder="Ex: USD" style="width:80px">
+        </div>
+        <div class="form-group">
+          <label>Canvi Divisa 2</label>
+          <input type="number" id="mv-canvi2" placeholder="0.92000" step="0.00001" min="0">
+        </div>
+      </div>
+      <div class="form-row" style="margin-bottom:16px">
+        <div class="form-group" style="grid-column:span 3">
+          <label>Notes / Observacions</label>
+          <textarea id="mv-notes" rows="2"></textarea>
+        </div>
+      </div>
+
+      <!-- LÍNIES -->
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+        <span style="font-size:13px;font-weight:600;color:var(--text)">Línies de despesa</span>
+        <button class="btn btn-secondary btn-xs" onclick="addLineaViatge()">+ Afegir línia</button>
+      </div>
+      <div class="lines-wrap">
+        <table class="lines-tbl" id="lines-viatge-tbl">
+          <thead><tr>
+            <th style="width:40%">Concepte</th>
+            <th class="r" style="width:12%">Import EUR</th>
+            <th class="r" style="width:12%">Import Div1</th>
+            <th class="r" style="width:12%">Import Div2</th>
+            <th class="r" style="width:12%">Div→EUR</th>
+            <th class="r" style="width:10%">Total EUR</th>
+            <th style="width:32px"></th>
+          </tr></thead>
+          <tbody id="lines-viatge-body"></tbody>
+        </table>
+      </div>
+
+      <!-- TOTALS -->
+      <div class="totals-box" id="mv-totals" style="margin-top:12px">
+        <div class="tot-item">
+          <span class="t-label">Subtot EUR</span>
+          <span class="t-val" id="mv-tot-eur">0,00</span>
+        </div>
+        <div class="tot-item">
+          <span class="t-label">Subtot Div→EUR</span>
+          <span class="t-val" id="mv-tot-div">0,00</span>
+        </div>
+        <div class="tot-item final">
+          <span class="t-label">Total Despeses</span>
+          <span class="t-val" id="mv-tot-total">0,00</span>
+        </div>
+        <div class="tot-item" style="margin-left:auto">
+          <span class="t-label">Núm. línies</span>
+          <span class="t-val" id="mv-tot-count">0</span>
+        </div>
+      </div>
+    </div>
+    <div class="modal-ftr">
+      <button class="btn btn-danger btn-sm" id="mv-btn-del" onclick="deleteViatge()" style="margin-right:auto;display:none">🗑 Eliminar</button>
+      <button class="btn btn-secondary" onclick="closeModalViatge()">Cancel·lar</button>
+      <button class="btn btn-primary" id="mv-btn-save" onclick="saveViatge()">💾 Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ MODAL TICKET ══════════════ -->
+<div class="overlay" id="modal-ticket">
+  <div class="modal" style="max-width:680px">
+    <div class="modal-hdr">
+      <h3 id="mt-title">Nou ticket / despesa</h3>
+      <button class="modal-close" onclick="closeModalTicket()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row" style="margin-bottom:12px">
+        <div class="form-group">
+          <label>Data *</label>
+          <input type="date" id="mt-data">
+        </div>
+        <div class="form-group">
+          <label>Tipus</label>
+          <select id="mt-tipus">
+            <option value="AL">AL — Altres</option>
+            <option value="DP">DP — Desplaçaments propis</option>
+            <option value="SP">SP — Desplaçaments suplerts</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>CNCE</label>
+          <select id="mt-cnce">
+            <option value="CN">CN — Nacional</option>
+            <option value="CE">CE — Exportació</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row" style="margin-bottom:12px">
+        <div class="form-group" style="grid-column:span 2">
+          <label>Concepte *</label>
+          <input type="text" id="mt-concepte" placeholder="Ex: Atencions_Prospectia. Ref 260529">
+        </div>
+        <div class="form-group">
+          <label>Projecte (IdPJ)</label>
+          <input type="text" id="mt-pj" placeholder="Ex: 25086900">
+        </div>
+      </div>
+
+      <!-- IMPORTS -->
+      <div style="font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px">Imports</div>
+      <div class="form-row" style="margin-bottom:8px">
+        <div class="form-group">
+          <label>Tiquet Compra</label>
+          <input type="number" id="mt-tiquet" value="0" step="0.01" min="0" oninput="calcTkTotal()">
+        </div>
+        <div class="form-group">
+          <label>Correus</label>
+          <input type="number" id="mt-correus" value="0" step="0.01" min="0" oninput="calcTkTotal()">
+        </div>
+        <div class="form-group">
+          <label>Impresos</label>
+          <input type="number" id="mt-impresos" value="0" step="0.01" min="0" oninput="calcTkTotal()">
+        </div>
+        <div class="form-group">
+          <label>Locomoció</label>
+          <input type="number" id="mt-locomocio" value="0" step="0.01" min="0" oninput="calcTkTotal()">
+        </div>
+      </div>
+      <div class="form-row" style="margin-bottom:12px">
+        <div class="form-group">
+          <label>Reparacions</label>
+          <input type="number" id="mt-reparacions" value="0" step="0.01" min="0" oninput="calcTkTotal()">
+        </div>
+        <div class="form-group">
+          <label>Mat. Oficina</label>
+          <input type="number" id="mt-mat-oficina" value="0" step="0.01" min="0" oninput="calcTkTotal()">
+        </div>
+        <div class="form-group">
+          <label>Varis</label>
+          <input type="number" id="mt-varis" value="0" step="0.01" min="0" oninput="calcTkTotal()">
+        </div>
+        <div class="form-group">
+          <label>Especial</label>
+          <input type="number" id="mt-especial" value="0" step="0.01" min="0" oninput="calcTkTotal()">
+        </div>
+      </div>
+      <div class="form-row" style="margin-bottom:12px">
+        <div class="form-group">
+          <label>Especial Mig</label>
+          <input type="number" id="mt-especial-mig" value="0" step="0.01" min="0" oninput="calcTkTotal()">
+        </div>
+        <div class="form-group" style="justify-content:flex-end">
+          <label>Total</label>
+          <input type="text" id="mt-total" readonly style="font-weight:700;color:var(--blue);background:#f0f6ff;font-size:15px">
+        </div>
+      </div>
+    </div>
+    <div class="modal-ftr">
+      <button class="btn btn-danger btn-sm" id="mt-btn-del" onclick="deleteTicket()" style="margin-right:auto;display:none">🗑 Eliminar</button>
+      <button class="btn btn-secondary" onclick="closeModalTicket()">Cancel·lar</button>
+      <button class="btn btn-primary" id="mt-btn-save" onclick="saveTicket()">💾 Guardar</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+const SB_URL = 'https://ftuaeaghnnlusigqtoqv.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ0dWFlYWdobm5sdXNpZ3F0b3F2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAxNjI0MjIsImV4cCI6MjA5NTczODQyMn0.9n1gWnq_QfrLIWU7sIBReXgQAGA-NPFOpsdDp-jbDW8';
+
+async function sbGet(t,q=''){
+  const r=await fetch(`${SB_URL}/rest/v1/${t}?${q}`,{headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}});
+  if(!r.ok) throw new Error(await r.text());
+  return r.json();
+}
+async function sbPost(t,d){
+  const r=await fetch(`${SB_URL}/rest/v1/${t}`,{method:'POST',headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json','Prefer':'return=representation'},body:JSON.stringify(d)});
+  if(!r.ok) throw new Error(await r.text());
+  return r.json();
+}
+async function sbPatch(t,id,d){
+  const r=await fetch(`${SB_URL}/rest/v1/${t}?id=eq.${id}`,{method:'PATCH',headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json','Prefer':'return=representation'},body:JSON.stringify(d)});
+  if(!r.ok) throw new Error(await r.text());
+  return r.json();
+}
+async function sbDel(t,id){
+  const r=await fetch(`${SB_URL}/rest/v1/${t}?id=eq.${id}`,{method:'DELETE',headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}});
+  if(!r.ok) throw new Error(await r.text());
+}
+async function sbDelWhere(t,col,val){
+  const r=await fetch(`${SB_URL}/rest/v1/${t}?${col}=eq.${encodeURIComponent(val)}`,{method:'DELETE',headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}});
+  if(!r.ok) throw new Error(await r.text());
+}
+
+const fm=(n,d=2)=>n===null||n===undefined||isNaN(n)?'—':Number(n).toLocaleString('ca-ES',{minimumFractionDigits:d,maximumFractionDigits:d});
+const fd=s=>{if(!s)return'—';const d=new Date(s+'T00:00:00');return`${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`};
+
+function toast(msg,type='inf'){
+  const el=document.createElement('div');el.className=`toast ${type}`;el.textContent=msg;
+  document.getElementById('toast').appendChild(el);setTimeout(()=>el.remove(),3000);
+}
+
+// ── TABS ──
+function showTab(id){
+  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.main-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  if(id==='tab-viatges') document.getElementById('mtab-viatges').classList.add('active');
+  else document.getElementById('mtab-tickets').classList.add('active');
+  // Sidebar
+  document.querySelectorAll('.nav-sub').forEach(s=>s.classList.remove('active'));
+  if(id==='tab-viatges') document.querySelectorAll('.nav-sub')[0].classList.add('active');
+  else document.querySelectorAll('.nav-sub')[1].classList.add('active');
+}
+
+// ════════════════════════════
+// VIATGES — LLISTAT
+// ════════════════════════════
+let allViatges=[];
+async function loadViatges(){
+  try{
+    allViatges = await sbGet('viatges','select=*,clients(codi,rao_social)&order=data.desc');
+    renderViatges();
+  }catch(e){toast('Error carregant viatges: '+e.message,'err');}
+}
+
+function renderViatges(){
+  const tbody=document.getElementById('body-viatges');
+  if(!allViatges.length){
+    tbody.innerHTML='<tr><td colspan="9" style="text-align:center;padding:30px;color:var(--muted)">Cap despesa de viatge registrada</td></tr>';
+    return;
+  }
+  // Calcular total per viatge sumant les línies (s'ha de fer per separat o guardar total)
+  tbody.innerHTML=allViatges.map(v=>`
+    <tr onclick="openModalViatge(${v.id})">
+      <td style="font-weight:700;color:var(--blue)">${v.id_te||'—'}</td>
+      <td>${v.descripcio||'—'}</td>
+      <td>${v.pais||'—'}</td>
+      <td>${fd(v.data)}</td>
+      <td style="font-size:12px">${v.clients?.rao_social||'—'}</td>
+      <td style="font-size:12px">${v.id_projecte||'—'}</td>
+      <td>${v.divisa?`${v.divisa} ${fm(v.canvi_mig,5)}`:'EUR'}</td>
+      <td class="amt" style="font-weight:600">${fm(v.total_eur||0)}</td>
+      <td><button class="btn btn-xs btn-secondary" onclick="event.stopPropagation();openModalViatge(${v.id})">✏️</button></td>
+    </tr>`).join('');
+}
+
+// ════════════════════════════
+// MODAL VIATGE
+// ════════════════════════════
+let curViatgeId=null;
+let vLines=[];
+
+function openModalViatge(id){
+  curViatgeId=id;
+  vLines=[];
+  document.getElementById('mv-title').textContent = id ? 'Editar despesa de viatge' : 'Nova despesa de viatge';
+  document.getElementById('mv-btn-del').style.display = id ? 'inline-flex' : 'none';
+  clearViatgeForm();
+  if(id){
+    const v=allViatges.find(x=>x.id===id);
+    if(v) fillViatgeForm(v);
+    loadLiniesViatge(id);
+  } else {
+    addLineaViatge();
+  }
+  document.getElementById('modal-viatge').classList.add('open');
+}
+
+function clearViatgeForm(){
+  ['mv-ref','mv-data','mv-pais','mv-desc','mv-pj','mv-divisa','mv-canvi','mv-divisa2','mv-canvi2','mv-notes']
+    .forEach(id=>document.getElementById(id).value='');
+  document.getElementById('mv-empresa').value='';
+  document.getElementById('lines-viatge-body').innerHTML='';
+  updateTotalsViatge();
+}
+
+function fillViatgeForm(v){
+  document.getElementById('mv-ref').value=v.id_te||'';
+  document.getElementById('mv-data').value=v.data||'';
+  document.getElementById('mv-pais').value=v.pais||'';
+  document.getElementById('mv-desc').value=v.descripcio||'';
+  document.getElementById('mv-pj').value=v.id_projecte||'';
+  document.getElementById('mv-empresa').value=v.id_client||'';
+  document.getElementById('mv-divisa').value=v.divisa||'';
+  document.getElementById('mv-canvi').value=v.canvi_mig||'';
+  document.getElementById('mv-divisa2').value=v.divisa2||'';
+  document.getElementById('mv-canvi2').value=v.canvi_mig2||'';
+  document.getElementById('mv-notes').value=v.notes||'';
+}
+
+async function loadLiniesViatge(id){
+  try{
+    const lines=await sbGet('viatge_lines',`id_te=eq.${encodeURIComponent(allViatges.find(v=>v.id===id).id_te)}&order=id.asc`);
+    vLines=lines.map(l=>({
+      id:l.id,
+      despesa_linia:l.despesa_linia||'',
+      import_eur:l.import_eur||0,
+      import_div1:l.import_div1||0,
+      import_div2:l.import_div2||0,
+      div_eur:l.div_eur||0
+    }));
+    renderLiniesViatge();
+  }catch(e){toast('Error carregant línies','err');}
+}
+
+function renderLiniesViatge(){
+  const tbody=document.getElementById('lines-viatge-body');
+  tbody.innerHTML='';
+  vLines.forEach((l,i)=>{
+    const total=(l.import_eur||0)+(l.div_eur||0);
+    const tr=document.createElement('tr');
+    tr.innerHTML=`
+      <td><input type="text" value="${l.despesa_linia||''}" placeholder="Concepte" oninput="vLines[${i}].despesa_linia=this.value"></td>
+      <td><input type="number" class="r" value="${l.import_eur||''}" step="0.01" placeholder="0,00" oninput="vLines[${i}].import_eur=parseFloat(this.value)||0;recalcLinia(${i})"></td>
+      <td><input type="number" class="r" value="${l.import_div1||''}" step="0.01" placeholder="0,00" oninput="vLines[${i}].import_div1=parseFloat(this.value)||0;recalcLinia(${i})"></td>
+      <td><input type="number" class="r" value="${l.import_div2||''}" step="0.01" placeholder="0,00" oninput="vLines[${i}].import_div2=parseFloat(this.value)||0;recalcLinia(${i})"></td>
+      <td><input type="number" class="r" value="${l.div_eur||''}" step="0.01" placeholder="0,00" id="div-eur-${i}" oninput="vLines[${i}].div_eur=parseFloat(this.value)||0;updateTotalsViatge()"></td>
+      <td class="computed" id="tot-linia-${i}">${fm(total)}</td>
+      <td class="del-col"><button class="del-btn" onclick="removeLineaViatge(${i})">✕</button></td>`;
+    tbody.appendChild(tr);
+  });
+  updateTotalsViatge();
+}
+
+function recalcLinia(i){
+  const canvi=parseFloat(document.getElementById('mv-canvi').value)||1;
+  const div1=vLines[i].import_div1||0;
+  const div2=vLines[i].import_div2||0;
+  // div_eur = (div1 + div2) / canvi
+  const divEur=canvi>0 ? Math.round((div1+div2)/canvi*100)/100 : 0;
+  vLines[i].div_eur=divEur;
+  const inp=document.getElementById(`div-eur-${i}`);
+  if(inp) inp.value=divEur||'';
+  updateTotalsViatge();
+}
+
+function updateTotalsViatge(){
+  let totEur=0,totDiv=0;
+  vLines.forEach((l,i)=>{
+    const eur=l.import_eur||0;
+    const div=l.div_eur||0;
+    totEur+=eur; totDiv+=div;
+    const el=document.getElementById(`tot-linia-${i}`);
+    if(el) el.textContent=fm(eur+div);
+  });
+  document.getElementById('mv-tot-eur').textContent=fm(totEur);
+  document.getElementById('mv-tot-div').textContent=fm(totDiv);
+  document.getElementById('mv-tot-total').textContent=fm(totEur+totDiv);
+  document.getElementById('mv-tot-count').textContent=vLines.length;
+}
+
+function addLineaViatge(){
+  vLines.push({despesa_linia:'',import_eur:0,import_div1:0,import_div2:0,div_eur:0});
+  renderLiniesViatge();
+  // Focus a l'última línia
+  setTimeout(()=>{
+    const inputs=document.querySelectorAll('#lines-viatge-body tr:last-child input');
+    if(inputs[0]) inputs[0].focus();
+  },50);
+}
+
+function removeLineaViatge(i){
+  vLines.splice(i,1);
+  renderLiniesViatge();
+}
+
+function closeModalViatge(){
+  document.getElementById('modal-viatge').classList.remove('open');
+  curViatgeId=null; vLines=[];
+}
+
+async function saveViatge(){
+  const idTe=document.getElementById('mv-ref').value.trim();
+  const data=document.getElementById('mv-data').value;
+  if(!idTe||!data){toast('Ref. viatge i data són obligatoris','err');return;}
+
+  const totEur=vLines.reduce((s,l)=>(s+(l.import_eur||0)),0);
+  const totDiv=vLines.reduce((s,l)=>(s+(l.div_eur||0)),0);
+
+  const rec={
+    id_te:idTe,
+    data,
+    pais:document.getElementById('mv-pais').value||null,
+    descripcio:document.getElementById('mv-desc').value||null,
+    id_projecte:document.getElementById('mv-pj').value||null,
+    id_client:document.getElementById('mv-empresa').value||null,
+    divisa:document.getElementById('mv-divisa').value||null,
+    canvi_mig:parseFloat(document.getElementById('mv-canvi').value)||0,
+    divisa2:document.getElementById('mv-divisa2').value||null,
+    canvi_mig2:parseFloat(document.getElementById('mv-canvi2').value)||0,
+    notes:document.getElementById('mv-notes').value||null,
+    total_eur:Math.round((totEur+totDiv)*100)/100,
+    updated_at:new Date().toISOString()
+  };
+
+  const btn=document.getElementById('mv-btn-save');
+  btn.disabled=true;btn.innerHTML='<span class="spin"></span> Guardant...';
+
+  try{
+    if(curViatgeId){
+      await sbPatch('viatges',curViatgeId,rec);
+    } else {
+      const res=await sbPost('viatges',rec);
+      curViatgeId=res[0]?.id;
+    }
+    // Guardar línies
+    await sbDelWhere('viatge_lines','id_te',idTe);
+    const linesToSave=vLines.filter(l=>l.despesa_linia&&l.despesa_linia.trim()).map(l=>({
+      id_te:idTe,
+      despesa_linia:l.despesa_linia,
+      import_eur:l.import_eur||0,
+      import_div1:l.import_div1||0,
+      import_div2:l.import_div2||0,
+      div_eur:l.div_eur||0
+    }));
+    if(linesToSave.length) await sbPost('viatge_lines',linesToSave);
+    toast('Despesa de viatge guardada','ok');
+    await loadViatges();
+    closeModalViatge();
+  }catch(e){toast('Error: '+e.message,'err');}
+  finally{btn.disabled=false;btn.innerHTML='💾 Guardar';}
+}
+
+async function deleteViatge(){
+  if(!confirm('Eliminar aquesta despesa de viatge?')) return;
+  try{
+    const v=allViatges.find(x=>x.id===curViatgeId);
+    if(v) await sbDelWhere('viatge_lines','id_te',v.id_te);
+    await sbDel('viatges',curViatgeId);
+    toast('Despesa eliminada','ok');
+    await loadViatges();
+    closeModalViatge();
+  }catch(e){toast('Error: '+e.message,'err');}
+}
+
+// ════════════════════════════
+// TICKETS — LLISTAT
+// ════════════════════════════
+let allTickets=[];
+async function loadTickets(){
+  try{
+    let qs='select=*&order=data.desc';
+    const de=document.getElementById('tk-de').value;
+    const fins=document.getElementById('tk-fins').value;
+    if(de) qs+=`&data=gte.${de}`;
+    if(fins) qs+=`&data=lte.${fins}`;
+    allTickets=await sbGet('tickets',qs);
+    renderTickets();
+  }catch(e){toast('Error carregant tickets: '+e.message,'err');}
+}
+
+function tkTotal(t){
+  return (parseFloat(t.tiquet)||0)+(parseFloat(t.correus)||0)+(parseFloat(t.impresos)||0)+
+    (parseFloat(t.locomocio)||0)+(parseFloat(t.reparacions)||0)+(parseFloat(t.mat_oficina)||0)+
+    (parseFloat(t.varis)||0)+(parseFloat(t.especial)||0)+(parseFloat(t.especial_mig)||0);
+}
+
+function renderTickets(){
+  const tbody=document.getElementById('body-tickets');
+  if(!allTickets.length){
+    tbody.innerHTML='<tr><td colspan="15" style="text-align:center;padding:30px;color:var(--muted)">Cap ticket registrat</td></tr>';
+    return;
+  }
+  tbody.innerHTML=allTickets.map(t=>{
+    const tot=tkTotal(t);
+    const tipusBadge={'AL':'badge-al','DP':'badge-dp','SP':'badge-sp'}[t.tipus_ne]||'badge-al';
+    const cnceBadge=t.cnce==='CE'?'badge-ce':'badge-cn';
+    return `<tr onclick="openModalTicket(${t.id})">
+      <td>${fd(t.data)}</td>
+      <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${t.concepte||'—'}</td>
+      <td><span class="badge ${tipusBadge}">${t.tipus_ne||'AL'}</span></td>
+      <td><span class="badge ${cnceBadge}">${t.cnce||'CN'}</span></td>
+      <td style="font-size:12px">${t.id_projecte||'—'}</td>
+      <td class="amt">${t.tiquet?fm(t.tiquet):'—'}</td>
+      <td class="amt">${t.correus?fm(t.correus):'—'}</td>
+      <td class="amt">${t.impresos?fm(t.impresos):'—'}</td>
+      <td class="amt">${t.locomocio?fm(t.locomocio):'—'}</td>
+      <td class="amt">${t.reparacions?fm(t.reparacions):'—'}</td>
+      <td class="amt">${t.mat_oficina?fm(t.mat_oficina):'—'}</td>
+      <td class="amt">${t.varis?fm(t.varis):'—'}</td>
+      <td class="amt">${t.especial||t.especial_mig?fm((parseFloat(t.especial)||0)+(parseFloat(t.especial_mig)||0)):'—'}</td>
+      <td class="amt" style="font-weight:700;color:var(--blue)">${fm(tot)}</td>
+      <td><button class="btn btn-xs btn-secondary" onclick="event.stopPropagation();openModalTicket(${t.id})">✏️</button></td>
+    </tr>`;
+  }).join('');
+}
+
+// ════════════════════════════
+// MODAL TICKET
+// ════════════════════════════
+let curTicketId=null;
+
+function openModalTicket(id){
+  curTicketId=id;
+  document.getElementById('mt-title').textContent=id?'Editar ticket':'Nou ticket / despesa';
+  document.getElementById('mt-btn-del').style.display=id?'inline-flex':'none';
+  clearTicketForm();
+  if(id){
+    const t=allTickets.find(x=>x.id===id);
+    if(t) fillTicketForm(t);
+  } else {
+    // Data per defecte: avui
+    document.getElementById('mt-data').value=new Date().toISOString().split('T')[0];
+  }
+  calcTkTotal();
+  document.getElementById('modal-ticket').classList.add('open');
+}
+
+function clearTicketForm(){
+  document.getElementById('mt-data').value='';
+  document.getElementById('mt-concepte').value='';
+  document.getElementById('mt-pj').value='';
+  document.getElementById('mt-tipus').value='AL';
+  document.getElementById('mt-cnce').value='CN';
+  ['mt-tiquet','mt-correus','mt-impresos','mt-locomocio','mt-reparacions','mt-mat-oficina','mt-varis','mt-especial','mt-especial-mig']
+    .forEach(id=>document.getElementById(id).value='0');
+}
+
+function fillTicketForm(t){
+  document.getElementById('mt-data').value=t.data||'';
+  document.getElementById('mt-concepte').value=t.concepte||'';
+  document.getElementById('mt-pj').value=t.id_projecte||'';
+  document.getElementById('mt-tipus').value=t.tipus_ne||'AL';
+  document.getElementById('mt-cnce').value=t.cnce||'CN';
+  document.getElementById('mt-tiquet').value=t.tiquet||0;
+  document.getElementById('mt-correus').value=t.correus||0;
+  document.getElementById('mt-impresos').value=t.impresos||0;
+  document.getElementById('mt-locomocio').value=t.locomocio||0;
+  document.getElementById('mt-reparacions').value=t.reparacions||0;
+  document.getElementById('mt-mat-oficina').value=t.mat_oficina||0;
+  document.getElementById('mt-varis').value=t.varis||0;
+  document.getElementById('mt-especial').value=t.especial||0;
+  document.getElementById('mt-especial-mig').value=t.especial_mig||0;
+}
+
+function calcTkTotal(){
+  const camps=['mt-tiquet','mt-correus','mt-impresos','mt-locomocio','mt-reparacions','mt-mat-oficina','mt-varis','mt-especial','mt-especial-mig'];
+  const tot=camps.reduce((s,id)=>s+(parseFloat(document.getElementById(id).value)||0),0);
+  document.getElementById('mt-total').value=fm(tot);
+}
+
+function closeModalTicket(){
+  document.getElementById('modal-ticket').classList.remove('open');
+  curTicketId=null;
+}
+
+async function saveTicket(){
+  const data=document.getElementById('mt-data').value;
+  const concepte=document.getElementById('mt-concepte').value.trim();
+  if(!data||!concepte){toast('Data i concepte són obligatoris','err');return;}
+
+  const rec={
+    data,concepte,
+    cnce:document.getElementById('mt-cnce').value,
+    tipus_ne:document.getElementById('mt-tipus').value,
+    id_projecte:document.getElementById('mt-pj').value||null,
+    tiquet:parseFloat(document.getElementById('mt-tiquet').value)||0,
+    correus:parseFloat(document.getElementById('mt-correus').value)||0,
+    impresos:parseFloat(document.getElementById('mt-impresos').value)||0,
+    locomocio:parseFloat(document.getElementById('mt-locomocio').value)||0,
+    reparacions:parseFloat(document.getElementById('mt-reparacions').value)||0,
+    mat_oficina:parseFloat(document.getElementById('mt-mat-oficina').value)||0,
+    varis:parseFloat(document.getElementById('mt-varis').value)||0,
+    especial:parseFloat(document.getElementById('mt-especial').value)||0,
+    especial_mig:parseFloat(document.getElementById('mt-especial-mig').value)||0,
+    updated_at:new Date().toISOString()
+  };
+
+  const btn=document.getElementById('mt-btn-save');
+  btn.disabled=true;btn.innerHTML='<span class="spin"></span> Guardant...';
+  try{
+    if(curTicketId) await sbPatch('tickets',curTicketId,rec);
+    else await sbPost('tickets',rec);
+    toast('Ticket guardat','ok');
+    await loadTickets();
+    closeModalTicket();
+  }catch(e){toast('Error: '+e.message,'err');}
+  finally{btn.disabled=false;btn.innerHTML='💾 Guardar';}
+}
+
+async function deleteTicket(){
+  if(!confirm('Eliminar aquest ticket?')) return;
+  try{
+    await sbDel('tickets',curTicketId);
+    toast('Ticket eliminat','ok');
+    await loadTickets();
+    closeModalTicket();
+  }catch(e){toast('Error: '+e.message,'err');}
+}
+
+// ════════════════════════════
+// INIT
+// ════════════════════════════
+async function init(){
+  // Carregar clients per selector
+  try{
+    const clis=await sbGet('clients','select=id,codi,rao_social&order=rao_social.asc');
+    const sel=document.getElementById('mv-empresa');
+    clis.forEach(c=>{
+      const o=document.createElement('option');
+      o.value=c.id;
+      o.textContent=`${c.codi} — ${c.rao_social}`;
+      sel.appendChild(o);
+    });
+  }catch(e){}
+
+  // Data per defecte filtres tickets: any actual
+  const ara=new Date();
+  document.getElementById('tk-de').value=`${ara.getFullYear()}-01-01`;
+  document.getElementById('tk-fins').value=ara.toISOString().split('T')[0];
+
+  await loadViatges();
+  await loadTickets();
+}
+
+init();
+</script>
+</body>
+</html>

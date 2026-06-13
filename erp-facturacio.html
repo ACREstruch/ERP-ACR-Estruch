@@ -876,7 +876,7 @@ async function loadClients(demo){
   if(demo){ allClients = demoClients(); }
   else {
     try{
-      allClients = await sbGet('clients','select=id,rao_social,sinonim,nif_vat,tipus_iva,tipus_irpf,forma_pag,banc,iban_bic&order=rao_social');
+      allClients = await sbGet('clients','select=id,rao_social,sinonim,nif_vat,cnce,tipus_iva,tipus_irpf,forma_pag,banc,iban_bic&order=rao_social');
     }catch(e){ console.error(e); allClients = []; }
   }
   const sel = document.getElementById('m-client');
@@ -885,8 +885,10 @@ async function loadClients(demo){
     const o = document.createElement('option');
     o.value = c.id;
     o.textContent = c.rao_social + (c.sinonim ? ` (${c.sinonim})` : '');
-    o.dataset.iva      = c.tipus_iva ?? 21;
-    o.dataset.irpf     = Math.abs(c.tipus_irpf ?? 0);
+    const isExterior = (c.cnce === 'CE' || c.cnce === 'EX');
+    o.dataset.cnce     = c.cnce || 'CN';
+    o.dataset.iva      = isExterior ? 0 : (c.tipus_iva ?? 21);
+    o.dataset.irpf     = isExterior ? 0 : Math.abs(c.tipus_irpf ?? 0);
     o.dataset.banc     = c.banc || '';
     o.dataset.iban     = c.iban_bic || '';
     o.dataset.formapag = c.forma_pag || '';

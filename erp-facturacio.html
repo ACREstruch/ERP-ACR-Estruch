@@ -884,7 +884,7 @@ async function loadClients(demo){
     o.value = c.id;
     o.textContent = c.rao_social + (c.sinonim ? ` (${c.sinonim})` : '');
     o.dataset.iva      = c.tipus_iva ?? 21;
-    o.dataset.irpf     = c.tipus_irpf ?? 0;
+    o.dataset.irpf     = Math.abs(c.tipus_irpf ?? 0);
     o.dataset.banc     = c.banc || '';
     o.dataset.iban     = c.iban_bic || '';
     o.dataset.formapag = c.forma_pag || '';
@@ -1156,7 +1156,7 @@ function fillForm(inv){
   s('m-fpag', inv.forma_pag);
   s('m-div', inv.divisa||'EUR');
   s('m-iva', inv.tipus_iva??21);
-  s('m-irpf', inv.tipus_irpf??0);
+  s('m-irpf', Math.abs(inv.tipus_irpf??0));
   s('m-cobrat', inv.import_cobrat??0);
   s('m-dcob', inv.data_cob);
   s('m-desp', inv.despeses_banc??0);
@@ -1301,7 +1301,7 @@ function recalc(){
   const ivaPc  = parseFloat(document.getElementById('m-iva').value)||0;
   const irpfPc = parseFloat(document.getElementById('m-irpf').value)||0;
   const iva    = curBi * ivaPc / 100;
-  const irpf   = curBi * irpfPc / 100;
+  const irpf   = -(curBi * irpfPc / 100);
   const tot    = curBi + iva + irpf;
 
   const fe = (n,d=2,sfx='')=>n.toLocaleString('ca-ES',{minimumFractionDigits:d,maximumFractionDigits:d})+(sfx?' '+sfx:'');
@@ -1320,7 +1320,7 @@ function recalcCob(){
   const ivaPc  = parseFloat(document.getElementById('m-iva').value)||0;
   const irpfPc = parseFloat(document.getElementById('m-irpf').value)||0;
   const iva  = curBi * ivaPc/100;
-  const irpf = curBi * irpfPc/100;
+  const irpf = -(curBi * irpfPc/100);
   const tot  = curBi + iva + irpf;
   const cob  = parseFloat(document.getElementById('m-cobrat').value)||0;
   const pend = tot - cob;
@@ -1351,7 +1351,7 @@ function updatePreview(){
   const ivaPc = parseFloat(document.getElementById('m-iva').value)||0;
   const irpfPc= parseFloat(document.getElementById('m-irpf').value)||0;
   const iva   = bi * ivaPc/100;
-  const irpf  = bi * irpfPc/100;
+  const irpf  = -(bi * irpfPc/100);
   const tot   = bi + iva + irpf;
   const noFra = document.getElementById('m-no').value || 'Factura';
   const cCli  = document.getElementById('m-cte-cli')?.value  || '430';
@@ -1397,7 +1397,7 @@ async function saveInvoice(){
   const ivaPc  = parseFloat(document.getElementById('m-iva').value)||0;
   const irpfPc = parseFloat(document.getElementById('m-irpf').value)||0;
   const iva    = curBi * ivaPc/100;
-  const irpf   = curBi * irpfPc/100;
+  const irpf   = -(curBi * irpfPc/100);
   const tot    = curBi + iva + irpf;
   const idCli  = document.getElementById('m-client').value;
 

@@ -173,6 +173,8 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;font-size:14px;ba
       <button class="main-tab" onclick="showTab('tab-pend1cli')">⏳ Pendent 1 client</button>
       <button class="main-tab" onclick="showTab('tab-pendfra')">📌 Pendent facturar</button>
       <button class="main-tab" onclick="showTab('tab-rebut')">🧾 Rebut</button>
+      <button class="main-tab" onclick="showTab('tab-desp-viatge')">✈️ Despeses Viatge</button>
+      <button class="main-tab" onclick="showTab('tab-desp-tickets')">📋 Llistat Despeses</button>
     </div>
 
     <!-- ══ TAB: LLISTAT FACTURES ══ -->
@@ -345,6 +347,49 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;font-size:14px;ba
       </div>
       <div class="report-area" id="rebut-area" style="display:none">
         <div class="report-body" id="rpt-rebut"></div>
+      </div>
+    </div>
+
+
+    <!-- ══ TAB: DESPESES VIATGE ══ -->
+    <div class="tab-content" id="tab-desp-viatge">
+      <div class="print-header">
+        <div class="ph-logo"><div class="brand">ACR|Estruch</div><div class="tag">export &amp; consulting</div></div>
+        <div class="ph-info">Muntaner, 440, 1-1B · 08006 Barcelona<br>+34 609852478 · info@acrestruch.com</div>
+      </div>
+      <div class="report-selector">
+        <div class="report-selector-row">
+          <div class="form-group"><label>Ref. Viatge</label><input type="text" id="dv-ref" placeholder="Ex: 221114" style="width:130px"></div>
+          <button class="btn btn-primary btn-sm" onclick="runDespViatge()">&#9658; Generar</button>
+        </div>
+      </div>
+      <div class="report-area" id="dv-area" style="display:none">
+        <div class="report-header"><h2 id="dv-title">Despeses Viatge</h2></div>
+        <div class="report-body" id="rpt-desp-viatge"></div>
+      </div>
+    </div>
+
+    <!-- ══ TAB: LLISTAT DESPESES (TICKETS) ══ -->
+    <div class="tab-content" id="tab-desp-tickets">
+      <div class="print-header">
+        <div class="ph-logo"><div class="brand">ACR|Estruch</div><div class="tag">export &amp; consulting</div></div>
+        <div class="ph-info">Muntaner, 440, 1-1B · 08006 Barcelona<br>+34 609852478 · info@acrestruch.com</div>
+      </div>
+      <div class="report-selector">
+        <div class="report-selector-row">
+          <div class="form-group"><label>Any</label>
+            <select id="dt-any">
+              <option value="2026">2026</option><option value="2025">2025</option>
+              <option value="2024">2024</option><option value="2023">2023</option>
+              <option value="2022">2022</option><option value="2019">2019</option>
+            </select>
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="runDespTickets()">&#9658; Generar</button>
+        </div>
+      </div>
+      <div class="report-area">
+        <div class="report-header"><h2>Llistat Despeses</h2></div>
+        <div class="report-body" id="rpt-desp-tickets"><div class="rpt-loading">Selecciona l'any i clica Generar</div></div>
       </div>
     </div>
 
@@ -862,6 +907,192 @@ async function init(){
 }
 
 init();
+
+// ══════════════════════════════
+// DESPESES VIATGE — REPORT
+// ══════════════════════════════
+async function runDespViatge(){
+  const ref = document.getElementById('dv-ref').value.trim();
+  if(!ref){ alert('Introdueix la ref. del viatge'); return; }
+  const el = document.getElementById('rpt-desp-viatge');
+  const area = document.getElementById('dv-area');
+  el.innerHTML='<div class="rpt-loading">Carregant...</div>';
+  area.style.display='block';
+  try{
+    const rows = await sbGet('viatges', `id_te=eq.${encodeURIComponent(ref)}&select=*,clients(codi,rao_social)`);
+    if(!rows.length){ el.innerHTML='<div class="rpt-empty"><div class="eico">❌</div><p>Viatge no trobat</p></div>'; return; }
+    const v = rows[0];
+    const lines = await sbGet('viatge_lines', `id_te=eq.${encodeURIComponent(ref)}&order=id.asc`);
+    document.getElementById('dv-title').textContent = `Despeses Viatge — ${v.descripcio||ref}`;
+
+    // Separar línies EUR i línies divisa
+    const linesEur = lines.filter(l => !l.import_div1 && !l.import_div2 && (l.import_eur||0) > 0);
+    const linesDiv = lines.filter(l => (l.import_div1||0) > 0 || (l.import_div2||0) > 0);
+
+    let totEur=0, totDiv=0, totDivEur=0;
+    let html = '';
+
+    // Capçalera info
+    html += `<div style="padding:16px 20px;border-bottom:1px solid var(--border-light);display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:12px">
+      <div><span style="color:var(--muted)">Viatge:</span> <strong>${v.descripcio||'—'}</strong><br>
+           <span style="color:var(--muted)">País:</span> ${v.pais||'—'}<br>
+           <span style="color:var(--muted)">Data:</span> ${fd(v.data)}</div>
+      <div><span style="color:var(--muted)">Viatge Ref.:</span> <strong style="color:var(--blue)">${v.id_te}</strong><br>
+           <span style="color:var(--muted)">PJ Ref:</span> ${v.id_projecte||'—'}<br>
+           <span style="color:var(--muted)">Canvi Divisa:</span> ${v.divisa||''} ${v.canvi_mig||''}</div>
+    </div>`;
+
+    if(v.notes) html += `<div style="padding:10px 20px;font-size:12px;font-style:italic;color:#555;border-bottom:1px solid var(--border-light)"><strong>Observacions:</strong> ${v.notes}</div>`;
+
+    html += `<table class="rtbl"><thead><tr><th style="width:60%">Concepte</th><th class="r">Imports EUR</th></tr></thead><tbody>`;
+
+    // Línies EUR
+    if(linesEur.length){
+      linesEur.forEach(l => {
+        totEur += parseFloat(l.import_eur)||0;
+        html += `<tr><td>${l.despesa_linia||'—'}</td><td class="r">${fm(l.import_eur)}</td></tr>`;
+      });
+      html += `<tr class="subtotal"><td>Subtot ${linesEur.length}</td><td class="r">${fm(totEur)}</td></tr>`;
+    }
+
+    // Línies Divisa
+    if(linesDiv.length){
+      html += `</tbody></table>`;
+      html += `<table class="rtbl"><thead><tr><th style="width:50%">Concepte</th><th class="r">DIV/1</th><th class="r">Euros</th></tr></thead><tbody>`;
+      linesDiv.forEach(l => {
+        const div1 = parseFloat(l.import_div1)||0;
+        const divEur = parseFloat(l.div_eur)||0;
+        totDiv += div1; totDivEur += divEur;
+        html += `<tr><td>${l.despesa_linia||'—'}</td><td class="r">${fm(div1)}</td><td class="r">${fm(divEur)}</td></tr>`;
+      });
+      html += `<tr class="subtotal"><td>Subtot ${linesDiv.length}</td><td class="r">${fm(totDiv)}</td><td class="r">${fm(totDivEur)}</td></tr>`;
+      html += `</tbody></table>`;
+      html += `<table class="rtbl"><tbody>`;
+    }
+
+    const total = totEur + totDivEur;
+    html += `<tr class="total-final"><td colspan="${linesDiv.length?2:1}">Total Despeses &nbsp; <span style="font-weight:400;font-size:11px">Total ${lines.length}</span></td>`;
+    if(linesDiv.length) html += `<td class="r">${fm(totDiv)}</td>`;
+    html += `<td class="r">${fm(total)}</td></tr>`;
+    html += `</tbody></table>`;
+
+    el.innerHTML = html;
+  }catch(e){ el.innerHTML=`<div class="rpt-empty">Error: ${e.message}</div>`; }
+}
+
+// ══════════════════════════════
+// LLISTAT DESPESES (TICKETS)
+// ══════════════════════════════
+async function runDespTickets(){
+  const any = document.getElementById('dt-any').value;
+  const el = document.getElementById('rpt-desp-tickets');
+  el.innerHTML='<div class="rpt-loading">Carregant...</div>';
+  try{
+    // Tickets de l'any
+    const tickets = await sbGet('tickets', `data=gte.${any}-01-01&data=lte.${any}-12-31&order=data.asc`);
+    // Viatges de l'any (com a línies del llistat)
+    const viatges = await sbGet('viatges', `data=gte.${any}-01-01&data=lte.${any}-12-31&order=data.asc`);
+
+    // Unir: cada viatge es tracta com un ticket (locomocio = total_eur, tipus SP)
+    const totsRegistres = [
+      ...tickets.map(t=>({
+        data:t.data, concepte:t.concepte, tipus:t.tipus_ne, cnce:t.cnce,
+        id_projecte:t.id_projecte,
+        tiquet:parseFloat(t.tiquet)||0,
+        correus:parseFloat(t.correus)||0,
+        impresos:parseFloat(t.impresos)||0,
+        locomocio:parseFloat(t.locomocio)||0,
+        reparacions:parseFloat(t.reparacions)||0,
+        mat_oficina:parseFloat(t.mat_oficina)||0,
+        varis:parseFloat(t.varis)||0,
+        especial:(parseFloat(t.especial)||0)+(parseFloat(t.especial_mig)||0),
+        esViatge:false
+      })),
+      ...viatges.map(v=>({
+        data:v.data, concepte:`Despeses viatge ${v.descripcio||v.id_te}, Ref ${v.id_te}`,
+        tipus:'SP', cnce:'CE', id_projecte:v.id_projecte,
+        tiquet:0,correus:0,impresos:0,
+        locomocio:parseFloat(v.total_eur)||0,
+        reparacions:0,mat_oficina:0,varis:0,especial:0,
+        esViatge:true
+      }))
+    ].sort((a,b)=>a.data.localeCompare(b.data));
+
+    if(!totsRegistres.length){
+      el.innerHTML='<div class="rpt-empty"><div class="eico">📭</div><p>Sense despeses per l'any ${any}</p></div>';
+      return;
+    }
+
+    // Agrupar per trimestre i CN/CE
+    const trims = {1:[],2:[],3:[],4:[]};
+    totsRegistres.forEach(r=>{
+      const mes = new Date(r.data+'T00:00:00').getMonth()+1;
+      const trim = Math.ceil(mes/3);
+      trims[trim].push(r);
+    });
+
+    const cols = ['tiquet','correus','impresos','locomocio','reparacions','mat_oficina','varis','especial'];
+    const colLabels = ['TIQ COMP','CORREUS','IMPRESOS','LOCOMOC','REPARAC','MAT OFI','VARIS','ESPECIAL'];
+
+    let html = `<table class="rtbl"><thead><tr>
+      <th>DATA</th><th>CONCEPTE</th>
+      ${colLabels.map(l=>`<th class="r">${l}</th>`).join('')}
+    </tr></thead><tbody>`;
+
+    let totals = Object.fromEntries(cols.map(c=>[c,0]));
+    let grandTotal = 0;
+
+    [1,2,3,4].forEach(t=>{
+      const rows = trims[t];
+      if(!rows.length) return;
+
+      // CN i CE separats
+      const cn = rows.filter(r=>r.cnce==='CN');
+      const ce = rows.filter(r=>r.cnce==='CE');
+
+      html += `<tr><td colspan="${2+cols.length}" style="padding:6px 12px;font-weight:700;color:var(--blue);background:#f0f4fa">T${t} ${any}</td></tr>`;
+
+      const renderGrup = (grup, label) => {
+        if(!grup.length) return;
+        html += `<tr><td colspan="${2+cols.length}" style="padding:4px 12px 2px;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase">${label}</td></tr>`;
+        let subtots = Object.fromEntries(cols.map(c=>[c,0]));
+        grup.forEach(r=>{
+          html += `<tr ${r.esViatge?'style="font-style:italic"':''}>
+            <td>${fd(r.data)}</td>
+            <td style="max-width:300px">${r.concepte||'—'}</td>
+            ${cols.map(c=>{
+              const v=r[c]||0;
+              subtots[c]+=v;
+              totals[c]+=v;
+              return `<td class="r">${v?fm(v):''}</td>`;
+            }).join('')}
+          </tr>`;
+        });
+        const subtot = cols.reduce((s,c)=>s+subtots[c],0);
+        grandTotal += subtot;
+        html += `<tr class="subtotal"><td colspan="2">Subtotals T${t} ${any}</td>
+          ${cols.map(c=>`<td class="r">${subtots[c]?fm(subtots[c]):''}</td>`).join('')}
+        </tr>`;
+      };
+
+      if(cn.length){ html += renderGrupHeader('DOMÈSTIQUES'); renderGrup(cn,''); }
+      if(ce.length){ html += renderGrupHeader('ESTRANGER'); renderGrup(ce,'Suplerts'); }
+    });
+
+    html += `<tr class="total-final">
+      <td colspan="2">Total Despeses</td>
+      ${cols.map(c=>`<td class="r">${totals[c]?fm(totals[c]):''}</td>`).join('')}
+    </tr>`;
+    html += `</tbody></table>`;
+    el.innerHTML = html;
+
+  }catch(e){ el.innerHTML=`<div class="rpt-empty">Error: ${e.message}</div>`; }
+}
+
+function renderGrupHeader(label){
+  return `<tr><td colspan="10" style="padding:3px 12px;font-size:11px;font-weight:800;color:#333">${label}</td></tr>`;
+}
+
 </script>
 </body>
 </html>

@@ -884,7 +884,7 @@ async function loadClients(demo){
     o.value = c.id;
     o.textContent = c.rao_social + (c.sinonim ? ` (${c.sinonim})` : '');
     o.dataset.iva      = c.tipus_iva ?? 21;
-    o.dataset.irpf     = c.tipus_irpf ?? 0;
+    o.dataset.irpf     = Math.abs(c.tipus_irpf ?? 0);
     o.dataset.banc     = c.banc || '';
     o.dataset.iban     = c.iban_bic || '';
     o.dataset.formapag = c.forma_pag || '';
@@ -1156,7 +1156,7 @@ function fillForm(inv){
   s('m-fpag', inv.forma_pag);
   s('m-div', inv.divisa||'EUR');
   s('m-iva', inv.tipus_iva??21);
-  s('m-irpf', inv.tipus_irpf??0);
+  s('m-irpf', Math.abs(inv.tipus_irpf??0));
   s('m-cobrat', inv.import_cobrat??0);
   s('m-dcob', inv.data_cob);
   s('m-desp', inv.despeses_banc??0);

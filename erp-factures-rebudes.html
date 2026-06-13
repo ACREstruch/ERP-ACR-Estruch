@@ -579,14 +579,16 @@ async function init(){
 
 async function loadProveidors(){
   try{
-    allProv = await sbGet('proveidors','select=id,nom,sinonim,tipus_iva,tipus_irpf&order=nom');
+    allProv = await sbGet('proveidors','select=id,nom,sinonim,cnce,tipus_iva,tipus_irpf&order=nom');
     const sel = document.getElementById('m-prov');
     sel.innerHTML = '<option value="">— Selecciona proveïdor —</option>';
     allProv.forEach(p=>{
       const o=document.createElement('option');
       o.value=p.id; o.textContent=p.nom+(p.sinonim?` (${p.sinonim})`:'');
-      o.dataset.iva=p.tipus_iva??21;
-      o.dataset.irpf=p.tipus_irpf??0;
+      const isExterior = (p.cnce === 'PE' || p.cnce === 'EX');
+      o.dataset.cnce=p.cnce||'PN';
+      o.dataset.iva=isExterior ? 0 : (p.tipus_iva??21);
+      o.dataset.irpf=isExterior ? 0 : (p.tipus_irpf??0);
       sel.appendChild(o);
     });
   }catch(e){console.error(e)}

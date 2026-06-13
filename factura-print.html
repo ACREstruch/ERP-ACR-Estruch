@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+<meta charset="UTF-8">
+<title>Factura</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  
+  body {
+    font-family: 'Arial', sans-serif;
+    font-size: 11px;
+    color: #222;
+    background: #fff;
+    padding: 0;
+  }
+
+  .page {
+    width: 210mm;
+    min-height: 297mm;
+    margin: 0 auto;
+    padding: 14mm 16mm 12mm 16mm;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+  }
+
+  /* CAPÇALERA */
+  .header {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 12mm;
+  }
+
+  .logo-text {
+    text-align: center;
+  }
+
+  .logo-text .brand {
+    font-size: 28px;
+    font-weight: 900;
+    letter-spacing: -1px;
+    color: #1a1a1a;
+  }
+
+  .logo-text .brand span {
+    color: #1a1a1a;
+  }
+
+  .logo-text .brand .sep {
+    color: #888;
+    font-weight: 300;
+  }
+
+  .logo-text .tagline {
+    font-size: 10px;
+    color: #666;
+    font-style: italic;
+    letter-spacing: 1px;
+  }
+
+  /* TIPUS DOCUMENT */
+  .doc-type {
+    font-size: 11px;
+    font-weight: 700;
+    color: #1a3a6b;
+    margin-bottom: 6mm;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  /* BLOC CLIENT */
+  .client-block {
+    margin-bottom: 8mm;
+    line-height: 1.5;
+  }
+
+  .client-block .client-code {
+    color: #555;
+    font-size: 10px;
+  }
+
+  .client-block .client-name {
+    font-weight: 700;
+    font-size: 12px;
+  }
+
+  /* BLOC INFO */
+  .info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1mm 8mm;
+    margin-bottom: 6mm;
+    font-size: 10px;
+  }
+
+  .info-row {
+    display: flex;
+    gap: 4mm;
+  }
+
+  .info-label {
+    color: #666;
+    width: 38mm;
+    flex-shrink: 0;
+  }
+
+  .info-value {
+    color: #222;
+  }
+
+  /* NÚMERO FACTURA */
+  .fra-num {
+    margin: 5mm 0 6mm 0;
+    font-size: 11px;
+  }
+
+  .fra-num .label {
+    color: #1a3a6b;
+    font-weight: 700;
+  }
+
+  .fra-num .num {
+    color: #1a3a6b;
+    font-weight: 700;
+    font-size: 13px;
+    margin-left: 4mm;
+  }
+
+  /* LÍNIES */
+  .lines-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 5mm;
+  }
+
+  .lines-table tr.line-row td {
+    padding: 2.5mm 0;
+    border-top: 1px solid #ddd;
+    vertical-align: top;
+  }
+
+  .lines-table tr.line-row:last-child td {
+    border-bottom: 1px solid #ddd;
+  }
+
+  .lines-table .desc {
+    width: 75%;
+    padding-right: 4mm;
+    line-height: 1.4;
+  }
+
+  .lines-table .amt {
+    width: 25%;
+    text-align: right;
+    white-space: nowrap;
+  }
+
+  /* TOTALS */
+  .totals {
+    width: 100%;
+    margin-bottom: 8mm;
+  }
+
+  .totals table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .totals td {
+    padding: 1.2mm 0;
+    font-size: 10.5px;
+  }
+
+  .totals .t-label { color: #333; }
+  .totals .t-amt { text-align: right; white-space: nowrap; }
+
+  .totals .t-irpf .t-amt { color: #c00; }
+
+  .totals .t-total td {
+    font-weight: 700;
+    font-size: 12px;
+    border-top: 1.5px solid #222;
+    border-bottom: 1.5px solid #222;
+    padding: 2mm 0;
+  }
+
+  /* PEU */
+  .footer {
+    margin-top: auto;
+    border-top: 1px solid #ccc;
+    padding-top: 4mm;
+  }
+
+  .footer-top {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 6mm;
+    margin-bottom: 3mm;
+    font-size: 9px;
+    line-height: 1.5;
+    color: #444;
+  }
+
+  .footer-top .f-label {
+    font-weight: 600;
+    color: #222;
+    display: block;
+  }
+
+  .footer-bottom {
+    text-align: center;
+    font-size: 9px;
+    color: #555;
+    border-top: 1px solid #eee;
+    padding-top: 2mm;
+  }
+
+  .footer-bottom a { color: #1a3a6b; text-decoration: none; }
+
+  /* IMPRESSIÓ */
+  @media print {
+    body { background: white; }
+    .page { margin: 0; padding: 12mm 15mm 10mm 15mm; }
+    .no-print { display: none !important; }
+  }
+
+  /* BOTÓ IMPRIMIR (no surt al PDF) */
+  .print-bar {
+    text-align: center;
+    padding: 8px;
+    background: #f5f5f5;
+    border-bottom: 1px solid #ddd;
+  }
+
+  .print-bar button {
+    background: #1a3a6b;
+    color: white;
+    border: none;
+    padding: 6px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 13px;
+    margin: 0 4px;
+  }
+
+  .print-bar button.sec {
+    background: #888;
+  }
+</style>
+</head>
+<body>
+
+<div class="print-bar no-print">
+  <button onclick="window.print()">🖨️ Imprimir / PDF</button>
+  <button class="sec" onclick="window.close()">✕ Tancar</button>
+</div>
+
+<div class="page" id="factura-page">
+
+  <!-- CAPÇALERA -->
+  <div class="header">
+    <div class="logo-text">
+      <div class="brand">ACR<span class="sep">|</span>Estruch</div>
+      <div class="tagline">export &amp; consulting</div>
+    </div>
+  </div>
+
+  <!-- TIPUS DOCUMENT -->
+  <div class="doc-type" id="p-doc-type">Factura</div>
+
+  <!-- CLIENT -->
+  <div class="client-block">
+    <div class="client-code" id="p-client-code"></div>
+    <div class="client-name" id="p-client-name"></div>
+    <div id="p-client-nif"></div>
+    <div id="p-client-dir1"></div>
+    <div id="p-client-dir2"></div>
+    <div id="p-client-dir3"></div>
+  </div>
+
+  <!-- INFO GRID -->
+  <div class="info-grid">
+    <div class="info-row">
+      <span class="info-label">Data factura</span>
+      <span class="info-value" id="p-data-fra"></span>
+    </div>
+    <div class="info-row">
+      <span class="info-label">N/ref</span>
+      <span class="info-value" id="p-nref"></span>
+    </div>
+    <div class="info-row">
+      <span class="info-label">Data de venciment</span>
+      <span class="info-value" id="p-data-venc"></span>
+    </div>
+    <div class="info-row">
+      <span class="info-label">Banc</span>
+      <span class="info-value" id="p-banc"></span>
+    </div>
+    <div class="info-row">
+      <span class="info-label">Forma de pagament</span>
+      <span class="info-value" id="p-forma-pag"></span>
+    </div>
+    <div class="info-row">
+      <span class="info-label">IBAN/BIC</span>
+      <span class="info-value" id="p-iban"></span>
+    </div>
+    <div class="info-row">
+      <span class="info-label">Divisa</span>
+      <span class="info-value" id="p-divisa"></span>
+    </div>
+    <div class="info-row">
+      <span class="info-label">IdIN</span>
+      <span class="info-value" id="p-idin"></span>
+    </div>
+  </div>
+
+  <!-- NÚMERO FACTURA -->
+  <div class="fra-num">
+    <span class="label">Factura num.</span>
+    <span class="num" id="p-no-factura"></span>
+  </div>
+
+  <!-- LÍNIES -->
+  <table class="lines-table" id="p-lines">
+  </table>
+
+  <!-- TOTALS -->
+  <div class="totals">
+    <table>
+      <tr>
+        <td class="t-label">Base Imposable</td>
+        <td class="t-amt" id="p-base"></td>
+      </tr>
+      <tr id="p-row-iva">
+        <td class="t-label" id="p-label-iva"></td>
+        <td class="t-amt" id="p-iva"></td>
+      </tr>
+      <tr class="t-irpf" id="p-row-irpf">
+        <td class="t-label" id="p-label-irpf"></td>
+        <td class="t-amt" id="p-irpf"></td>
+      </tr>
+      <tr class="t-total">
+        <td class="t-label">Total Factura</td>
+        <td class="t-amt" id="p-total"></td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- PEU -->
+  <div class="footer">
+    <div class="footer-top">
+      <div>
+        <span class="f-label">Denominació fiscal:</span>
+        Jaume Estruch i Sánchez. NIF-VAT No. ES38549541-T<br>
+        <span class="f-label">Nom comercial:</span>
+        ACR ESTRUCH export &amp; consulting
+      </div>
+      <div>
+        <span class="f-label">Banco BBVA</span>
+        IBAN: ES3101820269060203603140<br>
+        SWIFT Code: BBVAESMMXXX
+      </div>
+      <div>
+        <span class="f-label">Wise Bank:</span>
+        Address: 19 W 24th Street, Account Holder: JAUME ESTRUCH SANCHEZ<br>
+        Account number: 8310566838,
+        Wire transfer number: 026073008<br>
+        Bank code (SWIFT/BIC): CMFGUS33<br>
+        Routing number (ACH or ABA): 026073150
+      </div>
+    </div>
+    <div class="footer-bottom">
+      Muntaner, 440, 1-1B &nbsp;|&nbsp; 08006 Barcelona &nbsp;|&nbsp; +34 609852478 &nbsp;|&nbsp; info@acrestruch.com &nbsp;|&nbsp; <a href="https://www.acrestruch.com">www.acrestruch.com</a>
+    </div>
+  </div>
+
+</div><!-- /page -->
+
+<script>
+// Dades injectades des del ERP via localStorage o URL params
+const SUPABASE_URL = 'https://pzivkfwbzyvwjhkflufy.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB6aXZrZndienl2d2poa2ZsdWZ5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg2OTQ3MzIsImV4cCI6MjA2NDI3MDczMn0.laxWRIfgUCFZkFELTK4qHqyYkXQZ1CF1JWv0dEMy0PI';
+
+async function sbGet(table, qs=''){
+  const r = await fetch(`${SUPABASE_URL}/rest/v1/${table}?${qs}`,{
+    headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY}
+  });
+  return r.json();
+}
+
+const fe = (n,d=2) => {
+  if(n===null||n===undefined||isNaN(n)) return '—';
+  return Number(n).toLocaleString('ca-ES',{minimumFractionDigits:d,maximumFractionDigits:d})+' EUR';
+};
+
+const fd = s => {
+  if(!s) return '—';
+  const d = new Date(s+'T00:00:00');
+  return `${String(d.getDate()).padStart(2,'0')}.${String(d.getMonth()+1).padStart(2,'0')}.${d.getFullYear()}`;
+};
+
+async function loadFactura(noFra){
+  // Carregar factura
+  const invs = await sbGet('factures', `no_factura=eq.${encodeURIComponent(noFra)}&select=*,clients(*)`);
+  if(!invs || !invs.length){ document.body.innerHTML='<p style="padding:20px">Factura no trobada</p>'; return; }
+  const inv = invs[0];
+  const cli = inv.clients || {};
+
+  // Línies
+  const lines = await sbGet('factura_lines', `no_factura=eq.${encodeURIComponent(noFra)}&order=ordre`);
+
+  // Títol
+  document.title = `Factura ${noFra}`;
+  document.getElementById('p-doc-type').textContent = inv.classe_fra || 'FACTURA';
+
+  // Client
+  document.getElementById('p-client-code').textContent = cli.codi || '';
+  document.getElementById('p-client-name').textContent = cli.rao_social || '';
+  document.getElementById('p-client-nif').textContent = cli.nif_vat ? `ES-${cli.nif_vat}` : '';
+  document.getElementById('p-client-dir1').textContent = cli.adreca || '';
+  const cp = cli.cp ? `ES-${cli.cp}` : '';
+  const ciutat = cli.ciutat || '';
+  document.getElementById('p-client-dir2').textContent = [cp, ciutat].filter(Boolean).join(' ');
+  document.getElementById('p-client-dir3').textContent = cli.pais !== 'ESP' ? (cli.pais||'') : '';
+
+  // Info
+  document.getElementById('p-data-fra').textContent = fd(inv.data_fra);
+  document.getElementById('p-data-venc').textContent = fd(inv.data_venciment);
+  document.getElementById('p-forma-pag').textContent = inv.forma_pag || '—';
+  document.getElementById('p-divisa').textContent = inv.divisa || 'EUR';
+  document.getElementById('p-nref').textContent = inv.id_projecte || '—';
+  document.getElementById('p-banc').textContent = cli.banc || '—';
+  document.getElementById('p-iban').textContent = cli.iban_bic || '—';
+  document.getElementById('p-idin').textContent = inv.id_in || '—';
+  document.getElementById('p-no-factura').textContent = noFra;
+
+  // Línies
+  const tbody = document.getElementById('p-lines');
+  let baseImp = 0;
+  (lines||[]).forEach(l => {
+    const qt = l.quantitat || 0;
+    const pu = l.preu_unit || 0;
+    const dte = l.dte_pc || 0;
+    const imp = qt === 0 ? (l.import_linia||0) : (qt * pu) * (1 - dte/100);
+    baseImp += imp;
+    const tr = document.createElement('tr');
+    tr.className = 'line-row';
+    tr.innerHTML = `<td class="desc">${l.descripcio||''}</td><td class="amt">${fe(imp)}</td>`;
+    tbody.appendChild(tr);
+  });
+
+  // Totals
+  const ivaPc = inv.tipus_iva || 0;
+  const irpfPc = inv.tipus_irpf || 0;
+  const cnce = cli.cnce || 'CN';
+  const iva = cnce === 'CN' ? Math.round(baseImp * ivaPc / 100 * 100) / 100 : 0;
+  const irpf = cnce === 'CN' ? -Math.round(baseImp * irpfPc / 100 * 100) / 100 : 0;
+  const tot = baseImp + iva + irpf;
+
+  document.getElementById('p-base').textContent = fe(baseImp);
+
+  if(iva !== 0){
+    document.getElementById('p-label-iva').textContent = `${ivaPc}%  I.V.A.`;
+    document.getElementById('p-iva').textContent = fe(iva);
+  } else {
+    document.getElementById('p-row-iva').style.display = 'none';
+  }
+
+  if(irpf !== 0){
+    document.getElementById('p-label-irpf').textContent = `${irpfPc}%  I.R.P.F.`;
+    document.getElementById('p-irpf').textContent = fe(irpf);
+  } else {
+    document.getElementById('p-row-irpf').style.display = 'none';
+  }
+
+  document.getElementById('p-total').textContent = fe(tot);
+}
+
+// Llegir número de factura des de URL: ?fra=26017
+(async () => {
+  const params = new URLSearchParams(window.location.search);
+  const noFra = params.get('fra');
+  if(noFra){
+    await loadFactura(noFra);
+  } else {
+    document.getElementById('factura-page').innerHTML = '<p style="padding:20px;color:red">Paràmetre ?fra= no trobat</p>';
+  }
+})();
+</script>
+</body>
+</html>

@@ -561,7 +561,7 @@ function renderTable(rows){
     <td>${c.pais||'—'}</td>
     <td style="font-size:12px">${[c.tel,c.email].filter(Boolean).join(' · ')||'—'}</td>
     <td style="text-align:right">${c.tipus_iva??21}%</td>
-    <td style="text-align:right">${c.tipus_irpf??0}%</td>
+    <td style="text-align:right">${Math.abs(c.tipus_irpf??0)}%</td>
     <td>${c.forma_pag||'—'}</td>
     <td onclick="event.stopPropagation()" style="white-space:nowrap">
       <button class="btn btn-secondary btn-xs" onclick="openModal(${c.id})">✏️</button>
@@ -666,7 +666,7 @@ function fillForm(c){
   s('m-div',c.divisa||'EUR');
   const cnceEl = document.getElementById('m-cnce');
   if(cnceEl) cnceEl.value = c.cnce||'CN';
-  s('m-iva',c.tipus_iva??21); s('m-irpf',c.tipus_irpf??0);
+  s('m-iva',c.tipus_iva??21); s('m-irpf', Math.abs(c.tipus_irpf??0));
   s('m-banc',c.banc); s('m-iban',c.iban_bic);
   s('m-notes',c.notes);
 }

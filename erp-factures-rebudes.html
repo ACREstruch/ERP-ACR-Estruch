@@ -809,7 +809,7 @@ async function openModal(id){
   if(id){
     const fr=allFra.find(x=>x.id===id);
     if(!fr) return;
-    document.getElementById('m-title').textContent='Fra. '+formatSerie(fr);
+    document.getElementById('m-title').textContent=(fr.id_factura||formatSerie(fr));
     fillForm(fr);
     await loadPagaments(id);
   } else {
@@ -907,6 +907,8 @@ async function loadPagaments(idFra){
 }
 
 function renderPagaments(){
+  const cb=document.getElementById('np-liquidar');
+  if(cb){ cb.checked=false; document.getElementById('np-import').readOnly=false; }
   const body=document.getElementById('pag-body');
   if(!curPagaments.length){
     body.innerHTML='<div class="pag-empty">Cap pagament registrat</div>';
@@ -1105,9 +1107,9 @@ async function saveFactura(){
     if(curId){
       if(!existing?.id_insp){ data.id_insp = curId; }
       await sbPatch('factures_rebudes',curId,data);
-      if(existing && getEstat(existing) === 'PAGAT'){
-        await logAuditChange(existing, data);
-      }
+      // if(existing && getEstat(existing) === 'PAGAT'){
+      //   await logAuditChange(existing, data);
+      // }
     } else {
       const res=await sbPost('factures_rebudes',data);
       newId=res[0]?.id;

@@ -869,8 +869,8 @@ function resetForm(){
 
 function updateBadge(){
   const e=document.getElementById('m-estat').value;
-  const [cls,lbl]=ESTAT_MAP[e]||['bx',e];
-  document.getElementById('m-badge').innerHTML=`<span class="badge ${cls}">${lbl}</span>`;
+  const fr={estat:e,import_pagat:curBi>0?1:0,total_factura:curBi};
+  document.getElementById('m-badge').innerHTML=badgeHtml({estat:e});
 }
 
 // ── CÀLCULS ──

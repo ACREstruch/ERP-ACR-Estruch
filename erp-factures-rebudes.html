@@ -809,7 +809,7 @@ async function openModal(id){
   if(id){
     const fr=allFra.find(x=>x.id===id);
     if(!fr) return;
-    document.getElementById('m-title').textContent=(fr.id_factura||formatSerie(fr));
+    document.getElementById('m-title').textContent=(fr.id_insp||formatSerie(fr));
     fillForm(fr);
     await loadPagaments(id);
   } else {
@@ -907,8 +907,6 @@ async function loadPagaments(idFra){
 }
 
 function renderPagaments(){
-  const cb=document.getElementById('np-liquidar');
-  if(cb){ cb.checked=false; document.getElementById('np-import').readOnly=false; }
   const body=document.getElementById('pag-body');
   if(!curPagaments.length){
     body.innerHTML='<div class="pag-empty">Cap pagament registrat</div>';
@@ -1146,7 +1144,11 @@ function showTab(tabId){
   document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('on',t.dataset.tab===tabId));
   document.querySelectorAll('.tab-panel').forEach(p=>p.classList.toggle('on',p.id===tabId));
   if(tabId==='tp-cpt') updateAssentament();
-  if(tabId==='tp-pag') updatePagResum();
+  if(tabId==='tp-pag'){
+    const cb=document.getElementById('np-liquidar');
+    if(cb){ cb.checked=false; document.getElementById('np-import').readOnly=false; document.getElementById('np-import').value=''; }
+    updatePagResum();
+  }
 }
 document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>showTab(t.dataset.tab)));
 

@@ -103,13 +103,19 @@ table.lines-tbl{width:100%;border-collapse:collapse;font-size:12.5px}
 .tot-item.final .t-val{font-size:20px;color:var(--blue)}
 
 /* LIST */
-.list-wrap{overflow-x:auto}
+.list-wrap{overflow-x:auto;overflow-y:auto;max-height:calc(100vh - 220px)}
 table.main-tbl{width:100%;border-collapse:collapse;font-size:13px}
-.main-tbl th{padding:9px 12px;text-align:left;font-size:10.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;border-bottom:2px solid var(--border);white-space:nowrap;background:#fafbfc}
-.main-tbl td{padding:9px 12px;border-bottom:1px solid var(--border-light);vertical-align:middle}
+.main-tbl th{padding:9px 12px;text-align:left;font-size:10.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;border-bottom:2px solid var(--border);white-space:nowrap;background:#f0f4f8;position:sticky;top:0;z-index:3;box-shadow:0 2px 0 var(--border)}
+.main-tbl td{padding:5px 10px;border-bottom:1px solid var(--border-light);vertical-align:middle;font-size:12.5px}
 .main-tbl tbody tr:hover td{background:var(--blue-light);cursor:pointer}
 .main-tbl td.amt{text-align:right;font-variant-numeric:tabular-nums}
 .main-tbl th.amt{text-align:right}
+/* GRUP ANY */
+.grp-hdr{background:transparent!important;cursor:pointer;user-select:none;border-bottom:1px solid var(--border-light)}
+.grp-hdr td{color:#00387C!important;font-weight:400!important;font-size:12px!important;padding:5px 14px!important;letter-spacing:.3px}
+.grp-hdr:hover td{background:var(--blue-light)!important}
+.grp-hdr .grp-ico{display:inline-block;width:14px;transition:transform .2s}
+.grp-hdr.collapsed .grp-ico{transform:rotate(-90deg)}
 
 /* BADGES */
 .badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:700}
@@ -451,6 +457,15 @@ table.main-tbl{width:100%;border-collapse:collapse;font-size:13px}
 
 <script>
 const SB_URL = 'https://ftuaeaghnnlusigqtoqv.supabase.co';
+const PIN_CORRECTE = '1960';
+function requireAuth(){
+  const pin=sessionStorage.getItem('erp_pin');
+  if(pin===PIN_CORRECTE) return true;
+  const p=prompt('🔒 Introdueix el PIN per accedir:');
+  if(p===PIN_CORRECTE){ sessionStorage.setItem('erp_pin',p); return true; }
+  document.body.innerHTML='<div style="padding:40px;text-align:center;font-size:18px;color:#c0392b">Accés denegat</div>';
+  return false;
+}
 const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ0dWFlYWdobm5sdXNpZ3F0b3F2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAxNjI0MjIsImV4cCI6MjA5NTczODQyMn0.9n1gWnq_QfrLIWU7sIBReXgQAGA-NPFOpsdDp-jbDW8';
 
 async function sbGet(t,q=''){
@@ -509,25 +524,53 @@ async function loadViatges(){
   }catch(e){toast('Error carregant viatges: '+e.message,'err');}
 }
 
+let collapsedYearsViatges = new Set();
+
 function renderViatges(){
   const tbody=document.getElementById('body-viatges');
   if(!allViatges.length){
     tbody.innerHTML='<tr><td colspan="9" style="text-align:center;padding:30px;color:var(--muted)">Cap despesa de viatge registrada</td></tr>';
     return;
   }
-  // Calcular total per viatge sumant les línies (s'ha de fer per separat o guardar total)
-  tbody.innerHTML=allViatges.map(v=>`
-    <tr onclick="openModalViatge(${v.id})">
-      <td style="font-weight:700;color:var(--blue)">${v.id_te||'—'}</td>
-      <td>${v.descripcio||'—'}</td>
-      <td>${v.pais||'—'}</td>
-      <td>${fd(v.data)}</td>
-      <td style="font-size:12px">${v.clients?.rao_social||'—'}</td>
-      <td style="font-size:12px">${v.id_projecte||'—'}</td>
-      <td>${v.divisa?`${v.divisa} ${fm(v.canvi_mig,5)}`:'EUR'}</td>
-      <td class="amt" style="font-weight:600">${fm(v.total_eur||0)}</td>
-      <td><button class="btn btn-xs btn-secondary" onclick="event.stopPropagation();openModalViatge(${v.id})">✏️</button></td>
-    </tr>`).join('');
+  const sorted=[...allViatges].sort((a,b)=>(b.data||'').localeCompare(a.data||''));
+  const byYear={};
+  sorted.forEach(v=>{
+    const yr=v.data?v.data.substring(0,4):'?';
+    if(!byYear[yr]) byYear[yr]=[];
+    byYear[yr].push(v);
+  });
+  let html='';
+  Object.keys(byYear).sort((a,b)=>b-a).forEach(yr=>{
+    const collapsed=collapsedYearsViatges.has(yr);
+    const totAny=byYear[yr].reduce((s,v)=>s+(v.total_eur||0),0);
+    html+=`<tr class="grp-hdr${collapsed?' collapsed':''}" onclick="toggleYearViatges('${yr}')">
+      <td colspan="9"><span class="grp-ico">▼</span> ${yr} — ${byYear[yr].length} viatges · Total: ${fm(totAny)} €</td>
+    </tr>`;
+    byYear[yr].forEach(v=>{
+      html+=`<tr data-vt-yr="${yr}" style="${collapsed?'display:none':''}" onclick="openModalViatge(${v.id})">
+        <td style="font-weight:700;color:var(--blue)">${v.id_te||'—'}</td>
+        <td>${v.descripcio||'—'}</td>
+        <td>${v.pais||'—'}</td>
+        <td>${fd(v.data)}</td>
+        <td style="font-size:12px">${v.clients?.rao_social||'—'}</td>
+        <td style="font-size:12px">${v.id_projecte||'—'}</td>
+        <td>${v.divisa?`${v.divisa} ${fm(v.canvi_mig,5)}`:'EUR'}</td>
+        <td class="amt" style="font-weight:600">${fm(v.total_eur||0)}</td>
+        <td><button class="btn btn-xs btn-secondary" onclick="event.stopPropagation();openModalViatge(${v.id})">✏️</button></td>
+      </tr>`;
+    });
+  });
+  tbody.innerHTML=html;
+}
+
+function toggleYearViatges(yr){
+  if(collapsedYearsViatges.has(yr)) collapsedYearsViatges.delete(yr);
+  else collapsedYearsViatges.add(yr);
+  document.querySelectorAll(`[data-vt-yr='${yr}']`).forEach(tr=>{
+    tr.style.display=collapsedYearsViatges.has(yr)?'none':'';
+  });
+  const grp=Array.from(document.querySelectorAll('.grp-hdr')).find(r=>r.textContent.includes(` ${yr} `));
+  if(grp) grp.classList.toggle('collapsed',collapsedYearsViatges.has(yr));
 }
 
 // ════════════════════════════
@@ -679,6 +722,8 @@ async function saveViatge(){
     updated_at:new Date().toISOString()
   };
 
+  const pin=prompt('🔒 Introdueix el PIN per guardar:');
+  if(pin!==PIN_CORRECTE){toast('PIN incorrecte','err');return;}
   const btn=document.getElementById('mv-btn-save');
   btn.disabled=true;btn.innerHTML='<span class="spin"></span> Guardant...';
 
@@ -708,6 +753,8 @@ async function saveViatge(){
 }
 
 async function deleteViatge(){
+  const pin=prompt('🔒 Introdueix el PIN per eliminar:');
+  if(pin!==PIN_CORRECTE){toast('PIN incorrecte','err');return;}
   if(!confirm('Eliminar aquesta despesa de viatge?')) return;
   try{
     const v=allViatges.find(x=>x.id===curViatgeId);
@@ -741,34 +788,64 @@ function tkTotal(t){
     (parseFloat(t.varis)||0)+(parseFloat(t.especial)||0)+(parseFloat(t.especial_mig)||0);
 }
 
+let collapsedYearsTickets = new Set();
+
 function renderTickets(){
   const tbody=document.getElementById('body-tickets');
   if(!allTickets.length){
     tbody.innerHTML='<tr><td colspan="15" style="text-align:center;padding:30px;color:var(--muted)">Cap ticket registrat</td></tr>';
     return;
   }
-  tbody.innerHTML=allTickets.map(t=>{
-    const tot=tkTotal(t);
-    const tipusBadge={'AL':'badge-al','DP':'badge-dp','SP':'badge-sp'}[t.tipus_ne]||'badge-al';
-    const cnceBadge=t.cnce==='CE'?'badge-ce':'badge-cn';
-    return `<tr onclick="openModalTicket(${t.id})">
-      <td>${fd(t.data)}</td>
-      <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${t.concepte||'—'}</td>
-      <td><span class="badge ${tipusBadge}">${t.tipus_ne||'AL'}</span></td>
-      <td><span class="badge ${cnceBadge}">${t.cnce||'CN'}</span></td>
-      <td style="font-size:12px">${t.id_projecte||'—'}</td>
-      <td class="amt">${t.tiquet?fm(t.tiquet):'—'}</td>
-      <td class="amt">${t.correus?fm(t.correus):'—'}</td>
-      <td class="amt">${t.impresos?fm(t.impresos):'—'}</td>
-      <td class="amt">${t.locomocio?fm(t.locomocio):'—'}</td>
-      <td class="amt">${t.reparacions?fm(t.reparacions):'—'}</td>
-      <td class="amt">${t.mat_oficina?fm(t.mat_oficina):'—'}</td>
-      <td class="amt">${t.varis?fm(t.varis):'—'}</td>
-      <td class="amt">${t.especial||t.especial_mig?fm((parseFloat(t.especial)||0)+(parseFloat(t.especial_mig)||0)):'—'}</td>
-      <td class="amt" style="font-weight:700;color:var(--blue)">${fm(tot)}</td>
-      <td><button class="btn btn-xs btn-secondary" onclick="event.stopPropagation();openModalTicket(${t.id})">✏️</button></td>
+  // Ordenar Z-A (desc per data)
+  const sorted=[...allTickets].sort((a,b)=>(b.data||'').localeCompare(a.data||''));
+  // Agrupar per any
+  const byYear={};
+  sorted.forEach(t=>{
+    const yr=t.data?t.data.substring(0,4):'?';
+    if(!byYear[yr]) byYear[yr]=[];
+    byYear[yr].push(t);
+  });
+  let html='';
+  Object.keys(byYear).sort((a,b)=>b-a).forEach(yr=>{
+    const collapsed=collapsedYearsTickets.has(yr);
+    const totAny=byYear[yr].reduce((s,t)=>s+tkTotal(t),0);
+    html+=`<tr class="grp-hdr${collapsed?' collapsed':''}" onclick="toggleYearTickets('${yr}')">
+      <td colspan="15"><span class="grp-ico">▼</span> ${yr} — ${byYear[yr].length} registres · Total: ${fm(totAny)} €</td>
     </tr>`;
-  }).join('');
+    byYear[yr].forEach(t=>{
+      const tot=tkTotal(t);
+      const tipusBadge={'AL':'badge-al','DP':'badge-dp','SP':'badge-sp'}[t.tipus_ne]||'badge-al';
+      const cnceBadge=t.cnce==='CE'?'badge-ce':'badge-cn';
+      html+=`<tr data-tk-yr="${yr}" style="${collapsed?'display:none':''}" onclick="openModalTicket(${t.id})">
+        <td>${fd(t.data)}</td>
+        <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${t.concepte||'—'}</td>
+        <td><span class="badge ${tipusBadge}">${t.tipus_ne||'AL'}</span></td>
+        <td><span class="badge ${cnceBadge}">${t.cnce||'CN'}</span></td>
+        <td style="font-size:12px">${t.id_projecte||'—'}</td>
+        <td class="amt">${t.tiquet?fm(t.tiquet):'—'}</td>
+        <td class="amt">${t.correus?fm(t.correus):'—'}</td>
+        <td class="amt">${t.impresos?fm(t.impresos):'—'}</td>
+        <td class="amt">${t.locomocio?fm(t.locomocio):'—'}</td>
+        <td class="amt">${t.reparacions?fm(t.reparacions):'—'}</td>
+        <td class="amt">${t.mat_oficina?fm(t.mat_oficina):'—'}</td>
+        <td class="amt">${t.varis?fm(t.varis):'—'}</td>
+        <td class="amt">${t.especial||t.especial_mig?fm((parseFloat(t.especial)||0)+(parseFloat(t.especial_mig)||0)):'—'}</td>
+        <td class="amt" style="font-weight:700;color:var(--blue)">${fm(tot)}</td>
+        <td><button class="btn btn-xs btn-secondary" onclick="event.stopPropagation();openModalTicket(${t.id})">✏️</button></td>
+      </tr>`;
+    });
+  });
+  tbody.innerHTML=html;
+}
+
+function toggleYearTickets(yr){
+  if(collapsedYearsTickets.has(yr)) collapsedYearsTickets.delete(yr);
+  else collapsedYearsTickets.add(yr);
+  document.querySelectorAll(`[data-tk-yr='${yr}']`).forEach(tr=>{
+    tr.style.display=collapsedYearsTickets.has(yr)?'none':'';
+  });
+  const grp=Array.from(document.querySelectorAll('.grp-hdr')).find(r=>r.textContent.includes(` ${yr} `));
+  if(grp) grp.classList.toggle('collapsed',collapsedYearsTickets.has(yr));
 }
 
 // ════════════════════════════
@@ -852,6 +929,8 @@ async function saveTicket(){
     updated_at:new Date().toISOString()
   };
 
+  const pin=prompt('🔒 Introdueix el PIN per guardar:');
+  if(pin!==PIN_CORRECTE){toast('PIN incorrecte','err');return;}
   const btn=document.getElementById('mt-btn-save');
   btn.disabled=true;btn.innerHTML='<span class="spin"></span> Guardant...';
   try{
@@ -865,6 +944,8 @@ async function saveTicket(){
 }
 
 async function deleteTicket(){
+  const pin=prompt('🔒 Introdueix el PIN per eliminar:');
+  if(pin!==PIN_CORRECTE){toast('PIN incorrecte','err');return;}
   if(!confirm('Eliminar aquest ticket?')) return;
   try{
     await sbDel('tickets',curTicketId);
@@ -878,6 +959,7 @@ async function deleteTicket(){
 // INIT
 // ════════════════════════════
 async function init(){
+  if(!requireAuth()) return;
   // Carregar clients per selector
   try{
     const clis=await sbGet('clients','select=id,codi,rao_social&order=rao_social.asc');

@@ -412,11 +412,18 @@ input[type=number]{-moz-appearance:textfield}
           <select id="np-fpag">
             <option>Transferència</option>
             <option>Rebut domiciliat</option>
+            <option>Visa Iberia</option>
             <option>Efectiu</option>
             <option>Xec</option>
           </select>
           <input type="number" id="np-import" step="0.01" placeholder="0,00" style="text-align:right">
-          <input type="text" id="np-banc" placeholder="Banc">
+          <select id="np-banc">
+            <option value="">— Banc —</option>
+            <option>BBVA 3118</option>
+            <option>BBVA 3140</option>
+            <option>PAYPAL</option>
+            <option>TW (BBVA 3140)</option>
+          </select>
           <input type="number" id="np-desp" step="0.01" value="0" style="text-align:right">
           <button class="btn btn-green btn-xs" onclick="addPagament()" title="Afegir pagament">+</button>
         </div>
@@ -811,7 +818,7 @@ async function openModal(id){
   if(id){
     const fr=allFra.find(x=>x.id===id);
     if(!fr) return;
-    document.getElementById('m-title').textContent=(fr.no_fra_prov||fr.id_insp||formatSerie(fr));
+    document.getElementById('m-title').textContent=(fr.no_fra_prov||formatSerie(fr)||fr.id_insp);
     fillForm(fr);
     await loadPagaments(id);
   } else {
@@ -1000,8 +1007,12 @@ async function addPagament(){
     curPagaments.push(pag);
   }
   // Netejar camps
+  const cbReset=document.getElementById('np-liquidar');
+  if(cbReset){ cbReset.checked=false; }
+  document.getElementById('np-regularitz').value=0;
   document.getElementById('np-data').value='';
   document.getElementById('np-import').value='';
+  document.getElementById('np-import').readOnly=false;
   document.getElementById('np-banc').value='';
   document.getElementById('np-desp').value=0;
   renderPagaments();

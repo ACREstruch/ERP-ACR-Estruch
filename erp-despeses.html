@@ -290,7 +290,7 @@ table.main-tbl{width:100%;border-collapse:collapse;font-size:13px}
         </div>
         <div class="form-group">
           <label>Canvi Divisa 1</label>
-          <input type="number" id="mv-canvi" placeholder="19.24230" step="0.00001" min="0">
+          <input type="number" id="mv-canvi" placeholder="0.00000" step="0.00001" min="0">
         </div>
         <div class="form-group">
           <label>Divisa 2</label>
@@ -325,27 +325,16 @@ table.main-tbl{width:100%;border-collapse:collapse;font-size:13px}
             <th style="width:32px"></th>
           </tr></thead>
           <tbody id="lines-viatge-body"></tbody>
+          <tfoot><tr style="border-top:2px solid var(--border)">
+            <td style="font-size:12.5px;color:var(--muted);padding:5px 8px"><span id="mv-tot-count">0</span> línies</td>
+            <td style="text-align:right;font-size:12.5px;padding:5px 8px" id="mv-tot-eur">0,00</td>
+            <td style="text-align:right;font-size:12.5px;padding:5px 8px" id="mv-tot-div1">0,00</td>
+            <td style="text-align:right;font-size:12.5px;padding:5px 8px" id="mv-tot-div2">—</td>
+            <td style="text-align:right;font-size:12.5px;padding:5px 8px" id="mv-tot-div">0,00</td>
+            <td style="text-align:right;font-size:12.5px;font-weight:700;color:var(--blue);padding:5px 8px" id="mv-tot-total">0,00</td>
+            <td></td>
+          </tr></tfoot>
         </table>
-      </div>
-
-      <!-- TOTALS -->
-      <div class="totals-box" id="mv-totals" style="margin-top:12px">
-        <div class="tot-item">
-          <span class="t-label">Subtot EUR</span>
-          <span class="t-val" id="mv-tot-eur">0,00</span>
-        </div>
-        <div class="tot-item">
-          <span class="t-label">Subtot Div→EUR</span>
-          <span class="t-val" id="mv-tot-div">0,00</span>
-        </div>
-        <div class="tot-item final">
-          <span class="t-label">Total Despeses</span>
-          <span class="t-val" id="mv-tot-total">0,00</span>
-        </div>
-        <div class="tot-item" style="margin-left:auto">
-          <span class="t-label">Núm. línies</span>
-          <span class="t-val" id="mv-tot-count">0</span>
-        </div>
       </div>
     </div>
     <div class="modal-ftr">
@@ -613,9 +602,9 @@ function fillViatgeForm(v){
   document.getElementById('mv-pj').value=v.id_projecte||'';
   document.getElementById('mv-empresa').value=v.id_client||'';
   document.getElementById('mv-divisa').value=v.divisa||'';
-  document.getElementById('mv-canvi').value=v.canvi_mig||'';
+  document.getElementById('mv-canvi').value=v.canvi_mig?Number(v.canvi_mig).toFixed(5):'';
   document.getElementById('mv-divisa2').value=v.divisa2||'';
-  document.getElementById('mv-canvi2').value=v.canvi_mig2||'';
+  document.getElementById('mv-canvi2').value=(v.canvi_mig2&&v.canvi_mig2!==0)?Number(v.canvi_mig2).toFixed(5):'';
   document.getElementById('mv-notes').value=v.notes||'';
 }
 
@@ -642,10 +631,10 @@ function renderLiniesViatge(){
     const tr=document.createElement('tr');
     tr.innerHTML=`
       <td><input type="text" value="${l.despesa_linia||''}" placeholder="Concepte" oninput="vLines[${i}].despesa_linia=this.value"></td>
-      <td><input type="number" class="r" value="${l.import_eur||''}" step="0.01" placeholder="0,00" oninput="vLines[${i}].import_eur=parseFloat(this.value)||0;recalcLinia(${i})"></td>
-      <td><input type="number" class="r" value="${l.import_div1||''}" step="0.01" placeholder="0,00" oninput="vLines[${i}].import_div1=parseFloat(this.value)||0;recalcLinia(${i})"></td>
-      <td><input type="number" class="r" value="${l.import_div2||''}" step="0.01" placeholder="0,00" oninput="vLines[${i}].import_div2=parseFloat(this.value)||0;recalcLinia(${i})"></td>
-      <td><input type="number" class="r" value="${l.div_eur||''}" step="0.01" placeholder="0,00" id="div-eur-${i}" oninput="vLines[${i}].div_eur=parseFloat(this.value)||0;updateTotalsViatge()"></td>
+      <td><input type="number" class="r" value="${l.import_eur?Number(l.import_eur).toFixed(2):''}" step="0.01" placeholder="0.00" oninput="vLines[${i}].import_eur=parseFloat(this.value)||0;recalcLinia(${i})"></td>
+      <td><input type="number" class="r" value="${l.import_div1?Number(l.import_div1).toFixed(2):''}" step="0.01" placeholder="0.00" oninput="vLines[${i}].import_div1=parseFloat(this.value)||0;recalcLinia(${i})"></td>
+      <td><input type="number" class="r" value="${l.import_div2?Number(l.import_div2).toFixed(2):''}" step="0.01" placeholder="0.00" oninput="vLines[${i}].import_div2=parseFloat(this.value)||0;recalcLinia(${i})"></td>
+      <td><input type="number" class="r" value="${l.div_eur?Number(l.div_eur).toFixed(2):''}" step="0.01" placeholder="0.00" id="div-eur-${i}" oninput="vLines[${i}].div_eur=parseFloat(this.value)||0;updateTotalsViatge()"></td>
       <td class="computed" id="tot-linia-${i}">${fm(total)}</td>
       <td class="del-col"><button class="del-btn" onclick="removeLineaViatge(${i})">✕</button></td>`;
     tbody.appendChild(tr);
@@ -657,8 +646,8 @@ function recalcLinia(i){
   const canvi=parseFloat(document.getElementById('mv-canvi').value)||1;
   const div1=vLines[i].import_div1||0;
   const div2=vLines[i].import_div2||0;
-  // div_eur = (div1 + div2) / canvi
-  const divEur=canvi>0 ? Math.round((div1+div2)/canvi*100)/100 : 0;
+  // div_eur = (div1 + div2) * canvi
+  const divEur=Math.round((div1+div2)*canvi*100)/100;
   vLines[i].div_eur=divEur;
   const inp=document.getElementById(`div-eur-${i}`);
   if(inp) inp.value=divEur||'';
@@ -666,17 +655,23 @@ function recalcLinia(i){
 }
 
 function updateTotalsViatge(){
-  let totEur=0,totDiv=0;
+  let totEur=0,totDiv1=0,totDiv2=0,totDivEur=0;
   vLines.forEach((l,i)=>{
     const eur=l.import_eur||0;
     const div=l.div_eur||0;
-    totEur+=eur; totDiv+=div;
+    totEur+=eur;
+    totDiv1+=(l.import_div1||0);
+    totDiv2+=(l.import_div2||0);
+    totDivEur+=div;
     const el=document.getElementById(`tot-linia-${i}`);
     if(el) el.textContent=fm(eur+div);
   });
+  const totFinal=Math.round((totEur+totDivEur)*100)/100;
   document.getElementById('mv-tot-eur').textContent=fm(totEur);
-  document.getElementById('mv-tot-div').textContent=fm(totDiv);
-  document.getElementById('mv-tot-total').textContent=fm(totEur+totDiv);
+  document.getElementById('mv-tot-div1').textContent=fm(totDiv1);
+  document.getElementById('mv-tot-div2').textContent=totDiv2?fm(totDiv2):'—';
+  document.getElementById('mv-tot-div').textContent=fm(totDivEur);
+  document.getElementById('mv-tot-total').textContent=fm(totFinal);
   document.getElementById('mv-tot-count').textContent=vLines.length;
 }
 
@@ -718,7 +713,7 @@ async function saveViatge(){
     divisa:document.getElementById('mv-divisa').value||null,
     canvi_mig:parseFloat(document.getElementById('mv-canvi').value)||0,
     divisa2:document.getElementById('mv-divisa2').value||null,
-    canvi_mig2:parseFloat(document.getElementById('mv-canvi2').value)||0,
+    canvi_mig2:parseFloat(document.getElementById('mv-canvi2').value)||null,
     notes:document.getElementById('mv-notes').value||null,
     total_eur:Math.round((totEur+totDiv)*100)/100,
     updated_at:new Date().toISOString()

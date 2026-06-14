@@ -460,7 +460,9 @@ const SB_URL = 'https://ftuaeaghnnlusigqtoqv.supabase.co';
 const PIN_CORRECTE = '1234';
 function requireAuth(){
   const pin=sessionStorage.getItem('erp_pin');
-  if(pin===PIN_CORRECTE) return true;
+  // Si el PIN guardat no coincideix amb l'actual, el netegem
+  if(pin && pin!==PIN_CORRECTE) sessionStorage.removeItem('erp_pin');
+  if(sessionStorage.getItem('erp_pin')===PIN_CORRECTE) return true;
   const p=prompt('🔒 Introdueix el PIN per accedir:');
   if(p===PIN_CORRECTE){ sessionStorage.setItem('erp_pin',p); return true; }
   document.body.innerHTML='<div style="padding:40px;text-align:center;font-size:18px;color:#c0392b">Accés denegat</div>';
@@ -972,10 +974,10 @@ async function init(){
     });
   }catch(e){}
 
-  // Data per defecte filtres tickets: any actual
-  const ara=new Date();
-  document.getElementById('tk-de').value=`${ara.getFullYear()}-01-01`;
-  document.getElementById('tk-fins').value=ara.toISOString().split('T')[0];
+  // Filtres tickets: buits per defecte → carrega tots els registres
+  // (l'usuari pot filtrar manualment si vol)
+  document.getElementById('tk-de').value='';
+  document.getElementById('tk-fins').value='';
 
   await loadViatges();
   await loadTickets();

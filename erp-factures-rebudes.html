@@ -885,7 +885,14 @@ function syncIrpf(){
 // ── PAGAMENTS ──
 async function loadPagaments(idFra){
   try{
-    curPagaments=await sbGet('pagaments_proveidors',`id_factura=eq.${idFra}&order=data_pag`);
+    // id_factura és text = no_fra_prov de la factura
+    const fra = allFra.find(x=>x.id===idFra);
+    const noFraProv = fra?.no_fra_prov || '';
+    if(noFraProv){
+      curPagaments=await sbGet('pagaments_proveidors',`id_factura=eq.${encodeURIComponent(noFraProv)}&order=data_pag`);
+    } else {
+      curPagaments=[];
+    }
   }catch{curPagaments=[];}
   renderPagaments();
 }
@@ -937,7 +944,8 @@ async function addPagament(){
   };
   if(curId){
     try{
-      pag.id_factura=curId;
+      const fra = allFra.find(x=>x.id===curId);
+      pag.id_factura=fra?.no_fra_prov||String(curId);
       const res=await sbPost('pagaments_proveidors',pag);
       curPagaments.push(res[0]);
       // Actualitzar import_pagat i estat

@@ -420,6 +420,15 @@ input[type=number]{-moz-appearance:textfield}
           <input type="number" id="np-desp" step="0.01" value="0" style="text-align:right">
           <button class="btn btn-green btn-xs" onclick="addPagament()" title="Afegir pagament">+</button>
         </div>
+        <div style="display:flex;align-items:center;gap:10px;margin-top:10px;padding:8px 4px;border-top:1px solid var(--border-light)">
+          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;font-weight:600;color:var(--green)">
+            <input type="checkbox" id="np-liquidar" onchange="onLiquidarChange()" style="width:16px;height:16px;cursor:pointer">
+            Liquidar tot (omple import pendent)
+          </label>
+          <span style="margin-left:auto;font-size:12px;color:var(--muted)">Regularització:
+            <input type="number" id="np-regularitz" step="0.01" value="0" style="width:80px;text-align:right;margin-left:4px" onchange="onRegularitzChange()">
+          </span>
+        </div>
       </div>
 
       <div class="totals-box" style="max-width:280px">
@@ -931,6 +940,31 @@ function updatePagResum(){
   document.getElementById('pag-resum').textContent=`Pagat: ${fe(pagat)} / ${fe(tot)}`;
 }
 
+function getPendent(){
+  const pagat=curPagaments.reduce((s,p)=>s+(p.import||0),0);
+  const ivaPc=parseFloat(document.getElementById('m-iva').value)||0;
+  const irpfPc=parseFloat(document.getElementById('m-irpf')?.value)||0;
+  const tot=Math.round((curBi+curBi*ivaPc/100-curBi*Math.abs(irpfPc)/100)*100)/100;
+  return Math.round((tot-pagat)*100)/100;
+}
+
+function onLiquidarChange(){
+  const cb=document.getElementById('np-liquidar');
+  const reg=parseFloat(document.getElementById('np-regularitz').value)||0;
+  if(cb.checked){
+    const pendent=getPendent();
+    document.getElementById('np-import').value=(pendent+reg).toFixed(2);
+    document.getElementById('np-import').readOnly=true;
+  } else {
+    document.getElementById('np-import').value='';
+    document.getElementById('np-import').readOnly=false;
+  }
+}
+
+function onRegularitzChange(){
+  if(document.getElementById('np-liquidar').checked) onLiquidarChange();
+}
+
 async function addPagament(){
   const data=document.getElementById('np-data').value;
   const imp=parseFloat(document.getElementById('np-import').value)||0;
@@ -951,7 +985,8 @@ async function addPagament(){
       // Actualitzar import_pagat i estat
       const pagat=curPagaments.reduce((s,p)=>s+(p.import||0),0);
       const ivaPc=parseFloat(document.getElementById('m-iva').value)||0;
-      const tot=Math.round((curBi+curBi*ivaPc/100)*100)/100;
+      const irpfPc=parseFloat(document.getElementById('m-irpf')?.value)||0;
+      const tot=Math.round((curBi+curBi*ivaPc/100-curBi*Math.abs(irpfPc)/100)*100)/100;
       const nouEstat=pagat>=tot?'PAGAT':pagat>0?'PARCIALMENT':'PENDENT';
       await sbPatch('factures_rebudes',curId,{import_pagat:pagat,estat:nouEstat});
       document.getElementById('m-estat').value=nouEstat;

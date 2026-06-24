@@ -727,7 +727,7 @@ function updateBadge(){
 }
 
 function recalcComm(){
-  const imp=parseFloat(document.getElementById('m-import').value)||0;
+  const imp=parseFloat(document.getElementById('m-import')?.value)||0;
   const enPc=parseFloat(document.getElementById('m-en-pc').value)||0;
   const dgPc=parseFloat(document.getElementById('m-dg-pc').value)||0;
   const cbPc=parseFloat(document.getElementById('m-cb-pc').value)||0;
@@ -747,7 +747,7 @@ async function saveProjecte(){
   const codi=document.getElementById('m-codi').value.trim();
   const nom=document.getElementById('m-nom').value.trim();
   if(!nom){ toast('El nom és obligatori','err'); return; }
-  const imp=parseFloat(document.getElementById('m-import').value)||0;
+  const imp=parseFloat(document.getElementById('m-import')?.value)||0;
   const enPc=parseFloat(document.getElementById('m-en-pc').value)||0;
   const dgPc=parseFloat(document.getElementById('m-dg-pc').value)||0;
   const cbPc=parseFloat(document.getElementById('m-cb-pc').value)||0;

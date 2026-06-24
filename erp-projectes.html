@@ -246,51 +246,201 @@ input[type=number]{-moz-appearance:textfield}
 
     <!-- TAB PROJECTE -->
     <div class="tab-panel on" id="tp-gen">
-      <div class="grid3">
-        <div class="sec">Identificació</div>
-        <div class="fg">
-          <label>Codi *</label>
-          <input type="text" id="m-codi" placeholder="PJ26087500">
-        </div>
-        <div class="fg full" style="grid-column:2/-1">
-          <label>Nom / Descripció *</label>
-          <input type="text" id="m-nom" placeholder="Nom del projecte">
-        </div>
-        <div class="fg full">
-          <label>Descripció ampliada</label>
-          <textarea id="m-desc" rows="2"></textarea>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+
+        <!-- COLUMNA ESQUERRA -->
+        <div style="display:flex;flex-direction:column;gap:12px">
+
+          <!-- BLOC 1: Identificació -->
+          <div class="sec">Identificació</div>
+          <div style="display:grid;grid-template-columns:1fr 2fr;gap:8px">
+            <div class="fg">
+              <label>Codi *</label>
+              <input type="text" id="m-codi" placeholder="PJ26087500">
+            </div>
+            <div class="fg">
+              <label>Nom / Descripció *</label>
+              <input type="text" id="m-nom" placeholder="Nom del projecte">
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 2fr;gap:8px">
+            <div class="fg">
+              <label>PJ Relacionat</label>
+              <input type="text" id="m-pj-mcodi" placeholder="Codi PJ arrel">
+            </div>
+            <div class="fg">
+              <label>Nom PJ relacionat</label>
+              <input type="text" id="m-pj-mcodi-nom" readonly style="background:#f8f9fa">
+            </div>
+          </div>
+
+          <!-- BLOC 2: Procedència i relacions -->
+          <div class="sec">Procedència i relacions</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            <div class="fg">
+              <label>Carpeta</label>
+              <select id="m-carpeta">
+                <option value="">— Cap —</option>
+                <option value="ACR">ACR</option>
+              </select>
+            </div>
+            <div class="fg">
+              <label>Provinent</label>
+              <select id="m-provinent">
+                <option value="">— Selecciona —</option>
+              </select>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            <div class="fg">
+              <label>Entitat (EN)</label>
+              <input type="text" id="m-id-en" placeholder="Entitat">
+            </div>
+            <div class="fg">
+              <label>Representada (RC)</label>
+              <input type="text" id="m-id-rc" placeholder="Representada">
+            </div>
+          </div>
+          <div class="fg">
+            <label>Client</label>
+            <select id="m-client">
+              <option value="">— Selecciona client —</option>
+            </select>
+          </div>
+
+          <!-- BLOC 3: Empresa PJ -->
+          <div class="sec">Empresa PJ (contacte)</div>
+          <div class="fg">
+            <label>Empresa PJ</label>
+            <input type="text" id="m-empresa-pj">
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            <div class="fg">
+              <label>Contacte</label>
+              <input type="text" id="m-resp-nom">
+            </div>
+            <div class="fg">
+              <label>Càrrec</label>
+              <input type="text" id="m-resp-carrec">
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            <div class="fg">
+              <label>Tel / Mòbil</label>
+              <input type="text" id="m-resp-tel">
+            </div>
+            <div class="fg">
+              <label>eMail</label>
+              <input type="email" id="m-resp-email">
+            </div>
+          </div>
+          <div class="fg">
+            <label>Web</label>
+            <input type="text" id="m-resp-web">
+          </div>
         </div>
 
-        <div class="sec">Client i dates</div>
-        <div class="fg full">
-          <label>Client</label>
-          <select id="m-client">
-            <option value="">— Selecciona client —</option>
-          </select>
-        </div>
-        <div class="fg">
-          <label>Data inici</label>
-          <input type="date" id="m-inici">
-        </div>
-        <div class="fg">
-          <label>Data fi prevista</label>
-          <input type="date" id="m-fi">
-        </div>
-        <div class="fg">
-          <label>Estat</label>
-          <select id="m-estat" onchange="updateBadge()">
-            <option value="ACTIU">Actiu</option>
-            <option value="COMPLETAT">Completat</option>
-            <option value="PAUSAT">Pausat</option>
-            <option value="CANCEL·LAT">Cancel·lat</option>
-          </select>
+        <!-- COLUMNA DRETA -->
+        <div style="display:flex;flex-direction:column;gap:12px">
+
+          <!-- BLOC 4: Tipus i estat -->
+          <div class="sec">Tipus i estat</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            <div class="fg">
+              <label>Tipus (SBU)</label>
+              <select id="m-sbu">
+                <option value="">— Selecciona —</option>
+                <option>1. CONSULTING</option>
+                <option>2. TRADING</option>
+                <option>3. SERVICES</option>
+                <option>4. M&amp;A/PRIVATE EQUITY</option>
+                <option>5. MEDICAL PROD</option>
+              </select>
+            </div>
+            <div class="fg">
+              <label>Estat</label>
+              <select id="m-estat" onchange="updateBadge()">
+                <option value="ACTIU">Actiu</option>
+                <option value="COMPLETAT">Completat</option>
+                <option value="PAUSAT">Pausat</option>
+                <option value="CANCEL·LAT">Cancel·lat</option>
+              </select>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            <div class="fg">
+              <label>Data entrada</label>
+              <input type="date" id="m-data-entrada">
+            </div>
+            <div class="fg">
+              <label>Data inici</label>
+              <input type="date" id="m-inici">
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            <div class="fg">
+              <label>Exec. prevista</label>
+              <input type="text" id="m-exe-prev" placeholder="Text lliure">
+            </div>
+            <div class="fg">
+              <label>Data fi prevista</label>
+              <input type="date" id="m-fi">
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            <div class="fg">
+              <label>Data finalitzat</label>
+              <input type="date" id="m-data-finalitzat">
+            </div>
+            <div class="fg">
+              <label>Data cancel·lat</label>
+              <input type="date" id="m-data-cancel">
+            </div>
+          </div>
+
+          <!-- BLOC 5: Mercats i equip -->
+          <div class="sec">Mercats i equip</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            <div class="fg">
+              <label>Mercat Origen</label>
+              <select id="m-mercat-origen">
+                <option value="">— Selecciona —</option>
+              </select>
+            </div>
+            <div class="fg">
+              <label>Mercat Destí</label>
+              <select id="m-mercat-desti">
+                <option value="">— Selecciona —</option>
+              </select>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            <div class="fg">
+              <label>Delegat (DG)</label>
+              <input type="text" id="m-id-dg">
+            </div>
+            <div class="fg">
+              <label>Col·laborador (CB)</label>
+              <input type="text" id="m-id-cb">
+            </div>
+          </div>
+          <div class="fg">
+            <label>Responsable</label>
+            <input type="text" id="m-responsable">
+          </div>
+
+          <!-- BLOC 6: Valor i observacions -->
+          <div class="sec">Valor</div>
+          <div class="fg">
+            <label>Import total (EUR)</label>
+            <input type="number" id="m-import" step="0.01" value="0" onchange="recalcComm()">
+          </div>
+          <div class="sec">Observacions</div>
+          <div class="fg">
+            <textarea id="m-observacions" rows="3"></textarea>
+          </div>
         </div>
 
-        <div class="sec">Valor</div>
-        <div class="fg">
-          <label>Import total (EUR)</label>
-          <input type="number" id="m-import" step="0.01" value="0" onchange="recalcComm()">
-        </div>
       </div>
     </div>
 
@@ -382,6 +532,32 @@ async function loadClients(){
       sel.appendChild(o);
     });
   }catch(e){console.error(e)}
+}
+
+async function loadPaisos(){
+  try{
+    const rows = await sbGet('paisos','select=id_co,nom&order=nom');
+    ['m-mercat-origen','m-mercat-desti'].forEach(id=>{
+      const sel=document.getElementById(id);
+      if(!sel) return;
+      const cur=sel.value;
+      sel.innerHTML='<option value="">— Selecciona —</option>';
+      rows.forEach(r=>{ const o=document.createElement('option'); o.value=r.id_co; o.textContent=r.nom; sel.appendChild(o); });
+      sel.value=cur;
+    });
+  }catch(e){ console.error('Error paisos:',e); }
+}
+
+async function loadProveniments(){
+  try{
+    const rows = await sbGet('proveniments','select=id,nom&order=nom');
+    const sel=document.getElementById('m-provinent');
+    if(!sel) return;
+    const cur=sel.value;
+    sel.innerHTML='<option value="">— Selecciona —</option>';
+    rows.forEach(r=>{ const o=document.createElement('option'); o.value=r.nom; o.textContent=r.nom; sel.appendChild(o); });
+    sel.value=cur;
+  }catch(e){ console.error('Error proveniments:',e); }
 }
 
 async function loadProjectes(){
@@ -476,18 +652,44 @@ function closeModal(){ document.getElementById('overlay').classList.remove('open
 
 function fillForm(p){
   const s=(id,v)=>{const el=document.getElementById(id);if(el)el.value=(v??'')};
-  s('m-codi',p.codi); s('m-nom',p.nom); s('m-desc',p.descripcio);
-  s('m-client',p.id_client); s('m-inici',p.data_inici); s('m-fi',p.data_fi);
+  s('m-codi',p.codi); s('m-nom',p.nom);
+  s('m-pj-mcodi',p.pj_id_mcodi); s('m-pj-mcodi-nom','');
+  s('m-carpeta',p.carpeta||'ACR');
+  s('m-provinent',p.provinent);
+  s('m-id-en',p.id_en); s('m-id-rc',p.id_rc);
+  s('m-client',p.id_client);
+  s('m-empresa-pj',p.empresa_pj);
+  s('m-resp-nom',p.resp_nom); s('m-resp-carrec',p.resp_carrec);
+  s('m-resp-tel',p.resp_tel); s('m-resp-email',p.resp_email);
+  s('m-resp-web',p.resp_web);
+  s('m-sbu',p.pj_sbu);
   s('m-estat',p.estat||'ACTIU');
+  s('m-data-entrada',p.data_entrada);
+  s('m-inici',p.data_inici); s('m-fi',p.data_fi);
+  s('m-exe-prev',p.data_execucio);
+  s('m-data-finalitzat',p.data_finalitzat);
+  s('m-data-cancel',p.data_cancel);
+  s('m-mercat-origen',p.mercat_origen);
+  s('m-mercat-desti',p.mercat_desti);
+  s('m-id-dg',p.id_dg); s('m-id-cb',p.cb_pc??'');
+  s('m-responsable',p.responsable);
   s('m-import',p.import??0);
+  s('m-observacions',p.observacions);
   s('m-en-pc',p.en_pc??0); s('m-dg-pc',p.dg_pc??0); s('m-cb-pc',p.cb_pc??0);
   s('m-notes',p.notes);
   updateBadge(); recalcComm();
 }
 
 function resetForm(){
-  ['m-codi','m-nom','m-desc','m-inici','m-fi','m-notes'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
-  document.getElementById('m-client').value='';
+  ['m-codi','m-nom','m-pj-mcodi','m-pj-mcodi-nom','m-id-en','m-id-rc',
+   'm-empresa-pj','m-resp-nom','m-resp-carrec','m-resp-tel','m-resp-email','m-resp-web',
+   'm-exe-prev','m-id-dg','m-responsable','m-observacions','m-notes']
+  .forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  ['m-client','m-carpeta','m-provinent','m-sbu','m-mercat-origen','m-mercat-desti']
+  .forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  ['m-data-entrada','m-inici','m-fi','m-data-finalitzat','m-data-cancel']
+  .forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  document.getElementById('m-carpeta').value='ACR';
   document.getElementById('m-estat').value='ACTIU';
   document.getElementById('m-import').value=0;
   document.getElementById('m-en-pc').value=0;
@@ -533,20 +735,37 @@ async function saveProjecte(){
   const acrI=Math.round((imp-enI-dgI-cbI)*100)/100;
   const acrPc=imp>0?Math.round(acrI/imp*10000)/100:0;
   const idCli=document.getElementById('m-client').value;
+  const g=id=>document.getElementById(id)?.value||null;
   const data={
     codi:codi||null, nom,
-    descripcio:document.getElementById('m-desc').value||null,
+    pj_id_mcodi:g('m-pj-mcodi'),
+    carpeta:g('m-carpeta'),
+    provinent:g('m-provinent'),
+    id_en:g('m-id-en'), id_rc:g('m-id-rc'),
     id_client:idCli?parseInt(idCli):null,
-    data_inici:document.getElementById('m-inici').value||null,
-    data_fi:document.getElementById('m-fi').value||null,
+    empresa_pj:g('m-empresa-pj'),
+    resp_nom:g('m-resp-nom'), resp_carrec:g('m-resp-carrec'),
+    resp_tel:g('m-resp-tel'), resp_email:g('m-resp-email'),
+    resp_web:g('m-resp-web'),
+    pj_sbu:g('m-sbu'),
     estat:document.getElementById('m-estat').value,
+    data_entrada:g('m-data-entrada'),
+    data_inici:g('m-inici'),
+    data_fi:g('m-fi'),
+    data_execucio:g('m-exe-prev'),
+    data_finalitzat:g('m-data-finalitzat'),
+    data_cancel:g('m-data-cancel'),
+    mercat_origen:g('m-mercat-origen'),
+    mercat_desti:g('m-mercat-desti'),
+    id_dg:g('m-id-dg'),
+    responsable:g('m-responsable'),
     import:imp,
+    observacions:g('m-observacions'),
     en_pc:enPc, en_import:enI,
     dg_pc:dgPc, dg_import:dgI,
     cb_pc:cbPc, cb_import:cbI,
     acr_pc:acrPc, acr_import:acrI,
-    notes:document.getElementById('m-notes').value||null,
-    updated_at:new Date().toISOString(),
+    notes:g('m-notes'),
   };
   const btn=document.getElementById('btn-save');
   btn.disabled=true; btn.innerHTML='<span class="spin"></span> Guardant...';
@@ -554,7 +773,9 @@ async function saveProjecte(){
     if(curId){ await sbPatch('projectes',curId,data); }
     else { await sbPost('projectes',data); }
     toast('Projecte guardat','ok');
-    await loadProjectes(); closeModal();
+    await loadPaisos();
+  await loadProveniments();
+  await loadProjectes(); closeModal();
   }catch(e){ toast('Error: '+e.message,'err'); }
   finally{ btn.disabled=false; btn.innerHTML='💾 Guardar'; }
 }

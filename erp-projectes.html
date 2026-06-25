@@ -96,17 +96,11 @@ th.amt{text-align:right}
 .fg input[readonly]{background:#f8f9fa;color:var(--muted)}
 .fg input.bv{font-weight:700;color:var(--blue);background:#f0f4f8}
 .fg textarea{resize:vertical;min-height:80px}
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
-.grid4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:14px}
-.full{grid-column:1/-1}
-.sec{grid-column:1/-1;font-size:11px;font-weight:800;color:var(--blue);text-transform:uppercase;letter-spacing:.8px;padding:4px 0 2px;border-bottom:1.5px solid var(--blue-dim);margin-bottom:2px}
-/* Comissions box */
+.sec{font-size:11px;font-weight:800;color:var(--blue);text-transform:uppercase;letter-spacing:.8px;padding:4px 0 2px;border-bottom:1.5px solid var(--blue-dim);margin-bottom:2px}
 .comm-box{background:#f8f9fa;border:1.5px solid var(--border);border-radius:var(--r);padding:14px 18px;margin-top:8px}
 .comm-row{display:grid;grid-template-columns:80px 1fr 80px 1fr;gap:10px;align-items:center;margin-bottom:10px;font-size:13px}
 .comm-row:last-child{margin-bottom:0}
 .comm-label{font-weight:700;color:var(--blue)}
-.comm-total{border-top:2px solid var(--border);padding-top:10px;display:flex;justify-content:space-between;font-size:14px;font-weight:700;color:var(--blue)}
 #toast{position:fixed;bottom:22px;right:22px;z-index:999;display:flex;flex-direction:column;gap:8px;pointer-events:none}
 .toast{padding:11px 18px;border-radius:var(--r);font-size:13px;font-weight:600;color:#fff;box-shadow:0 4px 16px rgba(0,0,0,.25);animation:tin .3s ease;pointer-events:auto}
 .toast.ok{background:var(--green)}.toast.err{background:var(--red)}.toast.inf{background:var(--blue)}
@@ -152,7 +146,7 @@ input[type=number]{-moz-appearance:textfield}
     <h1>Projectes</h1>
     <button class="btn btn-secondary btn-sm" onclick="refreshData()">↻ Actualitzar</button>
     <button class="btn btn-primary" onclick="openModal(null)">+ Nou projecte</button>
-      <span id="user-email" style="font-size:12px;color:var(--muted);margin-right:4px"></span>
+    <span id="user-email" style="font-size:12px;color:var(--muted);margin-right:4px"></span>
     <button class="btn btn-sm" style="background:#f8d7da;color:#721c24;border:1px solid #f5c6cb;margin-right:4px" onclick="doLogout()">⏻ Sortir</button>
   </header>
   <div id="content">
@@ -186,7 +180,7 @@ input[type=number]{-moz-appearance:textfield}
 
     <div class="filter-wrap">
       <div class="filter-bar">
-        <input type="text" id="f-cerca" placeholder="🔍  Cerca codi, nom, client..." oninput="applyFilters()" style="min-width:220px">
+        <input type="text" id="f-cerca" placeholder="🔍  Cerca codi, descripció, client..." oninput="applyFilters()" style="min-width:220px">
         <select id="f-estat" onchange="applyFilters()">
           <option value="">Tots els estats</option>
           <option value="ACTIU">Actiu</option>
@@ -204,20 +198,19 @@ input[type=number]{-moz-appearance:textfield}
         <table class="main-tbl">
           <thead>
             <tr>
-              <th>Codi</th>
-              <th>Nom</th>
+              <th>IdPJ</th>
+              <th>Descripció</th>
               <th>Client</th>
-              <th>Inici</th>
-              <th>Fi</th>
+              <th>Data Entrada</th>
+              <th>Data Inici</th>
               <th class="amt">Import</th>
-              <th class="amt">ACR %</th>
-              <th class="amt">ACR Import</th>
+              <th>Facturar</th>
               <th>Estat</th>
               <th></th>
             </tr>
           </thead>
           <tbody id="tbl-body">
-            <tr><td colspan="10"><div class="empty"><div class="eico">🔄</div><p>Carregant...</p></div></td></tr>
+            <tr><td colspan="9"><div class="empty"><div class="eico">🔄</div><p>Carregant...</p></div></td></tr>
           </tbody>
         </table>
       </div>
@@ -252,24 +245,18 @@ input[type=number]{-moz-appearance:textfield}
           <div class="sec">Identificació</div>
           <div style="display:grid;grid-template-columns:1fr 2fr;gap:8px">
             <div class="fg">
-              <label>Codi *</label>
-              <input type="text" id="m-codi" placeholder="S'autogenera">
+              <label>IdPJ *</label>
+              <input type="text" id="m-idpj" placeholder="S'autogenera">
             </div>
             <div class="fg">
               <label>Descripció *</label>
-              <input type="text" id="m-nom" placeholder="NOM del projecte">
+              <input type="text" id="m-descripcio" placeholder="Descripció del projecte">
             </div>
           </div>
           <div class="fg">
             <label>TAG</label>
-            <input type="text" id="m-pj-mcodi" placeholder="Tag del projecte" list="tag-list">
-            <datalist id="tag-list">
-              <option value="WITTMANN">
-              <option value="ALBERTCH DRESS">
-              <option value="AMES NEW MARKETS (MENA)">
-              <option value="FORGESTAL. EXPORT MANAGEMENT OUTSOURCING">
-              <option value="AMES. INTRODUCCIÓ SELFOIL MERCATS NAFTA">
-            </datalist>
+            <input type="text" id="m-tag" placeholder="Tag del projecte" list="tag-list">
+            <datalist id="tag-list"></datalist>
           </div>
 
           <!-- BLOC 2: Procedència -->
@@ -291,8 +278,8 @@ input[type=number]{-moz-appearance:textfield}
           </div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
             <div class="fg">
-              <label>Entitat (EN)</label>
-              <select id="m-id-en">
+              <label>Entitat</label>
+              <select id="m-entitat">
                 <option value="">— Selecciona —</option>
               </select>
             </div>
@@ -303,9 +290,13 @@ input[type=number]{-moz-appearance:textfield}
           </div>
           <div class="fg">
             <label>Client</label>
-            <select id="m-client">
+            <select id="m-client" onchange="onClientChange()">
               <option value="">— Selecciona client —</option>
             </select>
+          </div>
+          <div class="fg">
+            <label>ID Client</label>
+            <input type="text" id="m-idclient" readonly style="background:#f8f9fa;color:var(--muted)">
           </div>
 
           <!-- BLOC 3: Empresa Projecte -->
@@ -317,7 +308,7 @@ input[type=number]{-moz-appearance:textfield}
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
             <div class="fg">
               <label>Contacte</label>
-              <input type="text" id="m-resp-nom">
+              <input type="text" id="m-resp-pj">
             </div>
             <div class="fg">
               <label>Tel/Mòbil</label>
@@ -347,25 +338,26 @@ input[type=number]{-moz-appearance:textfield}
           <div class="sec">Tipus / Estat</div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
             <div class="fg">
-              <label>Tipus (SBU)</label>
-              <select id="m-sbu">
+              <label>Tipus PJ</label>
+              <select id="m-tipus-pj">
                 <option value="">— Selecciona —</option>
-                <option>1. CONSULTING</option>
-                <option>2. TRADING</option>
-                <option>3. SERVICES</option>
-                <option>4. M&amp;A/PRIVATE EQUITY</option>
-                <option>5. MEDICAL PROD</option>
+                <option value="CONSULTING">CONSULTING</option>
+                <option value="SALUT">SALUT</option>
+                <option value="SERVEIS">SERVEIS</option>
+                <option value="TRADING">TRADING</option>
               </select>
             </div>
             <div class="fg">
               <label>Estat</label>
               <div style="display:flex;align-items:center;gap:8px">
-              <select id="m-estat" onchange="onEstatChange()" style="flex:1">
-                <option value="ACTIU">Actiu</option>
-                <option value="COMPLETAT">Completat</option>
-                <option value="PAUSAT">Pausat</option>
-                <option value="CANCEL·LAT">Cancel·lat</option>
-              </select><span id="sit-icon" class="sit sit-act">✓</span></div>
+                <select id="m-estat" onchange="onEstatChange()" style="flex:1">
+                  <option value="ACTIU">ACTIU</option>
+                  <option value="COMPLETAT">COMPLETAT</option>
+                  <option value="PAUSAT">PAUSAT</option>
+                  <option value="CANCEL·LAT">CANCEL·LAT</option>
+                </select>
+                <span id="sit-icon">✓</span>
+              </div>
             </div>
           </div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
@@ -378,6 +370,20 @@ input[type=number]{-moz-appearance:textfield}
               <input type="date" id="m-data-finalitzat">
             </div>
           </div>
+          <div class="fg">
+            <label>Facturar</label>
+            <select id="m-facturar">
+              <option value="">— Selecciona —</option>
+              <option value="SI">SI</option>
+              <option value="NO">NO</option>
+              <option value="FACTURAT">FACTURAT</option>
+              <option value="FRA. PERIÒDICA">FRA. PERIÒDICA</option>
+            </select>
+          </div>
+          <div class="fg">
+            <label>Import</label>
+            <input type="number" id="m-import" value="0" step="0.01" oninput="recalcComm()">
+          </div>
 
           <!-- Dates Matchmaking -->
           <div style="border:2px solid #c0392b;border-radius:6px;padding:10px 12px;margin-top:2px">
@@ -389,7 +395,7 @@ input[type=number]{-moz-appearance:textfield}
               </div>
               <div class="fg">
                 <label>Data Inici</label>
-                <input type="date" id="m-inici">
+                <input type="date" id="m-data-inici">
               </div>
             </div>
           </div>
@@ -410,21 +416,15 @@ input[type=number]{-moz-appearance:textfield}
               </select>
             </div>
           </div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-            <div class="fg">
-              <label>Delegat (DG)</label>
-              <input type="text" id="m-id-dg">
-            </div>
-            <div class="fg">
-              <label>Col·laborador (CB)</label>
-              <input type="text" id="m-id-cb">
-            </div>
-          </div>
 
           <!-- BLOC 6: Observacions -->
           <div class="sec" style="margin-top:6px">Observacions</div>
           <div class="fg">
             <textarea id="m-observacions" rows="4"></textarea>
+          </div>
+          <div class="fg">
+            <label>Anotacions</label>
+            <textarea id="m-anotacions" rows="3"></textarea>
           </div>
         </div>
 
@@ -439,19 +439,19 @@ input[type=number]{-moz-appearance:textfield}
       <div class="comm-box">
         <div class="comm-row">
           <span class="comm-label">EN</span>
-          <div class="fg"><label>%</label><input type="number" id="m-en-pc" step="0.01" value="0" onchange="recalcComm()"></div>
+          <div class="fg"><label>%</label><input type="number" id="m-en-pc" step="0.01" value="0" oninput="recalcComm()"></div>
           <span style="color:var(--muted);font-size:12px;text-align:center">→</span>
           <div class="fg"><label>Import</label><input type="text" id="m-en-imp" readonly class="bv"></div>
         </div>
         <div class="comm-row">
           <span class="comm-label">DG</span>
-          <div class="fg"><label>%</label><input type="number" id="m-dg-pc" step="0.01" value="0" onchange="recalcComm()"></div>
+          <div class="fg"><label>%</label><input type="number" id="m-dg-pc" step="0.01" value="0" oninput="recalcComm()"></div>
           <span style="color:var(--muted);font-size:12px;text-align:center">→</span>
           <div class="fg"><label>Import</label><input type="text" id="m-dg-imp" readonly class="bv"></div>
         </div>
         <div class="comm-row">
           <span class="comm-label">CB</span>
-          <div class="fg"><label>%</label><input type="number" id="m-cb-pc" step="0.01" value="0" onchange="recalcComm()"></div>
+          <div class="fg"><label>%</label><input type="number" id="m-cb-pc" step="0.01" value="0" oninput="recalcComm()"></div>
           <span style="color:var(--muted);font-size:12px;text-align:center">→</span>
           <div class="fg"><label>Import</label><input type="text" id="m-cb-imp" readonly class="bv"></div>
         </div>
@@ -472,7 +472,7 @@ input[type=number]{-moz-appearance:textfield}
     <div class="tab-panel" id="tp-not">
       <div class="fg">
         <label>Notes</label>
-        <textarea id="m-notes" rows="8"></textarea>
+        <textarea id="m-notes" rows="12"></textarea>
       </div>
     </div>
 
@@ -489,6 +489,7 @@ input[type=number]{-moz-appearance:textfield}
 <script>
 const SB_URL='https://ftuaeaghnnlusigqtoqv.supabase.co';
 const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ0dWFlYWdobm5sdXNpZ3F0b3F2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAxNjI0MjIsImV4cCI6MjA5NTczODQyMn0.9n1gWnq_QfrLIWU7sIBReXgQAGA-NPFOpsdDp-jbDW8';
+
 function getSession(){try{const s=localStorage.getItem('erp_session');if(!s)return null;const sess=JSON.parse(s);if(Date.now()/1000>sess.expires_at-60){localStorage.removeItem('erp_session');return null;}return sess;}catch(e){return null;}}
 function getHDR(){const s=getSession();const tok=s&&s.access_token?s.access_token:SB_KEY;return{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+tok,'Prefer':'return=representation'};}
 function requireAuth(){if(!getSession()){location.replace('login.html');return false;}const el=document.getElementById('user-email');if(el){const s=getSession();el.textContent=s&&s.user?s.user.email:'';}return true;}
@@ -496,35 +497,56 @@ async function doLogout(){const s=getSession();if(s&&s.access_token)try{await fe
 
 async function sbGet(t,q=''){const r=await fetch(`${SB_URL}/rest/v1/${t}?${q}`,{headers:getHDR()});if(!r.ok)throw new Error(await r.text());return r.json()}
 async function sbPost(t,d){const r=await fetch(`${SB_URL}/rest/v1/${t}`,{method:'POST',headers:getHDR(),body:JSON.stringify(d)});if(!r.ok)throw new Error(await r.text());return r.json()}
-async function sbPatch(t,id,d){const r=await fetch(`${SB_URL}/rest/v1/${t}?id=eq.${id}`,{method:'PATCH',headers:getHDR(),body:JSON.stringify(d)});if(!r.ok)throw new Error(await r.text());return r.json()}
-async function sbDel(t,id){const r=await fetch(`${SB_URL}/rest/v1/${t}?id=eq.${id}`,{method:'DELETE', headers:getHDR()});if(!r.ok)throw new Error(await r.text())}
+async function sbPatch(t,id,d){const r=await fetch(`${SB_URL}/rest/v1/${t}?"IdPJ"=eq.${id}`,{method:'PATCH',headers:getHDR(),body:JSON.stringify(d)});if(!r.ok)throw new Error(await r.text());return r.json()}
+async function sbDel(t,id){const r=await fetch(`${SB_URL}/rest/v1/${t}?"IdPJ"=eq.${id}`,{method:'DELETE',headers:getHDR()});if(!r.ok)throw new Error(await r.text())}
 
-let allPJ=[], allClients=[], curId=null;
+let allPJ=[], allClients=[], curIdPJ=null;
 const fe=(n,d=2)=>(n||0).toLocaleString('ca-ES',{minimumFractionDigits:d,maximumFractionDigits:d});
 const fd=d=>d?new Date(d+'T00:00:00').toLocaleDateString('ca-ES',{day:'2-digit',month:'2-digit',year:'numeric'}):'—';
 
+const ESTAT_MAP={
+  'ACTIU':      ['bg','ACTIU',    '#d4edda'],
+  'COMPLETAT':  ['bb','COMPLETAT','#e3f2fd'],
+  'PAUSAT':     ['by','PAUSAT',   '#fff3cd'],
+  'CANCEL·LAT': ['br','CANCEL·LAT','#f8d7da'],
+};
+
+function badgeHtml(estat){
+  const [cls,lbl]=ESTAT_MAP[estat]||['bx',estat];
+  return `<span class="badge ${cls}">${lbl}</span>`;
+}
+
 async function init(){
   if(!requireAuth()) return;
-  await Promise.all([loadClients(), loadProjectes()]);
+  await Promise.all([loadClients(), loadEntitats(), loadPaisos(), loadProveniments(), loadProjectes()]);
+  loadTags();
 }
 
 async function loadClients(){
   try{
-    allClients=await sbGet('clients','select=id,rao_social,sinonim&order=rao_social');
+    allClients=await sbGet('clients','select=id,codi,rao_social,sinonim&order=rao_social');
     const sel=document.getElementById('m-client');
     sel.innerHTML='<option value="">— Selecciona client —</option>';
     allClients.forEach(c=>{
       const o=document.createElement('option');
-      o.value=c.id; o.textContent=c.rao_social+(c.sinonim?` (${c.sinonim})`:'');
+      o.value=c.id;
+      o.dataset.codi=c.codi||'';
+      o.textContent=c.rao_social+(c.sinonim?` (${c.sinonim})`:'');
       sel.appendChild(o);
     });
-  }catch(e){console.error(e)}
+  }catch(e){console.error('Error clients:',e)}
+}
+
+function onClientChange(){
+  const sel=document.getElementById('m-client');
+  const opt=sel.options[sel.selectedIndex];
+  document.getElementById('m-idclient').value=opt&&opt.dataset.codi?opt.dataset.codi:'';
 }
 
 async function loadEntitats(){
   try{
     const rows=await sbGet('entitats','select=id,nom,sinonim&order=nom');
-    const sel=document.getElementById('m-id-en'); if(!sel) return;
+    const sel=document.getElementById('m-entitat');if(!sel)return;
     const cur=sel.value;
     sel.innerHTML='<option value="">— Selecciona —</option>';
     rows.forEach(r=>{
@@ -536,57 +558,55 @@ async function loadEntitats(){
     sel.value=cur;
   }catch(e){console.error('Error entitats:',e);}
 }
+
 async function loadPaisos(){
   try{
-    const rows = await sbGet('paisos','select=id_co,nom&order=nom');
+    const rows=await sbGet('paisos','select=id_co,nom&order=nom');
     ['m-mercat-origen','m-mercat-desti'].forEach(id=>{
-      const sel=document.getElementById(id);
-      if(!sel) return;
+      const sel=document.getElementById(id);if(!sel)return;
       const cur=sel.value;
       sel.innerHTML='<option value="">— Selecciona —</option>';
-      rows.forEach(r=>{ const o=document.createElement('option'); o.value=r.id_co; o.textContent=r.nom; sel.appendChild(o); });
+      rows.forEach(r=>{
+        const o=document.createElement('option');
+        o.value=r.id_co;
+        o.textContent=`${r.id_co} - ${r.nom}`;
+        sel.appendChild(o);
+      });
       sel.value=cur;
     });
-  }catch(e){ console.error('Error paisos:',e); }
+  }catch(e){console.error('Error paisos:',e);}
 }
 
 async function loadProveniments(){
   try{
-    const rows = await sbGet('proveniments','select=id,nom&order=nom');
-    const sel=document.getElementById('m-provinent');
-    if(!sel) return;
+    const rows=await sbGet('proveniments','select=id,nom&order=nom');
+    const sel=document.getElementById('m-provinent');if(!sel)return;
     const cur=sel.value;
     sel.innerHTML='<option value="">— Selecciona —</option>';
-    rows.forEach(r=>{ const o=document.createElement('option'); o.value=r.nom; o.textContent=r.nom; sel.appendChild(o); });
+    rows.forEach(r=>{const o=document.createElement('option');o.value=r.nom;o.textContent=r.nom;sel.appendChild(o);});
     sel.value=cur;
-  }catch(e){ console.error('Error proveniments:',e); }
+  }catch(e){console.error('Error proveniments:',e);}
+}
+
+function loadTags(){
+  const dl=document.getElementById('tag-list');
+  const tags=[...new Set(allPJ.map(p=>p.TAG).filter(Boolean))].sort();
+  dl.innerHTML=tags.map(t=>`<option value="${t}">`).join('');
 }
 
 async function loadProjectes(){
   try{
-    allPJ=await sbGet('projectes','select=*,clients(rao_social)&order=data_inici.desc.nullslast');
+    allPJ=await sbGet('projectes','select=*&order=data_entrada.desc.nullslast');
     renderStats(); renderTable(allPJ);
-  }catch(e){ toast('Error: '+e.message,'err'); allPJ=[]; renderTable([]); }
+  }catch(e){toast('Error: '+e.message,'err');allPJ=[];renderTable([]);}
 }
 
-async function refreshData(){ toast('Actualitzant...','inf'); await loadProjectes(); toast('Actualitzat','ok'); }
-
-const ESTAT_MAP={
-  'ACTIU':     ['bg','Actiu'],
-  'COMPLETAT': ['bb','Completat'],
-  'PAUSAT':    ['by','Pausat'],
-  'CANCEL·LAT':['bx','Cancel·lat'],
-};
-
-function badgeHtml(estat){
-  const [cls,lbl]=ESTAT_MAP[estat]||['bx',estat];
-  return `<span class="badge ${cls}">${lbl}</span>`;
-}
+async function refreshData(){toast('Actualitzant...','inf');await loadProjectes();toast('Actualitzat','ok');}
 
 function renderStats(){
   let act=0,actE=0,com=0,comE=0,pau=0,pauE=0;
   allPJ.forEach(p=>{
-    const imp=p.import||0;
+    const imp=parseFloat(p.import)||0;
     if(p.estat==='ACTIU'){act++;actE+=imp;}
     else if(p.estat==='COMPLETAT'){com++;comE+=imp;}
     else if(p.estat==='PAUSAT'){pau++;pauE+=imp;}
@@ -604,22 +624,22 @@ function renderTable(rows){
   document.getElementById('f-count').textContent=rows.length+' projectes';
   const tbody=document.getElementById('tbl-body');
   if(!rows.length){
-    tbody.innerHTML=`<tr><td colspan="10"><div class="empty"><div class="eico">📋</div><p>Cap projecte trobat.</p><button class="btn btn-primary" onclick="openModal(null)">+ Nou projecte</button></div></td></tr>`;
+    tbody.innerHTML=`<tr><td colspan="9"><div class="empty"><div class="eico">📋</div><p>Cap projecte trobat.</p><button class="btn btn-primary" onclick="openModal(null)">+ Nou projecte</button></div></td></tr>`;
     return;
   }
-  tbody.innerHTML=rows.map(p=>`<tr onclick="openModal(${p.id})">
-    <td><span class="pj-codi">${p.codi||'—'}</span></td>
-    <td style="font-weight:600;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${p.nom}">${p.nom}</td>
-    <td style="color:var(--muted);font-size:12px">${p.clients?.rao_social||'—'}</td>
+  const ESTAT_BG={'ACTIU':'#d4edda','PAUSAT':'#fff3cd','CANCEL·LAT':'#f8d7da','COMPLETAT':'#e3f2fd'};
+  tbody.innerHTML=rows.map(p=>`<tr onclick="openModal('${p.IdPJ}')">
+    <td><span class="pj-codi">${p.IdPJ||'—'}</span></td>
+    <td style="font-weight:600;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${p.Descripcio||''}">${p.Descripcio||'—'}</td>
+    <td style="color:var(--muted);font-size:12px">${p.client||'—'}</td>
+    <td style="font-size:12px">${fd(p.data_entrada)}</td>
     <td style="font-size:12px">${fd(p.data_inici)}</td>
-    <td style="font-size:12px">${fd(p.data_fi)}</td>
     <td class="amt">${fe(p.import)}</td>
-    <td class="amt">${fe(p.acr_pc,2)}%</td>
-    <td class="amt" style="color:var(--green);font-weight:700">${fe(p.acr_import)}</td>
-    <td>${badgeHtml(p.estat)}</td>
+    <td style="font-size:12px">${p.facturar||'—'}</td>
+    <td style="background:${ESTAT_BG[p.estat]||'transparent'}">${badgeHtml(p.estat)}</td>
     <td onclick="event.stopPropagation()" style="white-space:nowrap">
-      <button class="btn btn-secondary btn-xs" onclick="openModal(${p.id})">✏️</button>
-      <button class="btn btn-xs btn-danger" style="margin-left:4px" onclick="confirmDel(${p.id})" title="Eliminar">✕</button>
+      <button class="btn btn-secondary btn-xs" onclick="openModal('${p.IdPJ}')">✏️</button>
+      <button class="btn btn-xs btn-danger" style="margin-left:4px" onclick="confirmDel('${p.IdPJ}')" title="Eliminar">✕</button>
     </td>
   </tr>`).join('');
 }
@@ -628,94 +648,97 @@ function applyFilters(){
   const cerca=document.getElementById('f-cerca').value.toLowerCase().trim();
   const estat=document.getElementById('f-estat').value;
   const res=allPJ.filter(p=>{
-    const cnom=p.clients?.rao_social||'';
-    const mc=!cerca||(p.codi||'').toLowerCase().includes(cerca)||(p.nom||'').toLowerCase().includes(cerca)||cnom.toLowerCase().includes(cerca);
+    const mc=!cerca||(p.IdPJ||'').toLowerCase().includes(cerca)||(p.Descripcio||'').toLowerCase().includes(cerca)||(p.client||'').toLowerCase().includes(cerca);
     const me=!estat||p.estat===estat;
     return mc&&me;
   });
   renderTable(res);
 }
-function clearFilters(){ document.getElementById('f-cerca').value=''; document.getElementById('f-estat').value=''; renderTable(allPJ); }
+function clearFilters(){document.getElementById('f-cerca').value='';document.getElementById('f-estat').value='';renderTable(allPJ);}
 
-function openModal(id){
-  curId=id; showTab('tp-gen');
-  if(id){
-    const p=allPJ.find(x=>x.id===id);
-    if(!p) return;
-    document.getElementById('m-title').textContent=p.codi||p.nom;
+function openModal(idpj){
+  curIdPJ=idpj; showTab('tp-gen');
+  if(idpj){
+    const p=allPJ.find(x=>x.IdPJ===idpj);
+    if(!p)return;
+    document.getElementById('m-title').textContent=p.IdPJ;
     fillForm(p);
-  } else {
+  }else{
     document.getElementById('m-title').textContent='Nou projecte';
     resetForm();
   }
   document.getElementById('overlay').classList.add('open');
 }
-function closeModal(){ document.getElementById('overlay').classList.remove('open'); curId=null; }
+function closeModal(){document.getElementById('overlay').classList.remove('open');curIdPJ=null;}
 
 function fillForm(p){
-  const s=(id,v)=>{const el=document.getElementById(id);if(el)el.value=(v??'')};
-  s('m-codi',p.codi); s('m-nom',p.nom);
-  s('m-pj-mcodi',p.pj_id_mcodi); s('m-pj-mcodi-nom','');
+  const s=(id,v)=>{const el=document.getElementById(id);if(el)el.value=(v??'');};
+  s('m-idpj',p.IdPJ);
+  s('m-descripcio',p.Descripcio);
+  s('m-tag',p.TAG);
   s('m-carpeta',p.carpeta||'ACR');
   s('m-provinent',p.provinent);
-  s('m-id-en',p.id_en); s('m-id-rc',p.id_rc);
-  s('m-client',p.id_client);
-  s('m-empresa-pj',p.empresa_pj);
-  s('m-resp-nom',p.resp_nom); s('m-resp-carrec',p.resp_carrec);
-  s('m-resp-tel',p.resp_tel); s('m-resp-email',p.resp_email);
-  s('m-resp-web',p.resp_web);
-  s('m-sbu',p.pj_sbu);
+  s('m-entitat',p.entitat);
+  s('m-id-rc',p.id_rc);
+  // client
+  const selCli=document.getElementById('m-client');
+  const cliOpt=[...selCli.options].find(o=>o.dataset.codi===p.idclient);
+  selCli.value=cliOpt?cliOpt.value:'';
+  s('m-idclient',p.idclient);
+  s('m-empresa-pj',p.EmpresaPJ);
+  s('m-resp-pj',p.RespPJ);
+  s('m-resp-carrec',p.RespCarrecPJ);
+  s('m-resp-tel',p.RespTel_MobPJ);
+  s('m-resp-email',p.RespeMailPJ);
+  s('m-resp-web',p.RespWebPJ);
+  s('m-tipus-pj',p.TipusPJ);
   s('m-estat',p.estat||'ACTIU');
   s('m-data-entrada',p.data_entrada);
-  s('m-inici',p.data_inici); s('m-fi',p.data_fi);
-  s('m-exe-prev',p.data_execucio);
   s('m-data-finalitzat',p.data_finalitzat);
-  s('m-data-cancel',p.data_cancel);
+  s('m-facturar',p.facturar);
+  s('m-import',p.import??0);
+  s('m-exe-prev',p.data_execucio);
+  s('m-data-inici',p.data_inici);
   s('m-mercat-origen',p.mercat_origen);
   s('m-mercat-desti',p.mercat_desti);
-  s('m-id-dg',p.id_dg); s('m-id-cb',p.cb_pc??'');
-  s('m-responsable',p.responsable);
-  s('m-import',p.import??0);
   s('m-observacions',p.observacions);
-  s('m-en-pc',p.en_pc??0); s('m-dg-pc',p.dg_pc??0); s('m-cb-pc',p.cb_pc??0);
+  s('m-anotacions',p.anotacions);
+  s('m-en-pc',p.en_pc??0);
+  s('m-dg-pc',p.dg_pc??0);
+  s('m-cb-pc',p.cb_pc??0);
   s('m-notes',p.notes);
   updateBadge(); recalcComm();
 }
 
 function resetForm(){
-  ['m-codi','m-nom','m-pj-mcodi','m-pj-mcodi-nom','m-id-en','m-id-rc',
-   'm-empresa-pj','m-resp-nom','m-resp-carrec','m-resp-tel','m-resp-email','m-resp-web',
-   'm-exe-prev','m-id-dg','m-responsable','m-observacions','m-notes']
+  ['m-idpj','m-descripcio','m-tag','m-id-rc','m-idclient',
+   'm-empresa-pj','m-resp-pj','m-resp-carrec','m-resp-tel','m-resp-email','m-resp-web',
+   'm-exe-prev','m-observacions','m-anotacions','m-notes']
   .forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
-  ['m-client','m-carpeta','m-provinent','m-sbu','m-mercat-origen','m-mercat-desti']
+  ['m-client','m-carpeta','m-provinent','m-entitat','m-tipus-pj','m-facturar','m-mercat-origen','m-mercat-desti']
   .forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
-  ['m-data-entrada','m-inici','m-fi','m-data-finalitzat','m-data-cancel']
+  ['m-data-entrada','m-data-inici','m-data-finalitzat']
   .forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   const _s=(id,v)=>{const el=document.getElementById(id);if(el)el.value=v;};
   _s('m-carpeta','ACR');
   _s('m-estat','ACTIU');
   _s('m-import',0);
-  _s('m-en-pc',0);
-  _s('m-dg-pc',0);
-  _s('m-cb-pc',0);
+  _s('m-en-pc',0);_s('m-dg-pc',0);_s('m-cb-pc',0);
   updateBadge(); recalcComm();
 }
 
 function onEstatChange(){
   updateBadge();
-  const estat = document.getElementById('m-estat').value;
-  if(estat !== 'ACTIU'){
-    const fins = document.getElementById('m-data-finalitzat');
-    if(fins && !fins.value) fins.value = new Date().toISOString().split('T')[0];
+  const estat=document.getElementById('m-estat').value;
+  if(estat!=='ACTIU'){
+    const fins=document.getElementById('m-data-finalitzat');
+    if(fins&&!fins.value)fins.value=new Date().toISOString().split('T')[0];
   }
 }
 
 function onDataEntradaChange(){
-  const val = document.getElementById('m-data-entrada').value;
-  if(val){
-    document.getElementById('m-estat').value = 'ACTIU';
-    updateBadge();
-  }
+  const val=document.getElementById('m-data-entrada').value;
+  if(val){document.getElementById('m-estat').value='ACTIU';updateBadge();}
 }
 
 function updateBadge(){
@@ -742,9 +765,9 @@ function recalcComm(){
 }
 
 async function saveProjecte(){
-  const codi=document.getElementById('m-codi').value.trim();
-  const nom=document.getElementById('m-nom').value.trim();
-  if(!nom){ toast('El nom és obligatori','err'); return; }
+  const idpj=document.getElementById('m-idpj').value.trim();
+  const descripcio=document.getElementById('m-descripcio').value.trim();
+  if(!descripcio){toast('La descripció és obligatòria','err');return;}
   const imp=parseFloat(document.getElementById('m-import')?.value)||0;
   const enPc=parseFloat(document.getElementById('m-en-pc').value)||0;
   const dgPc=parseFloat(document.getElementById('m-dg-pc').value)||0;
@@ -754,58 +777,61 @@ async function saveProjecte(){
   const cbI=Math.round(imp*cbPc/100*100)/100;
   const acrI=Math.round((imp-enI-dgI-cbI)*100)/100;
   const acrPc=imp>0?Math.round(acrI/imp*10000)/100:0;
-  const idCli=document.getElementById('m-client').value;
   const g=id=>document.getElementById(id)?.value||null;
+  const selCli=document.getElementById('m-client');
+  const cliOpt=selCli.options[selCli.selectedIndex];
   const data={
-    codi:codi||null, nom,
-    pj_id_mcodi:g('m-pj-mcodi'),
+    Descripcio:descripcio,
+    TAG:g('m-tag'),
     carpeta:g('m-carpeta'),
     provinent:g('m-provinent'),
-    id_en:g('m-id-en'), id_rc:g('m-id-rc'),
-    id_client:idCli?parseInt(idCli):null,
-    empresa_pj:g('m-empresa-pj'),
-    resp_nom:g('m-resp-nom'), resp_carrec:g('m-resp-carrec'),
-    resp_tel:g('m-resp-tel'), resp_email:g('m-resp-email'),
-    resp_web:g('m-resp-web'),
-    pj_sbu:g('m-sbu'),
+    entitat:g('m-entitat')?parseInt(g('m-entitat')):null,
+    id_rc:g('m-id-rc'),
+    idclient:g('m-idclient'),
+    client:cliOpt&&cliOpt.value?cliOpt.textContent.split(' (')[0]:'',
+    EmpresaPJ:g('m-empresa-pj'),
+    RespPJ:g('m-resp-pj'),
+    RespCarrecPJ:g('m-resp-carrec'),
+    RespTel_MobPJ:g('m-resp-tel'),
+    RespeMailPJ:g('m-resp-email'),
+    RespWebPJ:g('m-resp-web'),
+    TipusPJ:g('m-tipus-pj'),
     estat:document.getElementById('m-estat').value,
     data_entrada:g('m-data-entrada'),
-    data_inici:g('m-inici'),
-    data_fi:g('m-fi'),
-    data_execucio:g('m-exe-prev'),
     data_finalitzat:g('m-data-finalitzat'),
-    data_cancel:g('m-data-cancel'),
+    facturar:g('m-facturar'),
+    import:imp,
+    data_execucio:g('m-exe-prev'),
+    data_inici:g('m-data-inici'),
     mercat_origen:g('m-mercat-origen'),
     mercat_desti:g('m-mercat-desti'),
-    id_dg:g('m-id-dg'),
-    responsable:g('m-responsable'),
-    import:imp,
     observacions:g('m-observacions'),
-    en_pc:enPc, en_import:enI,
-    dg_pc:dgPc, dg_import:dgI,
-    cb_pc:cbPc, cb_import:cbI,
-    acr_pc:acrPc, acr_import:acrI,
+    anotacions:g('m-anotacions'),
+    en_pc:enPc,en_import:enI,
+    dg_pc:dgPc,dg_import:dgI,
+    cb_pc:cbPc,cb_import:cbI,
+    acr_pc:acrPc,acr_import:acrI,
     notes:g('m-notes'),
   };
+  if(!curIdPJ) data.IdPJ=idpj||null;
   const btn=document.getElementById('btn-save');
-  btn.disabled=true; btn.innerHTML='<span class="spin"></span> Guardant...';
+  btn.disabled=true;btn.innerHTML='<span class="spin"></span> Guardant...';
   try{
-    if(curId){ await sbPatch('projectes',curId,data); }
-    else { await sbPost('projectes',data); }
+    if(curIdPJ){await sbPatch('projectes',curIdPJ,data);}
+    else{await sbPost('projectes',data);}
     toast('Projecte guardat','ok');
-    await loadEntitats();
-  await loadPaisos();
-  await loadProveniments();
-  await loadProjectes(); closeModal();
-  }catch(e){ toast('Error: '+e.message,'err'); }
-  finally{ btn.disabled=false; btn.innerHTML='💾 Guardar'; }
+    await Promise.all([loadEntitats(),loadPaisos(),loadProveniments(),loadProjectes()]);
+    loadTags();
+    closeModal();
+  }catch(e){toast('Error: '+e.message,'err');}
+  finally{btn.disabled=false;btn.innerHTML='💾 Guardar';}
 }
 
-async function confirmDel(id){
-  const p=allPJ.find(x=>x.id===id);
-  if(!p||!confirm(`Eliminar el projecte "${p.nom}"?`)) return;
-  try{ await sbDel('projectes',id); toast('Eliminat','ok'); await loadProjectes(); }
-  catch(e){ toast('Error: '+e.message,'err'); }
+async function confirmDel(idpj){
+  const p=allPJ.find(x=>x.IdPJ===idpj);
+  if(!p||!confirm(`Eliminar el projecte "${p.Descripcio}"?`))return;
+  try{await sbDel('projectes',idpj);toast('Eliminat','ok');await loadProjectes();}
+  catch(e){toast('Error: '+e.message,'err');}
 }
 
 function showTab(tabId){

@@ -111,12 +111,8 @@ table.main-tbl{width:100%;border-collapse:collapse;font-size:13px}
     </div>
     <div class="nav-sub" onclick="location.href='erp-facturacio.html'">Factures emeses</div>
     <div class="nav-sub" onclick="location.href='erp-factures-rebudes.html'">Factures rebudes</div>
-    <div class="nav-item" onclick="location.href='erp-clients.html'">
-      <span class="ico">👥</span> Clients
-    </div>
-    <div class="nav-item" onclick="location.href='erp-proveidors.html'">
-      <span class="ico">🏭</span> Proveïdors
-    </div>
+    <div class="nav-item" onclick="location.href='erp-clients.html'"><span class="ico">👥</span> Clients</div>
+    <div class="nav-item" onclick="location.href='erp-proveidors.html'"><span class="ico">🏭</span> Proveïdors</div>
     <div class="nav-item active">
       <span class="ico">🏢</span> Entitats
     </div>
@@ -350,9 +346,10 @@ async function init(){
 
 async function loadEntitats(){
   try{
-    allEnt=await sbGet('entitats','select=*&order=en_RaoSocial');
+    allEnt=await sbGet('entitats','select=*&order=id');
+    console.log('Entitats carregades:', allEnt.length, allEnt[0]);
     renderStats(); renderTable(allEnt); populateFilters();
-  }catch(e){ toast('Error carregant entitats: '+e.message,'err'); allEnt=[]; renderTable([]); }
+  }catch(e){ toast('Error carregant entitats: '+e.message,'err'); console.error('Error:', e); allEnt=[]; renderTable([]); }
 }
 
 async function refreshData(){ toast('Actualitzant...','inf'); await loadEntitats(); toast('Actualitzat','ok'); }

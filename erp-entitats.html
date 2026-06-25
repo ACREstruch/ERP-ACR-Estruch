@@ -359,8 +359,8 @@ async function refreshData(){ toast('Actualitzant...','inf'); await loadEntitats
 
 function renderStats(){
   const total=allEnt.length;
-  const paisos=new Set(allEnt.map(e=>e.en_Pais).filter(Boolean)).size;
-  const tipus=new Set(allEnt.map(e=>e.en_Tipus).filter(Boolean)).size;
+  const paisos=new Set(allEnt.map(e=>e['en_Pais']).filter(Boolean)).size;
+  const tipus=new Set(allEnt.map(e=>e['en_CNCE']).filter(Boolean)).size;
   document.getElementById('s-total').textContent=total;
   document.getElementById('s-sub').textContent=total===1?'entitat':'entitats';
   document.getElementById('s-paisos').textContent=paisos||'—';
@@ -371,13 +371,13 @@ function populateFilters(){
   // Països
   const selPais=document.getElementById('f-pais');
   const curPais=selPais.value;
-  const paisos=[...new Set(allEnt.map(e=>e.en_Pais).filter(Boolean))].sort();
+  const paisos=[...new Set(allEnt.map(e=>e['en_Pais']).filter(Boolean))].sort();
   selPais.innerHTML='<option value="">Tots els països</option>';
   paisos.forEach(p=>{const o=document.createElement('option');o.value=p;o.textContent=p;if(p===curPais)o.selected=true;selPais.appendChild(o);});
   // Tipus
   const selTipus=document.getElementById('f-tipus');
   const curTipus=selTipus.value;
-  const tipus=[...new Set(allEnt.map(e=>e.en_Tipus).filter(Boolean))].sort();
+  const tipus=[...new Set(allEnt.map(e=>e['en_CNCE']).filter(Boolean))].sort();
   selTipus.innerHTML='<option value="">Tots els tipus</option>';
   tipus.forEach(t=>{const o=document.createElement('option');o.value=t;o.textContent=t;if(t===curTipus)o.selected=true;selTipus.appendChild(o);});
 }
@@ -390,13 +390,13 @@ function renderTable(rows){
     return;
   }
   tbody.innerHTML=rows.map(e=>`<tr onclick="openModal(${e.id})">
-    <td><span class="ent-nom">${e.en_RaoSocial||'—'}</span></td>
-    <td style="color:var(--muted)">${e.en_Sinonim||'—'}</td>
-    <td style="font-size:12px">${e.en_NIF||'—'}</td>
-    <td>${e.en_Tipus?`<span class="tag">${e.en_Tipus}</span>`:'—'}</td>
-    <td>${e.en_Pais||'—'}</td>
-    <td style="font-size:12px">${[e.en_Tel,e.en_Email].filter(Boolean).join(' · ')||'—'}</td>
-    <td style="font-size:12px">${[e.en_CntNom,e.en_CntCognoms].filter(Boolean).join(' ')||'—'}</td>
+    <td><span class="ent-nom">${e['en_RaoSocial']||'—'}</span></td>
+    <td style="color:var(--muted)">${e['en_IdSP']||'—'}</td>
+    <td style="font-size:12px">${'—'}</td>
+    <td>${e['en_CNCE']?`<span class="tag">${e['en_CNCE']}</span>`:'—'}</td>
+    <td>${e['en_Pais']||'—'}</td>
+    <td style="font-size:12px">${[e['en_Tel'],e['en_ConteMail']].filter(Boolean).join(' · ')||'—'}</td>
+    <td style="font-size:12px">${[e['en_ContNom'],e['en_ContCognom']].filter(Boolean).join(' ')||'—'}</td>
     <td onclick="event.stopPropagation()" style="white-space:nowrap">
       <button class="btn btn-secondary btn-xs" onclick="openModal(${e.id})">✏️</button>
       <button class="btn btn-xs btn-danger" style="margin-left:4px" onclick="confirmDel(${e.id})" title="Eliminar">✕</button>
@@ -410,12 +410,11 @@ function applyFilters(){
   const tipus=document.getElementById('f-tipus').value;
   const res=allEnt.filter(e=>{
     const mc=!cerca||
-      (e.en_RaoSocial||'').toLowerCase().includes(cerca)||
-      (e.en_Sinonim||'').toLowerCase().includes(cerca)||
-      (e.en_NIF||'').toLowerCase().includes(cerca)||
-      (e.en_Pais||'').toLowerCase().includes(cerca);
-    const mp=!pais||e.en_Pais===pais;
-    const mt=!tipus||e.en_Tipus===tipus;
+      (e['en_RaoSocial']||'').toLowerCase().includes(cerca)||
+      (e['en_IdSP']||'').toLowerCase().includes(cerca)||
+      (e['en_Pais']||'').toLowerCase().includes(cerca);
+    const mp=!pais||e['en_Pais']===pais;
+    const mt=!tipus||e["en_CNCE"]===tipus;
     return mc&&mp&&mt;
   });
   renderTable(res);
@@ -434,7 +433,7 @@ function openModal(id){
   if(id){
     const e=allEnt.find(x=>x.id===id);
     if(!e) return;
-    document.getElementById('m-title').textContent=e.en_RaoSocial||'Entitat';
+    document.getElementById('m-title').textContent=e["en_RaoSocial"]||'Entitat';
     fillForm(e);
     btnDel.style.display='inline-flex';
   } else {
@@ -449,23 +448,23 @@ function closeModal(){ document.getElementById('overlay').classList.remove('open
 
 function fillForm(e){
   const s=(id,v)=>{const el=document.getElementById(id);if(el)el.value=(v??'')};
-  s('m-nom',e.en_RaoSocial);
-  s('m-sin',e.en_Sinonim);
-  s('m-nif',e.en_NIF);
-  s('m-tipus',e.en_Tipus);
-  s('m-adr',e.en_Adreca);
-  s('m-cp',e.en_CP);
-  s('m-ciu',e.en_Ciutat);
-  s('m-pais',e.en_Pais);
-  s('m-tel',e.en_Tel);
-  s('m-email',e.en_Email);
-  s('m-web',e.en_Web);
-  s('m-cnt-nom',e.en_CntNom);
-  s('m-cnt-cog',e.en_CntCognoms);
-  s('m-cnt-email',e.en_CntEmail);
-  s('m-cnt-tel',e.en_CntTel);
-  s('m-cnt-carrec',e.en_CntCarrec);
-  s('m-notes',e.en_Notes);
+  s('m-nom',e['en_RaoSocial']);
+  s('m-sin',e['en_IdSP']);
+  s('m-nif',null);
+  s('m-tipus',e["en_CNCE"]);
+  s('m-adr',e['Direcció']);
+  s('m-cp',e['en_CP']);
+  s('m-ciu',e['Municipi']);
+  s('m-pais',e["en_Pais"]);
+  s('m-tel',e['en_Tel']);
+  s('m-email',e['en_ConteMail']);
+  s('m-web',e['en_Web']);
+  s('m-cnt-nom',e['en_ContNom']);
+  s('m-cnt-cog',e['en_ContCognom']);
+  s('m-cnt-email',null);
+  s('m-cnt-tel',e['en_ContMobil']);
+  s('m-cnt-carrec',e['en_ContCarrec']);
+  s('m-notes',e['en_Notes']);
 }
 
 function resetForm(){
@@ -479,23 +478,23 @@ async function saveEntitat(){
   const nom=document.getElementById('m-nom').value.trim();
   if(!nom){ toast('El nom és obligatori','err'); return; }
   const data={
-    en_RaoSocial: nom,
-    en_Sinonim: document.getElementById('m-sin').value||null,
-    en_NIF: document.getElementById('m-nif').value||null,
-    en_Tipus: document.getElementById('m-tipus').value||null,
-    en_Adreca: document.getElementById('m-adr').value||null,
-    en_CP: document.getElementById('m-cp').value||null,
-    en_Ciutat: document.getElementById('m-ciu').value||null,
-    en_Pais: document.getElementById('m-pais').value||null,
-    en_Tel: document.getElementById('m-tel').value||null,
-    en_Email: document.getElementById('m-email').value||null,
-    en_Web: document.getElementById('m-web').value||null,
-    en_CntNom: document.getElementById('m-cnt-nom').value||null,
-    en_CntCognoms: document.getElementById('m-cnt-cog').value||null,
-    en_CntEmail: document.getElementById('m-cnt-email').value||null,
-    en_CntTel: document.getElementById('m-cnt-tel').value||null,
-    en_CntCarrec: document.getElementById('m-cnt-carrec').value||null,
-    en_Notes: document.getElementById('m-notes').value||null,
+    'en_RaoSocial': nom,
+    'en_IdSP': document.getElementById('m-sin').value||null,
+    // 'en_NIF': document.getElementById('m-nif').value||null,
+    'en_CNCE': document.getElementById('m-tipus').value||null,
+    'Direcció': document.getElementById('m-adr').value||null,
+    'en_CP': document.getElementById('m-cp').value||null,
+    'Municipi': document.getElementById('m-ciu').value||null,
+    'en_Pais': document.getElementById('m-pais').value||null,
+    'en_Tel': document.getElementById('m-tel').value||null,
+    'en_ConteMail': document.getElementById('m-email').value||null,
+    'en_Web': document.getElementById('m-web').value||null,
+    'en_ContNom': document.getElementById('m-cnt-nom').value||null,
+    'en_ContCognom': document.getElementById('m-cnt-cog').value||null,
+    // 'en_CntEmail': document.getElementById('m-cnt-email').value||null,
+    'en_ContMobil': document.getElementById('m-cnt-tel').value||null,
+    'en_ContCarrec': document.getElementById('m-cnt-carrec').value||null,
+    'en_Notes': document.getElementById('m-notes').value||null,
   };
   const btn=document.getElementById('btn-save');
   btn.disabled=true; btn.innerHTML='<span class="spin"></span> Guardant...';

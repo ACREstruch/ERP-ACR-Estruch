@@ -691,12 +691,13 @@ function resetForm(){
   .forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   ['m-data-entrada','m-inici','m-fi','m-data-finalitzat','m-data-cancel']
   .forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
-  document.getElementById('m-carpeta').value='ACR';
-  document.getElementById('m-estat').value='ACTIU';
-  document.getElementById('m-import').value=0;
-  document.getElementById('m-en-pc').value=0;
-  document.getElementById('m-dg-pc').value=0;
-  document.getElementById('m-cb-pc').value=0;
+  const _s=(id,v)=>{const el=document.getElementById(id);if(el)el.value=v;};
+  _s('m-carpeta','ACR');
+  _s('m-estat','ACTIU');
+  _s('m-import',0);
+  _s('m-en-pc',0);
+  _s('m-dg-pc',0);
+  _s('m-cb-pc',0);
   updateBadge(); recalcComm();
 }
 

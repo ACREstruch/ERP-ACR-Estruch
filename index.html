@@ -291,7 +291,7 @@ async function init(){
       sbGet('factures_rebudes','select=no_factura,data_termini,estat,total_factura,import_pagat,proveidors(nom)&order=data_termini'),
       sbGet('clients','select=id',),
       sbGet('proveidors','select=id'),
-      sbGet('projectes','select=id,estat,import'),
+      sbGet('projectes','select="IdPJ",estat,import'),
       sbGet('assentaments','select=id'),
       sbGet('pla_comptes','select=id'),
     ]);

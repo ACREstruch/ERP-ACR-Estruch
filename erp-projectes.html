@@ -545,14 +545,14 @@ function onClientChange(){
 
 async function loadEntitats(){
   try{
-    const rows=await sbGet('entitats','select=id,nom,sinonim&order=nom');
+    const rows=await sbGet('entitats','select=id,en_RaoSocial&order=en_RaoSocial');
     const sel=document.getElementById('m-entitat');if(!sel)return;
     const cur=sel.value;
     sel.innerHTML='<option value="">— Selecciona —</option>';
     rows.forEach(r=>{
       const o=document.createElement('option');
       o.value=r.id;
-      o.textContent=r.sinonim?`${r.nom} (${r.sinonim})`:r.nom;
+      o.textContent=r.en_RaoSocial||'—';
       sel.appendChild(o);
     });
     sel.value=cur;

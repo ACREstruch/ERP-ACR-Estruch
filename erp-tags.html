@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ERP ACR Estruch — Tags</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --blue:#00387C;--blue-mid:#1a54a0;--blue-light:#e8f0fb;--blue-dim:#d0e0f5;
+  --green:#1a8c42;--green-bg:#d4edda;--green-txt:#155724;
+  --red:#c0392b;--red-bg:#f8d7da;--red-txt:#721c24;
+  --grey:#6c757d;--grey-bg:#e9ecef;--grey-txt:#495057;
+  --bg:#FAF8F6;--white:#fff;--border:#dee2e6;--border-light:#eaeef2;
+  --text:#212529;--muted:#6c757d;
+  --sidebar:220px;--topbar:58px;--r:6px;
+  --shadow:0 1px 4px rgba(0,0,0,.1),0 4px 12px rgba(0,0,0,.06);
+}
+body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;font-size:14px;background:var(--bg);color:var(--text);height:100vh;overflow:hidden}
+#app{display:flex;height:100vh}
+#sidebar{width:var(--sidebar);background:#fff;border-right:1px solid #EDE9E4;display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto}
+#logo-area{padding:14px 16px 12px;border-bottom:1px solid #EDE9E4;cursor:pointer}
+.logo-main{font-size:19px;font-weight:800;color:var(--blue);letter-spacing:-.4px;line-height:1.1}
+.logo-main .sep{color:#9ca3af;font-weight:300;margin:0 1px}
+.logo-sub{font-size:10.5px;color:#6b7280;margin-top:3px;letter-spacing:.3px;font-style:italic}
+#nav{padding:10px 0;flex:1}
+.nav-section{padding:10px 14px 3px;font-size:10px;color:#9ca3af;text-transform:uppercase;letter-spacing:1.2px;font-weight:600}
+.nav-item{display:flex;align-items:center;gap:9px;padding:9px 16px;color:#374151;cursor:pointer;border-left:3px solid transparent;transition:all .15s;font-size:13px;user-select:none}
+.nav-item:hover{background:#f3f4f6;color:#111827}
+.nav-item.active{background:#eff6ff;color:var(--blue);border-left-color:var(--blue);font-weight:600}
+.nav-item .ico{font-size:15px;width:19px;text-align:center;flex-shrink:0}
+.nav-sub{padding:6px 16px 6px 44px;color:#6b7280;cursor:pointer;font-size:12px;transition:all .15s;border-left:3px solid transparent;user-select:none}
+.nav-sub:hover{color:#374151;background:#f3f4f6}
+.nav-footer{padding:12px 14px;border-top:1px solid #EDE9E4;font-size:11px;color:#9ca3af}
+#main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+#topbar{height:var(--topbar);background:var(--white);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 22px;gap:12px;flex-shrink:0;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+#topbar h1{font-size:17px;font-weight:700;color:var(--blue);flex:1}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 15px;border-radius:var(--r);border:none;cursor:pointer;font-size:13px;font-weight:500;transition:all .15s;white-space:nowrap}
+.btn-primary{background:var(--blue);color:#fff}.btn-primary:hover{background:var(--blue-mid)}
+.btn-secondary{background:#fff;color:var(--blue);border:1.5px solid var(--blue)}.btn-secondary:hover{background:var(--blue-light)}
+.btn-danger{background:var(--red-bg);color:var(--red-txt);border:1px solid #f5c6cb}.btn-danger:hover{background:#f5c6cb}
+.btn-sm{padding:5px 10px;font-size:12px}.btn-xs{padding:3px 8px;font-size:11px}
+.btn:disabled{opacity:.5;cursor:default}
+#content{flex:1;overflow-y:auto;padding:18px 22px}
+#toast{position:fixed;bottom:22px;right:22px;z-index:999;display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.toast{padding:11px 18px;border-radius:var(--r);font-size:13px;font-weight:600;color:#fff;box-shadow:0 4px 16px rgba(0,0,0,.25);animation:tin .3s ease;pointer-events:auto}
+.toast.ok{background:var(--green)}.toast.err{background:var(--red)}.toast.inf{background:var(--blue)}
+@keyframes tin{from{transform:translateX(110%);opacity:0}to{transform:translateX(0);opacity:1}}
+::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:rgba(0,0,0,.2);border-radius:3px}
+
+/* Layout tags */
+.tags-layout{display:grid;grid-template-columns:260px 1fr;gap:16px;height:calc(100vh - var(--topbar) - 36px)}
+.tags-index{background:var(--white);border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden;display:flex;flex-direction:column}
+.tags-index-hdr{padding:14px 18px;border-bottom:1px solid var(--border);font-size:11px;font-weight:800;color:var(--blue);text-transform:uppercase;letter-spacing:.8px}
+.tag-cat-item{padding:12px 18px;cursor:pointer;border-left:3px solid transparent;transition:all .15s;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border-light)}
+.tag-cat-item:hover{background:var(--blue-light)}
+.tag-cat-item.active{background:#eff6ff;border-left-color:var(--blue);font-weight:700;color:var(--blue)}
+.tag-cat-item .cat-ico{font-size:16px}
+.tag-cat-item .cat-info{flex:1}
+.tag-cat-item .cat-nom{font-size:13px;font-weight:600}
+.tag-cat-item .cat-cnt{font-size:11px;color:var(--muted);margin-top:2px}
+.tags-content{background:var(--white);border-radius:var(--r);box-shadow:var(--shadow);display:flex;flex-direction:column;overflow:hidden}
+.tags-content-hdr{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.tags-content-hdr h2{font-size:15px;font-weight:700;color:var(--blue);flex:1}
+.tags-content-sub{font-size:12px;color:var(--muted)}
+.tags-list{flex:1;overflow-y:auto;padding:8px 0}
+.tag-item{display:flex;align-items:center;gap:12px;padding:10px 18px;border-bottom:1px solid var(--border-light);transition:background .12s}
+.tag-item:hover{background:#f8f9fa}
+.tag-item:last-child{border-bottom:none}
+.tag-nom{flex:1;font-size:13px;font-weight:500}
+.tag-actions{display:flex;gap:6px;opacity:0;transition:opacity .15s}
+.tag-item:hover .tag-actions{opacity:1}
+.tags-add{padding:14px 18px;border-top:1px solid var(--border);display:flex;gap:8px;background:#fafbfc}
+.tags-add input{flex:1;padding:7px 10px;border:1.5px solid var(--border);border-radius:var(--r);font-size:13px;font-family:inherit}
+.tags-add input:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(0,56,124,.08)}
+.empty-tags{text-align:center;padding:40px 20px;color:var(--muted);font-size:13px}
+.edit-input{flex:1;padding:5px 8px;border:1.5px solid var(--blue);border-radius:var(--r);font-size:13px;font-family:inherit}
+.edit-input:focus{outline:none}
+</style>
+</head>
+<body>
+<div id="app">
+
+<nav id="sidebar">
+  <div id="logo-area" onclick="location.href='index.html'">
+    <div class="logo-main">ACR<span class="sep">·</span>ERP</div>
+    <div class="logo-sub">ACR Estruch ERP v1.0</div>
+  </div>
+  <div id="nav">
+    <div class="nav-item" onclick="location.href='index.html'"><span class="ico">🏠</span> Dashboard</div>
+    <div class="nav-section">Mòduls</div>
+    <div class="nav-item" onclick="location.href='index.html'"><span class="ico">🧾</span> Facturació</div>
+    <div class="nav-sub" onclick="location.href='erp-facturacio.html'">Factures emeses</div>
+    <div class="nav-sub" onclick="location.href='erp-factures-rebudes.html'">Factures rebudes</div>
+    <div class="nav-item" onclick="location.href='erp-clients.html'"><span class="ico">👥</span> Clients</div>
+    <div class="nav-item" onclick="location.href='erp-proveidors.html'"><span class="ico">🏭</span> Proveïdors</div>
+    <div class="nav-item" onclick="location.href='erp-entitats.html'"><span class="ico">🏢</span> Entitats</div>
+    <div class="nav-item" onclick="location.href='erp-projectes.html'"><span class="ico">📋</span> Projectes</div>
+    <div class="nav-section" style="margin-top:10px">Comptabilitat</div>
+    <div class="nav-item" onclick="location.href='erp-major.html'"><span class="ico">📒</span> Major</div>
+    <div class="nav-item" onclick="location.href='erp-assentaments.html'"><span class="ico">✏️</span> Assentaments</div>
+    <div class="nav-item" onclick="location.href='erp-pla-comptes.html'"><span class="ico">🗂️</span> Pla de comptes</div>
+    <div class="nav-section" style="margin-top:10px">Altres</div>
+    <div class="nav-item" onclick="location.href='erp-despeses.html'"><span class="ico">✈️</span> Despeses</div>
+    <div class="nav-item" onclick="location.href='erp-reports.html'"><span class="ico">📊</span> Reports</div>
+    <div class="nav-item active" onclick="location.href='erp-tags.html'"><span class="ico">🏷️</span> Tags</div>
+  </div>
+  <div class="nav-footer">ACR Estruch ERP v1.0</div>
+</nav>
+
+<main id="main">
+  <header id="topbar">
+    <h1>Tags</h1>
+    <span id="user-email" style="font-size:12px;color:var(--muted);margin-right:4px"></span>
+    <button class="btn btn-sm" style="background:#f8d7da;color:#721c24;border:1px solid #f5c6cb;margin-right:4px" onclick="doLogout()">⏻ Sortir</button>
+  </header>
+  <div id="content">
+    <div class="tags-layout">
+
+      <!-- INDEX -->
+      <div class="tags-index">
+        <div class="tags-index-hdr">Gestió de Tags</div>
+        <div class="tag-cat-item active" onclick="selectCat('PROJECTES',this)" id="cat-PROJECTES">
+          <span class="cat-ico">📋</span>
+          <div class="cat-info">
+            <div class="cat-nom">Tag Projectes</div>
+            <div class="cat-cnt" id="cnt-PROJECTES">carregant...</div>
+          </div>
+        </div>
+        <div class="tag-cat-item" onclick="selectCat('PROVEIDORS',this)" id="cat-PROVEIDORS">
+          <span class="cat-ico">🏭</span>
+          <div class="cat-info">
+            <div class="cat-nom">Tag Proveïdors — Categoria</div>
+            <div class="cat-cnt" id="cnt-PROVEIDORS">carregant...</div>
+          </div>
+        </div>
+        <div class="tag-cat-item" onclick="selectCat('CLIENTS',this)" id="cat-CLIENTS">
+          <span class="cat-ico">👥</span>
+          <div class="cat-info">
+            <div class="cat-nom">Tag Clients — Grup</div>
+            <div class="cat-cnt" id="cnt-CLIENTS">carregant...</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CONTINGUT -->
+      <div class="tags-content">
+        <div class="tags-content-hdr">
+          <h2 id="content-title">Tag Projectes</h2>
+          <span class="tags-content-sub" id="content-sub"></span>
+        </div>
+        <div class="tags-list" id="tags-list">
+          <div class="empty-tags">Carregant...</div>
+        </div>
+        <div class="tags-add">
+          <input type="text" id="nou-tag" placeholder="Nou tag..." onkeydown="if(event.key==='Enter')addTag()">
+          <button class="btn btn-primary btn-sm" onclick="addTag()">+ Afegir</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</main>
+</div>
+<div id="toast"></div>
+
+<script>
+const SB_URL='https://ftuaeaghnnlusigqtoqv.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ0dWFlYWdobm5sdXNpZ3F0b3F2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAxNjI0MjIsImV4cCI6MjA5NTczODQyMn0.9n1gWnq_QfrLIWU7sIBReXgQAGA-NPFOpsdDp-jbDW8';
+
+function getSession(){try{const s=localStorage.getItem('erp_session');if(!s)return null;const sess=JSON.parse(s);if(Date.now()/1000>sess.expires_at-60){localStorage.removeItem('erp_session');return null;}return sess;}catch(e){return null;}}
+function getHDR(){const s=getSession();const tok=s&&s.access_token?s.access_token:SB_KEY;return{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+tok,'Prefer':'return=representation'};}
+function requireAuth(){if(!getSession()){location.replace('login.html');return false;}const el=document.getElementById('user-email');if(el){const s=getSession();el.textContent=s&&s.user?s.user.email:'';}return true;}
+async function doLogout(){const s=getSession();if(s&&s.access_token)try{await fetch(`${SB_URL}/auth/v1/logout`,{method:'POST',headers:{'apikey':SB_KEY,'Authorization':'Bearer '+s.access_token}});}catch(e){}localStorage.removeItem('erp_session');location.href='login.html';}
+
+async function sbGet(t,q=''){const r=await fetch(`${SB_URL}/rest/v1/${t}?${q}`,{headers:getHDR()});if(!r.ok)throw new Error(await r.text());return r.json()}
+async function sbPost(t,d){const r=await fetch(`${SB_URL}/rest/v1/${t}`,{method:'POST',headers:getHDR(),body:JSON.stringify(d)});if(!r.ok)throw new Error(await r.text());return r.json()}
+async function sbPatch(t,q,d){const r=await fetch(`${SB_URL}/rest/v1/${t}?${q}`,{method:'PATCH',headers:getHDR(),body:JSON.stringify(d)});if(!r.ok)throw new Error(await r.text());return r.json()}
+async function sbDel(t,q){const r=await fetch(`${SB_URL}/rest/v1/${t}?${q}`,{method:'DELETE',headers:getHDR()});if(!r.ok)throw new Error(await r.text())}
+
+const CAT_LABELS={
+  'PROJECTES':'Tag Projectes',
+  'PROVEIDORS':'Tag Proveïdors — Categoria',
+  'CLIENTS':'Tag Clients — Grup'
+};
+
+let allTags=[], curCat='PROJECTES';
+
+async function init(){
+  if(!requireAuth()) return;
+  await loadTags();
+  renderCat('PROJECTES');
+}
+
+async function loadTags(){
+  try{
+    allTags=await sbGet('tags','select=*&order=tipus,nom');
+    ['PROJECTES','PROVEIDORS','CLIENTS'].forEach(t=>{
+      const cnt=allTags.filter(x=>x.tipus===t).length;
+      document.getElementById('cnt-'+t).textContent=cnt+' tags';
+    });
+  }catch(e){toast('Error: '+e.message,'err');}
+}
+
+function selectCat(cat, el){
+  curCat=cat;
+  document.querySelectorAll('.tag-cat-item').forEach(x=>x.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('content-title').textContent=CAT_LABELS[cat];
+  document.getElementById('nou-tag').value='';
+  renderCat(cat);
+}
+
+function renderCat(cat){
+  const items=allTags.filter(x=>x.tipus===cat);
+  document.getElementById('content-sub').textContent=items.length+' elements';
+  const list=document.getElementById('tags-list');
+  if(!items.length){
+    list.innerHTML='<div class="empty-tags">Cap tag. Afegeix-ne un!</div>';
+    return;
+  }
+  list.innerHTML=items.map(t=>`
+    <div class="tag-item" id="tag-${t.id}">
+      <span class="tag-nom" id="nom-${t.id}">${t.nom}</span>
+      <div class="tag-actions">
+        <button class="btn btn-secondary btn-xs" onclick="editTag(${t.id},'${t.nom.replace(/'/g,"\\'")}')">✏️</button>
+        <button class="btn btn-danger btn-xs" onclick="delTag(${t.id},'${t.nom.replace(/'/g,"\\'")}')">✕</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+async function addTag(){
+  const nom=document.getElementById('nou-tag').value.trim().toUpperCase();
+  if(!nom){toast('Escriu un nom','err');return;}
+  if(allTags.find(t=>t.tipus===curCat&&t.nom===nom)){toast('Ja existeix!','err');return;}
+  try{
+    await sbPost('tags',{tipus:curCat,nom});
+    toast('Tag afegit','ok');
+    document.getElementById('nou-tag').value='';
+    await loadTags();
+    renderCat(curCat);
+  }catch(e){toast('Error: '+e.message,'err');}
+}
+
+function editTag(id, nomActual){
+  const nomEl=document.getElementById('nom-'+id);
+  const itemEl=document.getElementById('tag-'+id);
+  itemEl.innerHTML=`
+    <input class="edit-input" id="edit-${id}" value="${nomActual}" onkeydown="if(event.key==='Enter')saveEdit(${id});if(event.key==='Escape')cancelEdit(${id},'${nomActual.replace(/'/g,"\\'")}')">
+    <div class="tag-actions" style="opacity:1">
+      <button class="btn btn-primary btn-xs" onclick="saveEdit(${id})">✓</button>
+      <button class="btn btn-secondary btn-xs" onclick="cancelEdit(${id},'${nomActual.replace(/'/g,"\\'")}')">✕</button>
+    </div>
+  `;
+  document.getElementById('edit-'+id).focus();
+}
+
+async function saveEdit(id){
+  const nom=document.getElementById('edit-'+id).value.trim().toUpperCase();
+  if(!nom){toast('El nom no pot estar buit','err');return;}
+  try{
+    await sbPatch('tags','id=eq.'+id,{nom});
+    toast('Tag actualitzat','ok');
+    await loadTags();
+    renderCat(curCat);
+  }catch(e){toast('Error: '+e.message,'err');}
+}
+
+function cancelEdit(id, nomOriginal){
+  document.getElementById('tag-'+id).innerHTML=`
+    <span class="tag-nom" id="nom-${id}">${nomOriginal}</span>
+    <div class="tag-actions">
+      <button class="btn btn-secondary btn-xs" onclick="editTag(${id},'${nomOriginal.replace(/'/g,"\\'")}')">✏️</button>
+      <button class="btn btn-danger btn-xs" onclick="delTag(${id},'${nomOriginal.replace(/'/g,"\\'")}')">✕</button>
+    </div>
+  `;
+}
+
+async function delTag(id, nom){
+  if(!confirm(`Eliminar el tag "${nom}"?`))return;
+  try{
+    await sbDel('tags','id=eq.'+id);
+    toast('Tag eliminat','ok');
+    await loadTags();
+    renderCat(curCat);
+  }catch(e){toast('Error: '+e.message,'err');}
+}
+
+function toast(msg,type='inf'){
+  const el=document.createElement('div');el.className=`toast ${type}`;el.textContent=msg;
+  document.getElementById('toast').appendChild(el);setTimeout(()=>el.remove(),3500);
+}
+
+init();
+</script>
+</body>
+</html>

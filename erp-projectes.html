@@ -642,7 +642,7 @@ function renderTable(rows){
   const currentYY=String(new Date().getFullYear()).slice(-2);
   const ESTAT_BG={'ACTIU':'#d4edda','PAUSAT':'#fff3cd','CANCEL·LAT':'#f8d7da','COMPLETAT':'#e3f2fd'};
   const byYear={};
-  rows.forEach(p=>{const yy=(p.IdPJ||'??').substring(0,2);(byYear[yy]=byYear[yy]||[]).push(p);});
+  rows.forEach(p=>{const yy=fmtIdPJ(p.IdPJ).substring(0,2);(byYear[yy]=byYear[yy]||[]).push(p);});
   const years=Object.keys(byYear).sort().reverse();
   tbody.innerHTML=years.map(yy=>{
     const exp=yy===currentYY;
@@ -650,7 +650,7 @@ function renderTable(rows){
     const ico=exp?'▼':'▶';
     const hdr=`<tr class="year-hdr" onclick="toggleYear('${yy}')"><td colspan="9"><span id="ych-${yy}">${ico}</span> Any 20${yy} — ${byYear[yy].length} projectes</td></tr>`;
     const rws=byYear[yy].map(p=>`<tr class="yr-${yy}" style="${disp}" onclick="openModal('${p.IdPJ}')">
-      <td><span class="pj-codi">${p.IdPJ||'—'}</span></td>
+      <td><span class="pj-codi">${fmtIdPJ(p.IdPJ)}</span></td>
       <td style="font-weight:600;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${p.Descripcio||''}">${p.Descripcio||'—'}</td>
       <td style="color:var(--muted);font-size:12px">${p.client||'—'}</td>
       <td style="font-size:12px">${fd(p.data_entrada)}</td>
@@ -690,12 +690,14 @@ function clearFilters(){document.getElementById('f-cerca').value='';document.get
 function nextIdPJ(){
   const aa=String(new Date().getFullYear()).slice(-2);
   const seqs=allPJ
-    .map(p=>p.IdPJ)
-    .filter(id=>id&&/^\d{8}$/.test(id))
-    .map(id=>parseInt(id.substring(2,6)));
+    .map(p=>String(p.IdPJ||'').padStart(8,'0'))
+    .filter(id=>/^\d{8}$/.test(id))
+    .map(id=>parseInt(id.substring(2,6),10));
   const maxSeq=seqs.length?Math.max(...seqs):0;
   return aa+String(maxSeq+1).padStart(4,'0')+'00';
 }
+
+function fmtIdPJ(id){ return id?String(id).padStart(8,'0'):'—'; }
 
 function openModal(idpj){
   curIdPJ=idpj; showTab('tp-gen');

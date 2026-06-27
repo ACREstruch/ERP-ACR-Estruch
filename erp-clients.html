@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ca">
 <head>
 <meta charset="UTF-8">
@@ -130,9 +130,6 @@ input[type=number]{-moz-appearance:textfield}
 ::-webkit-scrollbar{width:6px;height:6px}
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:rgba(0,0,0,.2);border-radius:3px}
-/* sticky header */
-.tbl-wrap{overflow-x:auto;overflow-y:auto;max-height:calc(100vh - 280px)}
-.main-tbl thead th{position:sticky;top:0;z-index:3;background:#f0f4f8;box-shadow:0 2px 0 var(--border)}
 </style>
 </head>
 <body>
@@ -273,6 +270,12 @@ input[type=number]{-moz-appearance:textfield}
         <div class="fg">
           <label>Sinònim / Curt</label>
           <input type="text" id="m-sin" placeholder="CLICK">
+        </div>
+        <div class="fg">
+          <label>Grup</label>
+          <select id="m-grup">
+            <option value="">— Sense grup —</option>
+          </select>
         </div>
         <div class="fg">
           <label>ID Client</label>
@@ -432,7 +435,19 @@ let curId = null;
 
 async function init(){
   if(!requireAuth()) return;
-  await loadClients();
+  await Promise.all([loadClients(), loadGrupTags()]);
+}
+
+async function loadGrupTags(){
+  try{
+    const tags=await sbGet('tags','select=nom&tipus=eq.CLIENTS&order=nom');
+    const sel=document.getElementById('m-grup');
+    tags.forEach(t=>{
+      const o=document.createElement('option');
+      o.value=t.nom; o.textContent=t.nom;
+      sel.appendChild(o);
+    });
+  }catch(e){ console.warn('No s\'han pogut carregar grups:',e.message); }
 }
 
 async function loadClients(){
@@ -498,6 +513,7 @@ function renderTable(rows){
     <td><span class="tag">${c.codi||'—'}</span></td>
     <td><span class="client-nom">${c.rao_social}</span></td>
     <td style="color:var(--muted)">${c.sinonim||'—'}</td>
+    <td style="font-size:12px;color:var(--muted)">${c.grup||'—'}</td>
     <td style="font-size:12px">${c.nif_vat||'—'}</td>
     <td>${c.pais||'—'}</td>
     <td style="font-size:12px">${[c.tel,c.email].filter(Boolean).join(' · ')||'—'}</td>
@@ -556,7 +572,7 @@ function closeModal(){
 
 function fillForm(c){
   const s=(id,v)=>{const el=document.getElementById(id);if(el)el.value=(v??'')};
-  s('m-rao',c.rao_social); s('m-sin',c.sinonim); s('m-codi',c.codi); s('m-sit',c.situacio||'ACT'); s('m-nif',c.nif_vat);
+  s('m-rao',c.rao_social); s('m-sin',c.sinonim); s('m-grup',c.grup); s('m-codi',c.codi); s('m-sit',c.situacio||'ACT'); s('m-nif',c.nif_vat);
   s('m-adr',c.adreca); s('m-cp',c.cp); s('m-ciu',c.ciutat); s('m-pais',c.pais);
   s('m-tel',c.tel); s('m-email',c.email); s('m-web',c.web);
   s('m-cnt-nom',c.cont_nom); s('m-cnt-cog',c.cont_cognom); s('m-cnt-email',c.cont_email);
@@ -569,7 +585,7 @@ function fillForm(c){
 }
 
 function resetForm(){
-  ['m-rao','m-sin','m-codi','m-nif','m-adr','m-cp','m-ciu','m-pais',
+  ['m-rao','m-sin','m-grup','m-codi','m-nif','m-adr','m-cp','m-ciu','m-pais',
    'm-tel','m-email','m-web','m-cnt-nom','m-cnt-cog','m-cnt-email',
    'm-banc','m-iban','m-notes'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   document.getElementById('m-sit').value='ACT';
@@ -587,6 +603,7 @@ async function saveClient(){
   const data = {
     rao_social:  rao,
     sinonim:     document.getElementById('m-sin').value||null,
+    grup:        document.getElementById('m-grup').value||null,
     codi:        document.getElementById('m-codi').value||null,
     situacio:    document.getElementById('m-sit').value||'ACT',
     nif_vat:     document.getElementById('m-nif').value||null,

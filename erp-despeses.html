@@ -159,22 +159,22 @@ table.main-tbl{width:100%;border-collapse:collapse;font-size:13px}
         <div id="nav">
     <div class="nav-item" onclick="location.href='index.html'"><span class="ico">🏠</span> Dashboard</div>
     <div class="nav-section">Mòduls</div>
-    <div class="nav-item" onclick="location.href='erp-facturacio.html'"><span class="ico">🧾</span> Facturació</div>
+    <div class="nav-item" onclick="location.href='index.html'"><span class="ico">🧾</span> Facturació</div>
     <div class="nav-sub" onclick="location.href='erp-facturacio.html'">Factures emeses</div>
     <div class="nav-sub" onclick="location.href='erp-factures-rebudes.html'">Factures rebudes</div>
     <div class="nav-item" onclick="location.href='erp-clients.html'"><span class="ico">👥</span> Clients</div>
     <div class="nav-item" onclick="location.href='erp-proveidors.html'"><span class="ico">🏭</span> Proveïdors</div>
-    <div class="nav-item" onclick="location.href='erp-projectes.html'"><span class="ico">📋</span> Projectes</div>
     <div class="nav-item" onclick="location.href='erp-entitats.html'"><span class="ico">🏢</span> Entitats</div>
+    <div class="nav-item" onclick="location.href='erp-projectes.html'"><span class="ico">📋</span> Projectes</div>
     <div class="nav-item" onclick="location.href='erp-tags.html'"><span class="ico">🏷️</span> Tags</div>
     <div class="nav-section" style="margin-top:10px">Comptabilitat</div>
     <div class="nav-item" onclick="location.href='erp-major.html'"><span class="ico">📒</span> Major</div>
     <div class="nav-item" onclick="location.href='erp-assentaments.html'"><span class="ico">✏️</span> Assentaments</div>
     <div class="nav-item" onclick="location.href='erp-pla-comptes.html'"><span class="ico">🗂️</span> Pla de comptes</div>
-    <div class="nav-section" style="margin-top:10px">Informes</div>
+    <div class="nav-section" style="margin-top:10px">Altres</div>
+    <div class="nav-item active" onclick="location.href='erp-despeses.html'"><span class="ico">✈️</span> Despeses</div>
     <div class="nav-item" onclick="location.href='erp-reports.html'"><span class="ico">📊</span> Reports</div>
-    <div class="nav-item active" onclick="location.href='erp-despeses.html'" class="active"><span class="ico">✈️</span> Despeses</div>
-</div>
+  </div>
   <div class="nav-footer">ACR Estruch ERP v1.0</div>
 </nav>
 
@@ -448,42 +448,18 @@ table.main-tbl{width:100%;border-collapse:collapse;font-size:13px}
 
 <script>
 const SB_URL = 'https://ftuaeaghnnlusigqtoqv.supabase.co';
-const PIN_CORRECTE = '1234';
-function requireAuth(){
-  const pin=sessionStorage.getItem('erp_pin');
-  // Si el PIN guardat no coincideix amb l'actual, el netegem
-  if(pin && pin!==PIN_CORRECTE) sessionStorage.removeItem('erp_pin');
-  if(sessionStorage.getItem('erp_pin')===PIN_CORRECTE) return true;
-  const p=prompt('🔒 Introdueix el PIN per accedir:');
-  if(p===PIN_CORRECTE){ sessionStorage.setItem('erp_pin',p); return true; }
-  document.body.innerHTML='<div style="padding:40px;text-align:center;font-size:18px;color:#c0392b">Accés denegat</div>';
-  return false;
-}
 const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ0dWFlYWdobm5sdXNpZ3F0b3F2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAxNjI0MjIsImV4cCI6MjA5NTczODQyMn0.9n1gWnq_QfrLIWU7sIBReXgQAGA-NPFOpsdDp-jbDW8';
+const PIN_CORRECTE = '1234';
+function getSession(){try{const s=localStorage.getItem('erp_session');if(!s)return null;const sess=JSON.parse(s);if(Date.now()/1000>sess.expires_at-60){localStorage.removeItem('erp_session');return null;}return sess;}catch(e){return null;}}
+function getHDR(){const s=getSession();const tok=s&&s.access_token?s.access_token:SB_KEY;return{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+tok,'Prefer':'return=representation'};}
+function requireAuth(){if(!getSession()){location.replace('login.html');return false;}return true;}
+async function doLogout(){const s=getSession();if(s&&s.access_token)try{await fetch(`${SB_URL}/auth/v1/logout`,{method:'POST',headers:{'apikey':SB_KEY,'Authorization':'Bearer '+s.access_token}});}catch(e){}localStorage.removeItem('erp_session');location.href='login.html';}
 
-async function sbGet(t,q=''){
-  const r=await fetch(`${SB_URL}/rest/v1/${t}?${q}`,{headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}});
-  if(!r.ok) throw new Error(await r.text());
-  return r.json();
-}
-async function sbPost(t,d){
-  const r=await fetch(`${SB_URL}/rest/v1/${t}`,{method:'POST',headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json','Prefer':'return=representation'},body:JSON.stringify(d)});
-  if(!r.ok) throw new Error(await r.text());
-  return r.json();
-}
-async function sbPatch(t,id,d){
-  const r=await fetch(`${SB_URL}/rest/v1/${t}?id=eq.${id}`,{method:'PATCH',headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json','Prefer':'return=representation'},body:JSON.stringify(d)});
-  if(!r.ok) throw new Error(await r.text());
-  return r.json();
-}
-async function sbDel(t,id){
-  const r=await fetch(`${SB_URL}/rest/v1/${t}?id=eq.${id}`,{method:'DELETE',headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}});
-  if(!r.ok) throw new Error(await r.text());
-}
-async function sbDelWhere(t,col,val){
-  const r=await fetch(`${SB_URL}/rest/v1/${t}?${col}=eq.${encodeURIComponent(val)}`,{method:'DELETE',headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}});
-  if(!r.ok) throw new Error(await r.text());
-}
+async function sbGet(t,q=''){const r=await fetch(`${SB_URL}/rest/v1/${t}?${q}`,{headers:getHDR()});if(!r.ok)throw new Error(await r.text());return r.json()}
+async function sbPost(t,d){const r=await fetch(`${SB_URL}/rest/v1/${t}`,{method:'POST',headers:getHDR(),body:JSON.stringify(d)});if(!r.ok)throw new Error(await r.text());return r.json()}
+async function sbPatch(t,id,d){const r=await fetch(`${SB_URL}/rest/v1/${t}?id=eq.${id}`,{method:'PATCH',headers:getHDR(),body:JSON.stringify(d)});if(!r.ok)throw new Error(await r.text());return r.json()}
+async function sbDel(t,id){const r=await fetch(`${SB_URL}/rest/v1/${t}?id=eq.${id}`,{method:'DELETE',headers:getHDR()});if(!r.ok)throw new Error(await r.text())}
+async function sbDelWhere(t,col,val){const r=await fetch(`${SB_URL}/rest/v1/${t}?${col}=eq.${encodeURIComponent(val)}`,{method:'DELETE',headers:getHDR()});if(!r.ok)throw new Error(await r.text())}
 
 const fm=(n,d=2)=>n===null||n===undefined||isNaN(n)?'—':Number(n).toLocaleString('ca-ES',{minimumFractionDigits:d,maximumFractionDigits:d});
 const fd=s=>{if(!s)return'—';const d=new Date(s+'T00:00:00');return`${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`};

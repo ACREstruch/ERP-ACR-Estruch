@@ -624,6 +624,16 @@ input[type=number]{-moz-appearance:textfield}
           <label>SWIFT</label>
           <input type="text" id="m-swift" placeholder="BBVAESMMXXX">
         </div>
+
+        <div class="sec">Rectificatives</div>
+        <div class="fg">
+          <label>Anulada per (Nº factura rectificativa)</label>
+          <input type="text" id="m-anulada-per" placeholder="p.ex. REC001">
+        </div>
+        <div class="fg">
+          <label>Rectifica factura (Nº factura original)</label>
+          <input type="text" id="m-rectifica-fra" placeholder="p.ex. 25016">
+        </div>
       </div>
     </div><!-- /tp-fin -->
 
@@ -1150,6 +1160,8 @@ function fillForm(inv){
   s('m-bancag', inv.banc_ag);
   s('m-iban', inv.iban_bic);
   s('m-swift', inv.swift);
+  s('m-anulada-per', inv.anulada_per);
+  s('m-rectifica-fra', inv.rectifica_factura);
   s('m-en-pc', inv.en_pc??0);
   s('m-dg-pc', inv.dg_pc??0);
   s('m-cb-pc', inv.cb_pc??0);
@@ -1191,6 +1203,8 @@ function resetForm(){
   document.getElementById('m-bancag').value='';
   document.getElementById('m-iban').value='';
   document.getElementById('m-swift').value='';
+  document.getElementById('m-anulada-per').value='';
+  document.getElementById('m-rectifica-fra').value='';
   document.getElementById('m-en-pc').value=0;
   document.getElementById('m-dg-pc').value=0;
   document.getElementById('m-cb-pc').value=0;
@@ -1431,6 +1445,8 @@ async function saveInvoice(){
     classe_fra:   document.getElementById('m-classe').value,
     notes:        document.getElementById('m-notes').value,
     notes_privades: document.getElementById('m-notes-priv').value,
+    anulada_per:  document.getElementById('m-anulada-per').value||null,
+    rectifica_factura: document.getElementById('m-rectifica-fra').value||null,
     updated_at:   new Date().toISOString(),
   };
   // acr_pc

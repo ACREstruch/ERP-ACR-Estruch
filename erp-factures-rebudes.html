@@ -313,10 +313,6 @@ input[type=number]{-moz-appearance:textfield}
           <input type="date" id="m-data">
         </div>
         <div class="fg">
-          <label>Data entrada</label>
-          <input type="date" id="m-entrada">
-        </div>
-        <div class="fg">
           <label>Data termini pagament</label>
           <input type="date" id="m-termini">
         </div>
@@ -672,6 +668,16 @@ function clearFilters(){
 }
 
 // ── MODAL ──
+function nextNoIntern(){
+  const yy=String(new Date().getFullYear()).slice(-2);
+  const seqs=allFra
+    .map(f=>String(f.no_factura||''))
+    .filter(n=>/^\d{5}$/.test(n)&&n.startsWith(yy))
+    .map(n=>parseInt(n.slice(2),10));
+  const maxSeq=seqs.length?Math.max(...seqs):0;
+  return yy+String(maxSeq+1).padStart(3,'0');
+}
+
 async function openModal(id){
   curId=id; curPagaments=[];
   showTab('tp-fra');
@@ -693,7 +699,7 @@ function closeModal(){ document.getElementById('overlay').classList.remove('open
 function fillForm(fr){
   const s=(id,v)=>{const el=document.getElementById(id);if(el)el.value=(v??'')};
   s('m-no',fr.no_factura); s('m-no-prov',fr.no_fra_prov); s('m-estat',fr.estat);
-  s('m-prov',fr.id_prov); s('m-data',fr.data_fra); s('m-entrada',fr.data_entrada); s('m-termini',fr.data_termini);
+  s('m-prov',fr.id_prov); s('m-data',fr.data_fra); s('m-termini',fr.data_termini);
   s('m-concepte',fr.concepte); s('m-bi',fr.base_imposable??0); s('m-iva',fr.tipus_iva??21);
   s('m-div',fr.divisa||'EUR'); s('m-tc',fr.tc_divisa??1);
   s('m-cte-prov',fr.compte_prov||'400'); s('m-cte-desp',fr.compte_despeses||'600');
@@ -705,12 +711,11 @@ function fillForm(fr){
 
 function resetForm(){
   const today=new Date().toISOString().split('T')[0];
-  document.getElementById('m-no').value='';
+  document.getElementById('m-no').value=nextNoIntern();
   document.getElementById('m-no-prov').value='';
   document.getElementById('m-estat').value='PENDENT';
   document.getElementById('m-prov').value='';
   document.getElementById('m-data').value=today;
-  document.getElementById('m-entrada').value=today;
   document.getElementById('m-termini').value='';
   document.getElementById('m-concepte').value='';
   document.getElementById('m-bi').value=0;
@@ -890,7 +895,6 @@ async function saveFactura(){
     no_fra_prov:document.getElementById('m-no-prov').value||null,
     id_prov:idProv?parseInt(idProv):null,
     data_fra:dataFra,
-    data_entrada:document.getElementById('m-entrada').value||null,
     data_termini:document.getElementById('m-termini').value||null,
     forma_pag:document.getElementById('m-fpag')?.value||'Transferència',
     divisa:document.getElementById('m-div').value,

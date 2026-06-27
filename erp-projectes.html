@@ -496,6 +496,7 @@ input[type=number]{-moz-appearance:textfield}
 <script>
 const SB_URL='https://ftuaeaghnnlusigqtoqv.supabase.co';
 const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ0dWFlYWdobm5sdXNpZ3F0b3F2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAxNjI0MjIsImV4cCI6MjA5NTczODQyMn0.9n1gWnq_QfrLIWU7sIBReXgQAGA-NPFOpsdDp-jbDW8';
+const PIN='1234';
 
 function getSession(){try{const s=localStorage.getItem('erp_session');if(!s)return null;const sess=JSON.parse(s);if(Date.now()/1000>sess.expires_at-60){localStorage.removeItem('erp_session');return null;}return sess;}catch(e){return null;}}
 function getHDR(){const s=getSession();const tok=s&&s.access_token?s.access_token:SB_KEY;return{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+tok,'Prefer':'return=representation'};}
@@ -809,6 +810,7 @@ function recalcComm(){
 }
 
 async function saveProjecte(){
+  if(curIdPJ!=null){const pin=prompt('🔒 PIN per guardar:');if(pin!==PIN){toast('PIN incorrecte','err');return;}}
   const idpj=document.getElementById('m-idpj').value.trim();
   const descripcio=document.getElementById('m-descripcio').value.trim();
   if(!descripcio){toast('La descripció és obligatòria','err');return;}
@@ -871,6 +873,7 @@ async function saveProjecte(){
 }
 
 async function confirmDel(idpj){
+  const pin=prompt('🔒 PIN per eliminar:');if(pin!==PIN){toast('PIN incorrecte','err');return;}
   const p=allPJ.find(x=>x.IdPJ===idpj);
   if(!p||!confirm(`Eliminar el projecte "${p.Descripcio}"?`))return;
   try{await sbDel('projectes',idpj);toast('Eliminat','ok');await loadProjectes();}

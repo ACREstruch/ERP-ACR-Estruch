@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ca">
 <head>
 <meta charset="UTF-8">
@@ -602,6 +602,7 @@ function resetForm(){
 }
 
 async function saveClient(){
+  if(curId!=null){const pin=prompt('🔒 PIN per guardar:');if(pin!==PIN){toast('PIN incorrecte','err');return;}}
   const rao = document.getElementById('m-rao').value.trim();
   if(!rao){ toast('La Raó Social és obligatòria','err'); return; }
 
@@ -651,6 +652,7 @@ async function saveClient(){
 }
 
 async function confirmDel(id){
+  const pin=prompt('🔒 PIN per eliminar:');if(pin!==PIN){toast('PIN incorrecte','err');return;}
   const c = allClients.find(x=>x.id===id);
   if(!c) return;
   if(!confirm(`Eliminar el client "${c.rao_social}"?\nAquesta acció no es pot desfer.`)) return;

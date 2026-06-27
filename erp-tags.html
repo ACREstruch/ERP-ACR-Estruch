@@ -170,6 +170,7 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;font-size:14px;ba
 <script>
 const SB_URL='https://ftuaeaghnnlusigqtoqv.supabase.co';
 const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ0dWFlYWdobm5sdXNpZ3F0b3F2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAxNjI0MjIsImV4cCI6MjA5NTczODQyMn0.9n1gWnq_QfrLIWU7sIBReXgQAGA-NPFOpsdDp-jbDW8';
+const PIN='1234';
 
 function getSession(){try{const s=localStorage.getItem('erp_session');if(!s)return null;const sess=JSON.parse(s);if(Date.now()/1000>sess.expires_at-60){localStorage.removeItem('erp_session');return null;}return sess;}catch(e){return null;}}
 function getHDR(){const s=getSession();const tok=s&&s.access_token?s.access_token:SB_KEY;return{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+tok,'Prefer':'return=representation'};}
@@ -260,6 +261,7 @@ function editTag(id, nomActual){
 }
 
 async function saveEdit(id){
+  const pin=prompt('🔒 PIN per guardar:');if(pin!==PIN){toast('PIN incorrecte','err');return;}
   const nom=document.getElementById('edit-'+id).value.trim().toUpperCase();
   if(!nom){toast('El nom no pot estar buit','err');return;}
   try{
@@ -281,6 +283,7 @@ function cancelEdit(id, nomOriginal){
 }
 
 async function delTag(id, nom){
+  const pin=prompt('🔒 PIN per eliminar:');if(pin!==PIN){toast('PIN incorrecte','err');return;}
   if(!confirm(`Eliminar el tag "${nom}"?`))return;
   try{
     await sbDel('tags','id=eq.'+id);

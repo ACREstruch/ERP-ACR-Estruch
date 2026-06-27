@@ -324,6 +324,7 @@ table.main-tbl{width:100%;border-collapse:collapse;font-size:13px}
 <script>
 const SB_URL='https://ftuaeaghnnlusigqtoqv.supabase.co';
 const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ0dWFlYWdobm5sdXNpZ3F0b3F2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAxNjI0MjIsImV4cCI6MjA5NTczODQyMn0.9n1gWnq_QfrLIWU7sIBReXgQAGA-NPFOpsdDp-jbDW8';
+const PIN='1234';
 
 function getSession(){try{const s=localStorage.getItem('erp_session');if(!s)return null;const sess=JSON.parse(s);if(Date.now()/1000>sess.expires_at-60){localStorage.removeItem('erp_session');return null;}return sess;}catch(e){return null;}}
 function getHDR(){const s=getSession();const tok=s&&s.access_token?s.access_token:SB_KEY;return{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+tok,'Prefer':'return=representation'};}
@@ -470,6 +471,7 @@ function resetForm(){
 }
 
 async function saveEntitat(){
+  if(curId!=null){const pin=prompt('🔒 PIN per guardar:');if(pin!==PIN){toast('PIN incorrecte','err');return;}}
   const nom=document.getElementById('m-nom').value.trim();
   if(!nom){ toast('El nom és obligatori','err'); return; }
   const data={
@@ -503,6 +505,7 @@ async function saveEntitat(){
 }
 
 async function confirmDel(id){
+  const pin=prompt('🔒 PIN per eliminar:');if(pin!==PIN){toast('PIN incorrecte','err');return;}
   const e=allEnt.find(x=>x.id===id);
   if(!e||!confirm(`Eliminar "${e.en_RaoSocial}"?`)) return;
   try{ await sbDel('entitats',id); toast('Eliminada','ok'); await loadEntitats(); }
@@ -510,6 +513,7 @@ async function confirmDel(id){
 }
 
 async function confirmDelCur(){
+  const pin=prompt('🔒 PIN per eliminar:');if(pin!==PIN){toast('PIN incorrecte','err');return;}
   if(curId) await confirmDel(curId);
   closeModal();
 }

@@ -875,6 +875,7 @@ function updateAssentament(){
 
 // ── GUARDAR ──
 async function saveFactura(){
+  if(curId!=null){const pin=prompt('🔒 PIN per guardar:');if(pin!==PIN){toast('PIN incorrecte','err');return;}}
   const noFra=document.getElementById('m-no').value.trim();
   const dataFra=document.getElementById('m-data').value;
   if(!noFra||!dataFra){ toast('Número i data obligatoris','err'); return; }
@@ -929,6 +930,7 @@ async function saveFactura(){
 }
 
 async function confirmDel(id){
+  const pin=prompt('🔒 PIN per eliminar:');if(pin!==PIN){toast('PIN incorrecte','err');return;}
   const fr=allFra.find(x=>x.id===id);
   if(!fr) return;
   if(!confirm(`Eliminar la factura ${fr.no_factura}?`)) return;

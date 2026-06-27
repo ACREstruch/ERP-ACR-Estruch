@@ -235,7 +235,7 @@ input[type=number]{-moz-appearance:textfield}
   </div>
   <div class="tabs">
     <button class="tab on" data-tab="tp-gen">Projecte</button>
-    <button class="tab" data-tab="tp-com">Comissions</button>
+    <button class="tab" data-tab="tp-com">Budget</button>
     <button class="tab" data-tab="tp-not">Notes</button>
   </div>
   <div class="modal-body">
@@ -245,11 +245,8 @@ input[type=number]{-moz-appearance:textfield}
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
 
         <!-- COLUMNA ESQUERRA -->
-        <div style="display:flex;flex-direction:column;gap:14px">
-
-          <!-- BLOC 1: Identificació -->
-          <div class="sec">Identificació</div>
-          <div style="display:grid;grid-template-columns:1fr 2fr;gap:8px">
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <div style="display:grid;grid-template-columns:120px 1fr;gap:8px">
             <div class="fg">
               <label>IdPJ *</label>
               <input type="text" id="m-idpj" placeholder="S'autogenera">
@@ -259,15 +256,14 @@ input[type=number]{-moz-appearance:textfield}
               <input type="text" id="m-descripcio" placeholder="Descripció del projecte">
             </div>
           </div>
-          <div class="fg">
-            <label>TAG</label>
-            <select id="m-tag">
-              <option value="">— Sense tag —</option>
-            </select>
+          <div style="display:grid;grid-template-columns:55% auto;gap:8px">
+            <div class="fg">
+              <label>TAG</label>
+              <select id="m-tag">
+                <option value="">— Sense tag —</option>
+              </select>
+            </div>
           </div>
-
-          <!-- BLOC 2: Procedència -->
-          <div class="sec" style="margin-top:6px">Procedència</div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
             <div class="fg">
               <label>Carpeta</label>
@@ -277,37 +273,40 @@ input[type=number]{-moz-appearance:textfield}
               </select>
             </div>
             <div class="fg">
-              <label>Provinent</label>
-              <select id="m-provinent">
+              <label>Tipus PJ</label>
+              <select id="m-tipus-pj">
                 <option value="">— Selecciona —</option>
+                <option value="CONSULTING">CONSULTING</option>
+                <option value="SALUT">SALUT</option>
+                <option value="SERVEIS">SERVEIS</option>
+                <option value="TRADING">TRADING</option>
               </select>
-            </div>
-          </div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-            <div class="fg">
-              <label>Entitat</label>
-              <select id="m-entitat">
-                <option value="">— Selecciona —</option>
-              </select>
-            </div>
-            <div class="fg">
-              <label>Representada (RC)</label>
-              <input type="text" id="m-id-rc" placeholder="Representada">
             </div>
           </div>
           <div class="fg">
-            <label>Client</label>
-            <select id="m-client" onchange="onClientChange()">
-              <option value="">— Selecciona client —</option>
+            <label>Provinent</label>
+            <select id="m-provinent">
+              <option value="">— Selecciona —</option>
             </select>
           </div>
           <div class="fg">
-            <label>ID Client</label>
-            <input type="text" id="m-idclient" readonly style="background:#f8f9fa;color:var(--muted)">
+            <label>Entitat</label>
+            <select id="m-entitat">
+              <option value="">— Selecciona —</option>
+            </select>
           </div>
-
-          <!-- BLOC 3: Empresa Projecte -->
-          <div class="sec" style="margin-top:6px">Empresa Projecte</div>
+          <div style="display:grid;grid-template-columns:1fr 90px;gap:8px">
+            <div class="fg">
+              <label>Client</label>
+              <select id="m-client" onchange="onClientChange()">
+                <option value="">— Selecciona client —</option>
+              </select>
+            </div>
+            <div class="fg">
+              <label>ID Client</label>
+              <input type="text" id="m-idclient" readonly style="background:#f8f9fa;color:var(--muted)">
+            </div>
+          </div>
           <div class="fg">
             <label>Empresa PJ</label>
             <input type="text" id="m-empresa-pj">
@@ -322,49 +321,35 @@ input[type=number]{-moz-appearance:textfield}
               <input type="text" id="m-resp-tel">
             </div>
           </div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <div style="display:grid;grid-template-columns:55% auto;gap:8px">
             <div class="fg">
               <label>Càrrec</label>
               <input type="text" id="m-resp-carrec">
             </div>
-            <div class="fg">
-              <label>eMail</label>
-              <input type="email" id="m-resp-email">
-            </div>
           </div>
           <div class="fg">
-            <label>Web</label>
-            <input type="text" id="m-resp-web">
+            <label>eMail</label>
+            <input type="email" id="m-resp-email">
+          </div>
+          <div style="display:grid;grid-template-columns:65% auto;gap:8px">
+            <div class="fg">
+              <label>Web</label>
+              <input type="text" id="m-resp-web">
+            </div>
           </div>
         </div>
 
         <!-- COLUMNA DRETA -->
-        <div style="display:flex;flex-direction:column;gap:14px">
-
-          <!-- BLOC 4: Tipus / Estat -->
-          <div class="sec">Tipus / Estat</div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-            <div class="fg">
-              <label>Tipus PJ</label>
-              <select id="m-tipus-pj">
-                <option value="">— Selecciona —</option>
-                <option value="CONSULTING">CONSULTING</option>
-                <option value="SALUT">SALUT</option>
-                <option value="SERVEIS">SERVEIS</option>
-                <option value="TRADING">TRADING</option>
-              </select>
-            </div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <div style="display:grid;grid-template-columns:60% auto;gap:8px">
             <div class="fg">
               <label>Estat</label>
-              <div style="display:flex;align-items:center;gap:8px">
-                <select id="m-estat" onchange="onEstatChange()" style="flex:1">
-                  <option value="ACTIU">ACTIU</option>
-                  <option value="COMPLETAT">COMPLETAT</option>
-                  <option value="PAUSAT">PAUSAT</option>
-                  <option value="CANCEL·LAT">CANCEL·LAT</option>
-                </select>
-                <span id="sit-icon">✓</span>
-              </div>
+              <select id="m-estat" onchange="onEstatChange()">
+                <option value="ACTIU">ACTIU</option>
+                <option value="COMPLETAT">COMPLETAT</option>
+                <option value="PAUSAT">PAUSAT</option>
+                <option value="CANCEL·LAT">CANCEL·LAT</option>
+              </select>
             </div>
           </div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
@@ -373,29 +358,13 @@ input[type=number]{-moz-appearance:textfield}
               <input type="date" id="m-data-entrada" onchange="onDataEntradaChange()">
             </div>
             <div class="fg">
-              <label>Data Finalitzat</label>
+              <label>Data Fi</label>
               <input type="date" id="m-data-finalitzat">
             </div>
           </div>
-          <div class="fg">
-            <label>Facturar</label>
-            <select id="m-facturar">
-              <option value="">— Selecciona —</option>
-              <option value="FACTURAR">FACTURAR</option>
-              <option value="NO">NO</option>
-              <option value="FACTURAT">FACTURAT</option>
-              <option value="FRA. PERIÒDICA">FRA. PERIÒDICA</option>
-            </select>
-          </div>
-          <div class="fg">
-            <label>Import</label>
-            <input type="number" id="m-import" value="0" step="0.01" oninput="recalcComm()">
-          </div>
-
-          <!-- Dates Matchmaking -->
-          <div style="border:2px solid #c0392b;border-radius:6px;padding:10px 12px;margin-top:2px">
+          <div style="border:2px solid #c0392b;border-radius:6px;padding:10px 12px">
             <div style="font-size:11px;font-weight:700;color:#c0392b;margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px">Dates Matchmaking</div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            <div style="display:grid;grid-template-columns:1fr 130px;gap:8px">
               <div class="fg">
                 <label>Execució Prevista</label>
                 <input type="text" id="m-exe-prev" placeholder="Text lliure">
@@ -406,42 +375,46 @@ input[type=number]{-moz-appearance:textfield}
               </div>
             </div>
           </div>
-
-          <!-- BLOC 5: Mercats -->
-          <div class="sec" style="margin-top:6px">Mercats</div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-            <div class="fg">
-              <label>Mercat Origen</label>
-              <select id="m-mercat-origen">
-                <option value="">— Selecciona —</option>
-              </select>
-            </div>
-            <div class="fg">
-              <label>Mercat Destí</label>
-              <select id="m-mercat-desti">
-                <option value="">— Selecciona —</option>
-              </select>
-            </div>
-          </div>
-
-          <!-- BLOC 6: Observacions -->
-          <div class="sec" style="margin-top:6px">Observacions</div>
           <div class="fg">
-            <textarea id="m-observacions" rows="4"></textarea>
+            <label>Mercat Origen</label>
+            <select id="m-mercat-origen">
+              <option value="">— Selecciona —</option>
+            </select>
           </div>
           <div class="fg">
-            <label>Anotacions</label>
-            <textarea id="m-anotacions" rows="3"></textarea>
+            <label>Mercat Destí</label>
+            <select id="m-mercat-desti">
+              <option value="">— Selecciona —</option>
+            </select>
+          </div>
+          <div class="fg">
+            <label>Observacions</label>
+            <textarea id="m-observacions" rows="5"></textarea>
           </div>
         </div>
 
       </div>
     </div>
 
-    <!-- TAB COMISSIONS -->
+    <!-- TAB BUDGET -->
     <div class="tab-panel" id="tp-com">
+      <div style="margin-bottom:16px">
+        <div class="fg" style="margin-bottom:12px">
+          <label>Facturar</label>
+          <div style="display:flex;gap:22px;align-items:center;padding:8px 0;flex-wrap:wrap">
+            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;font-weight:normal;color:var(--text)"><input type="radio" name="m-facturar" value="NO"> NO</label>
+            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;font-weight:normal;color:var(--text)"><input type="radio" name="m-facturar" value="SI"> SI</label>
+            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;font-weight:normal;color:var(--text)"><input type="radio" name="m-facturar" value="FACTURAT"> FACTURAT</label>
+            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;font-weight:normal;color:var(--text)"><input type="radio" name="m-facturar" value="FACT. PERIÒDICA"> FACT. PERIÒDICA</label>
+          </div>
+        </div>
+        <div class="fg" style="max-width:200px;margin-bottom:4px">
+          <label>Import (€)</label>
+          <input type="number" id="m-import" value="0" step="0.01" oninput="recalcComm()">
+        </div>
+      </div>
       <p style="font-size:12px;color:var(--muted);margin-bottom:16px">
-        Els imports es calculen automàticament en base a l'import del projecte.
+        Els imports de comissions es calculen automàticament en base a l'import del projecte.
       </p>
       <div class="comm-box">
         <div class="comm-row">
@@ -478,8 +451,8 @@ input[type=number]{-moz-appearance:textfield}
     <!-- TAB NOTES -->
     <div class="tab-panel" id="tp-not">
       <div class="fg">
-        <label>Notes</label>
-        <textarea id="m-notes" rows="12"></textarea>
+        <label>Anotacions</label>
+        <textarea id="m-anotacions" rows="12"></textarea>
       </div>
     </div>
 
@@ -513,10 +486,10 @@ const fe=(n,d=2)=>(n||0).toLocaleString('ca-ES',{minimumFractionDigits:d,maximum
 const fd=d=>d?new Date(d+'T00:00:00').toLocaleDateString('ca-ES',{day:'2-digit',month:'2-digit',year:'numeric'}):'—';
 
 const ESTAT_MAP={
-  'ACTIU':      ['bg','ACTIU',    '#d4edda'],
-  'COMPLETAT':  ['bb','COMPLETAT','#e3f2fd'],
-  'PAUSAT':     ['by','PAUSAT',   '#fff3cd'],
-  'CANCEL·LAT': ['br','CANCEL·LAT','#f8d7da'],
+  'ACTIU':      ['bg','ACT'],
+  'COMPLETAT':  ['bb','COM'],
+  'PAUSAT':     ['by','PAU'],
+  'CANCEL·LAT': ['br','CAN'],
 };
 
 function badgeHtml(estat){
@@ -641,7 +614,6 @@ function renderTable(rows){
     return;
   }
   const currentYY=String(new Date().getFullYear()).slice(-2);
-  const ESTAT_BG={'ACTIU':'#d4edda','PAUSAT':'#fff3cd','CANCEL·LAT':'#f8d7da','COMPLETAT':'#e3f2fd'};
   const byYear={};
   rows.forEach(p=>{const yy=fmtIdPJ(p.IdPJ).substring(0,2);(byYear[yy]=byYear[yy]||[]).push(p);});
   const years=Object.keys(byYear).sort().reverse();
@@ -658,7 +630,7 @@ function renderTable(rows){
       <td style="font-size:12px">${fd(p.data_inici)}</td>
       <td class="amt">${fe(p.import)}</td>
       <td style="font-size:12px">${p.facturar||'—'}</td>
-      <td style="background:${ESTAT_BG[p.estat]||'transparent'}">${badgeHtml(p.estat)}</td>
+      <td>${badgeHtml(p.estat)}</td>
       <td onclick="event.stopPropagation()" style="white-space:nowrap">
         <button class="btn btn-secondary btn-xs" onclick="openModal('${p.IdPJ}')">✏️</button>
         <button class="btn btn-xs btn-danger" style="margin-left:4px" onclick="confirmDel('${p.IdPJ}')" title="Eliminar">✕</button>
@@ -724,7 +696,6 @@ function fillForm(p){
   s('m-carpeta',p.carpeta||'ACR');
   s('m-provinent',p.provinent);
   s('m-entitat',p.entitat);
-  s('m-id-rc',p.id_rc);
   // client
   const selCli=document.getElementById('m-client');
   const cliOpt=[...selCli.options].find(o=>o.dataset.codi===p.idclient);
@@ -740,7 +711,7 @@ function fillForm(p){
   s('m-estat',p.estat||'ACTIU');
   s('m-data-entrada',p.data_entrada);
   s('m-data-finalitzat',p.data_finalitzat);
-  s('m-facturar',p.facturar);
+  document.querySelectorAll('input[name="m-facturar"]').forEach(r=>r.checked=r.value===(p.facturar||''));
   s('m-import',p.import??0);
   s('m-exe-prev',p.data_execucio);
   s('m-data-inici',p.data_inici);
@@ -751,17 +722,17 @@ function fillForm(p){
   s('m-en-pc',p.en_pc??0);
   s('m-dg-pc',p.dg_pc??0);
   s('m-cb-pc',p.cb_pc??0);
-  s('m-notes',p.notes);
   updateBadge(); recalcComm();
 }
 
 function resetForm(){
-  ['m-idpj','m-descripcio','m-tag','m-id-rc','m-idclient',
+  ['m-idpj','m-descripcio','m-tag','m-idclient',
    'm-empresa-pj','m-resp-pj','m-resp-carrec','m-resp-tel','m-resp-email','m-resp-web',
-   'm-exe-prev','m-observacions','m-anotacions','m-notes']
+   'm-exe-prev','m-observacions','m-anotacions']
   .forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
-  ['m-client','m-carpeta','m-provinent','m-entitat','m-tipus-pj','m-facturar','m-mercat-origen','m-mercat-desti']
+  ['m-client','m-carpeta','m-provinent','m-entitat','m-tipus-pj','m-mercat-origen','m-mercat-desti']
   .forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  document.querySelectorAll('input[name="m-facturar"]').forEach(r=>r.checked=false);
   ['m-data-entrada','m-data-inici','m-data-finalitzat']
   .forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   const _s=(id,v)=>{const el=document.getElementById(id);if(el)el.value=v;};
@@ -832,7 +803,6 @@ async function saveProjecte(){
     carpeta:g('m-carpeta'),
     provinent:g('m-provinent'),
     entitat:g('m-entitat')?parseInt(g('m-entitat')):null,
-    id_rc:g('m-id-rc'),
     idclient:g('m-idclient'),
     client:cliOpt&&cliOpt.value?cliOpt.textContent.split(' (')[0]:'',
     EmpresaPJ:g('m-empresa-pj'),
@@ -845,7 +815,7 @@ async function saveProjecte(){
     estat:document.getElementById('m-estat').value,
     data_entrada:g('m-data-entrada'),
     data_finalitzat:g('m-data-finalitzat'),
-    facturar:g('m-facturar'),
+    facturar:document.querySelector('input[name="m-facturar"]:checked')?.value||null,
     import:imp,
     data_execucio:g('m-exe-prev'),
     data_inici:g('m-data-inici'),
@@ -857,7 +827,6 @@ async function saveProjecte(){
     dg_pc:dgPc,dg_import:dgI,
     cb_pc:cbPc,cb_import:cbI,
     acr_pc:acrPc,acr_import:acrI,
-    notes:g('m-notes'),
   };
   if(!curIdPJ) data.IdPJ=idpj||null;
   const btn=document.getElementById('btn-save');

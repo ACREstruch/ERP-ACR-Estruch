@@ -174,9 +174,9 @@ input[type=number]{-moz-appearance:textfield}
           <thead>
             <tr>
               <th>Codi</th>
-              <th>Categoria</th>
               <th>Nom</th>
               <th>Sinònim</th>
+              <th>Categoria</th>
               <th>NIF / VAT</th>
               <th>País</th>
               <th>Tel / Email</th>
@@ -402,9 +402,9 @@ function renderTable(rows){
   }
   tbody.innerHTML=rows.map(p=>`<tr onclick="openModal(${p.id})">
     <td><span class="tag">${p.codi||'—'}</span></td>
-    <td style="font-size:12px;color:var(--muted)">${p.categoria||'—'}</td>
     <td><span class="prov-nom">${p.nom}</span></td>
     <td style="color:var(--muted)">${p.sinonim||'—'}</td>
+    <td style="font-size:12px;color:var(--muted)">${p.categoria||'—'}</td>
     <td style="font-size:12px">${p.nif_vat||'—'}</td>
     <td>${p.pais||'—'}</td>
     <td style="font-size:12px">${[p.tel,p.email].filter(Boolean).join(' · ')||'—'}</td>

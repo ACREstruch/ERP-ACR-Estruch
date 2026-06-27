@@ -519,7 +519,9 @@ input[type=number]{-moz-appearance:textfield}
         </div>
         <div class="fg">
           <label>N/Ref (nostre projecte)</label>
-          <input type="text" id="m-nref" placeholder="PJ26087500">
+          <select id="m-nref">
+            <option value="">— Sense projecte —</option>
+          </select>
         </div>
         <div class="fg">
           <label>S/Ref (referència client)</label>
@@ -859,6 +861,7 @@ async function init(){
   if(demo) document.getElementById('demo-banner').classList.add('show');
 
   await loadClients(demo);
+  await loadProjectesRef(demo);
   await loadInvoices(demo);
 }
 
@@ -896,6 +899,25 @@ function onClientChange(){
   if(opt.dataset.iban)     document.getElementById('m-iban').value = opt.dataset.iban;
   if(opt.dataset.formapag) document.getElementById('m-fpag').value = opt.dataset.formapag;
   recalc();
+}
+
+// ════════════════════════════════════════════════
+// CARREGAR PROJECTES (per N/Ref)
+// ════════════════════════════════════════════════
+async function loadProjectesRef(demo){
+  const sel = document.getElementById('m-nref');
+  sel.innerHTML = '<option value="">— Sense projecte —</option>';
+  if(demo) return;
+  try{
+    const pjs = await sbGet('projectes','select=IdPJ,Descripcio&order=IdPJ.desc.nullslast');
+    pjs.forEach(p=>{
+      const codi = String(p.IdPJ||'').padStart(8,'0');
+      const o = document.createElement('option');
+      o.value = codi;
+      o.textContent = codi + ' — ' + (p.Descripcio||'');
+      sel.appendChild(o);
+    });
+  }catch(e){ console.warn('No s\'han pogut carregar projectes:',e.message); }
 }
 
 // ════════════════════════════════════════════════
@@ -1147,7 +1169,8 @@ function fillForm(inv){
   s('m-venc', inv.data_venciment);
   s('m-estat', inv.estat);
   s('m-client', inv.id_client);
-  s('m-nref', inv.n_ref || inv.id_projecte);
+  const nrefVal = String(inv.n_ref || inv.id_projecte || '').padStart(8,'0').replace(/^0{8}$/,'');
+  document.getElementById('m-nref').value = nrefVal;
   s('m-sref', inv.s_ref);
   s('m-fpag', inv.forma_pag);
   s('m-div', inv.divisa||'EUR');

@@ -63,6 +63,8 @@ table.main-tbl{width:100%;border-collapse:collapse;font-size:13px}
 .main-tbl td{padding:11px 14px;border-bottom:1px solid var(--border-light);vertical-align:middle}
 .main-tbl tbody tr:hover td{background:var(--blue-light);cursor:pointer}
 .main-tbl tbody tr:last-child td{border-bottom:none}
+.year-hdr td{background:#eef2f8;font-size:11px;font-weight:800;color:var(--blue);text-transform:uppercase;letter-spacing:.6px;padding:6px 14px;cursor:pointer;user-select:none;border-bottom:1px solid var(--border)}
+.year-hdr:hover td{background:#dde6f5}
 .pj-codi{font-weight:700;color:var(--blue)}
 td.amt{text-align:right;font-variant-numeric:tabular-nums;font-weight:500}
 th.amt{text-align:right}
@@ -606,7 +608,7 @@ async function loadTags(){
 
 async function loadProjectes(){
   try{
-    allPJ=await sbGet('projectes','select=*&order=data_entrada.desc.nullslast');
+    allPJ=await sbGet('projectes','select=*&order=IdPJ.desc.nullslast');
     renderStats(); renderTable(allPJ);
   }catch(e){toast('Error: '+e.message,'err');allPJ=[];renderTable([]);}
 }
@@ -637,21 +639,40 @@ function renderTable(rows){
     tbody.innerHTML=`<tr><td colspan="9"><div class="empty"><div class="eico">📋</div><p>Cap projecte trobat.</p><button class="btn btn-primary" onclick="openModal(null)">+ Nou projecte</button></div></td></tr>`;
     return;
   }
+  const currentYY=String(new Date().getFullYear()).slice(-2);
   const ESTAT_BG={'ACTIU':'#d4edda','PAUSAT':'#fff3cd','CANCEL·LAT':'#f8d7da','COMPLETAT':'#e3f2fd'};
-  tbody.innerHTML=rows.map(p=>`<tr onclick="openModal('${p.IdPJ}')">
-    <td><span class="pj-codi">${p.IdPJ||'—'}</span></td>
-    <td style="font-weight:600;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${p.Descripcio||''}">${p.Descripcio||'—'}</td>
-    <td style="color:var(--muted);font-size:12px">${p.client||'—'}</td>
-    <td style="font-size:12px">${fd(p.data_entrada)}</td>
-    <td style="font-size:12px">${fd(p.data_inici)}</td>
-    <td class="amt">${fe(p.import)}</td>
-    <td style="font-size:12px">${p.facturar||'—'}</td>
-    <td style="background:${ESTAT_BG[p.estat]||'transparent'}">${badgeHtml(p.estat)}</td>
-    <td onclick="event.stopPropagation()" style="white-space:nowrap">
-      <button class="btn btn-secondary btn-xs" onclick="openModal('${p.IdPJ}')">✏️</button>
-      <button class="btn btn-xs btn-danger" style="margin-left:4px" onclick="confirmDel('${p.IdPJ}')" title="Eliminar">✕</button>
-    </td>
-  </tr>`).join('');
+  const byYear={};
+  rows.forEach(p=>{const yy=(p.IdPJ||'??').substring(0,2);(byYear[yy]=byYear[yy]||[]).push(p);});
+  const years=Object.keys(byYear).sort().reverse();
+  tbody.innerHTML=years.map(yy=>{
+    const exp=yy===currentYY;
+    const disp=exp?'':'display:none';
+    const ico=exp?'▼':'▶';
+    const hdr=`<tr class="year-hdr" onclick="toggleYear('${yy}')"><td colspan="9"><span id="ych-${yy}">${ico}</span> Any 20${yy} — ${byYear[yy].length} projectes</td></tr>`;
+    const rws=byYear[yy].map(p=>`<tr class="yr-${yy}" style="${disp}" onclick="openModal('${p.IdPJ}')">
+      <td><span class="pj-codi">${p.IdPJ||'—'}</span></td>
+      <td style="font-weight:600;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${p.Descripcio||''}">${p.Descripcio||'—'}</td>
+      <td style="color:var(--muted);font-size:12px">${p.client||'—'}</td>
+      <td style="font-size:12px">${fd(p.data_entrada)}</td>
+      <td style="font-size:12px">${fd(p.data_inici)}</td>
+      <td class="amt">${fe(p.import)}</td>
+      <td style="font-size:12px">${p.facturar||'—'}</td>
+      <td style="background:${ESTAT_BG[p.estat]||'transparent'}">${badgeHtml(p.estat)}</td>
+      <td onclick="event.stopPropagation()" style="white-space:nowrap">
+        <button class="btn btn-secondary btn-xs" onclick="openModal('${p.IdPJ}')">✏️</button>
+        <button class="btn btn-xs btn-danger" style="margin-left:4px" onclick="confirmDel('${p.IdPJ}')" title="Eliminar">✕</button>
+      </td>
+    </tr>`).join('');
+    return hdr+rws;
+  }).join('');
+}
+
+function toggleYear(yy){
+  const rows=document.querySelectorAll('.yr-'+yy);
+  const ico=document.getElementById('ych-'+yy);
+  const hidden=rows[0]?.style.display==='none';
+  rows.forEach(r=>r.style.display=hidden?'':'none');
+  if(ico)ico.textContent=hidden?'▼':'▶';
 }
 
 function applyFilters(){

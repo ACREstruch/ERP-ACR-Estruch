@@ -174,7 +174,6 @@ input[type=number]{-moz-appearance:textfield}
           <thead>
             <tr>
               <th>Codi</th>
-              <th>Categoria</th>
               <th>Nom</th>
               <th>Sinònim</th>
               <th>NIF / VAT</th>
@@ -187,7 +186,7 @@ input[type=number]{-moz-appearance:textfield}
             </tr>
           </thead>
           <tbody id="tbl-body">
-            <tr><td colspan="11"><div class="empty"><div class="eico">🔄</div><p>Carregant...</p></div></td></tr>
+            <tr><td colspan="10"><div class="empty"><div class="eico">🔄</div><p>Carregant...</p></div></td></tr>
           </tbody>
         </table>
       </div>
@@ -228,9 +227,9 @@ input[type=number]{-moz-appearance:textfield}
         </div>
         <div class="fg">
           <label>NIF / VAT</label>
-          s('m-banc',p.banc); s('m-iban',p.iban_bic);
-  s('m-categoria',p.categoria);
-  s('m-notes',p.notes);
+          <input type="text" id="m-nif">
+        </div>
+        <div class="sec">Adreça</div>
         <div class="fg full">
           <label>Adreça</label>
           <input type="text" id="m-adr">
@@ -398,7 +397,6 @@ function renderTable(rows){
   }
   tbody.innerHTML=rows.map(p=>`<tr onclick="openModal(${p.id})">
     <td><span class="tag">${p.codi||'—'}</span></td>
-    <td style="font-size:12px;color:var(--muted)">${p.categoria||'—'}</td>
     <td><span class="prov-nom">${p.nom}</span></td>
     <td style="color:var(--muted)">${p.sinonim||'—'}</td>
     <td style="font-size:12px">${p.nif_vat||'—'}</td>
@@ -457,7 +455,7 @@ function fillForm(p){
 
 function resetForm(){
   ['m-nom','m-sin','m-codi','m-nif','m-adr','m-cp','m-ciu','m-pais',
-   'm-tel','m-email','m-web','m-cnt-nom','m-cnt-cog','m-banc','m-iban','m-categoria','m-notes']
+   'm-tel','m-email','m-web','m-cnt-nom','m-cnt-cog','m-banc','m-iban','m-notes']
   .forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   document.getElementById('m-fpag').value='Transferència';
   document.getElementById('m-dies').value=30;

@@ -227,7 +227,7 @@ input[type=number]{-moz-appearance:textfield}
               <th>Grup</th>
               <th>NIF / VAT</th>
               <th>País</th>
-              <th>Tel / Email</th>
+              <th>Tel</th>
               <th>IVA %</th>
               <th>IRPF %</th>
               <th>Forma pag.</th>
@@ -492,6 +492,9 @@ function populatePaisFilter(){
   });
 }
 
+const FPAG={'1':'Transferència','2':'Rebut domiciliat','3':'Efectiu','4':'Xec'};
+function formaText(v){ return FPAG[v]||v||'—'; }
+
 function sitBadge(s){
   const map={ACT:['sit-act','ACT'],'N/A':['sit-na','N/A'],NUL:['sit-nul','NUL']};
   const [cls,lbl]=map[s]||['sit-na',s||'ACT'];
@@ -517,10 +520,10 @@ function renderTable(rows){
     <td style="font-size:12px;color:var(--muted)">${c.grup||'—'}</td>
     <td style="font-size:12px">${c.nif_vat||'—'}</td>
     <td>${c.pais||'—'}</td>
-    <td style="font-size:12px">${[c.tel,c.email].filter(Boolean).join(' · ')||'—'}</td>
+    <td style="font-size:12px">${c.tel||'—'}</td>
     <td style="text-align:right">${c.tipus_iva??21}%</td>
     <td style="text-align:right">${c.tipus_irpf??0}%</td>
-    <td>${c.forma_pag||'—'}</td>
+    <td>${formaText(c.forma_pag)}</td>
     <td onclick="event.stopPropagation()" style="white-space:nowrap">
       <button class="btn btn-secondary btn-xs" onclick="openModal(${c.id})">✏️</button>
       <button class="btn btn-xs btn-danger" style="margin-left:4px" onclick="confirmDel(${c.id})" title="Eliminar">✕</button>

@@ -1,0 +1,1107 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ERP ACR Estruch — Reports</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --blue:#00387C;
+  --blue-mid:#1a54a0;
+  --blue-light:#e8f0fb;
+  --bg:#FAF8F6;
+  --white:#fff;
+  --border:#dee2e6;
+  --border-light:#eaeef2;
+  --text:#212529;
+  --muted:#6c757d;
+  --red:#c0392b;
+  --red-bg:#f8d7da;
+  --green:#1a8c42;
+  --green-bg:#d4edda;
+  --sidebar:220px;
+  --topbar:58px;
+  --r:6px;
+  --shadow:0 1px 4px rgba(0,0,0,.1),0 4px 12px rgba(0,0,0,.06);
+}
+body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;font-size:14px;background:var(--bg);color:var(--text);height:100vh;overflow:hidden}
+#app{display:flex;height:100vh}
+
+/* SIDEBAR */
+#sidebar{width:var(--sidebar);background:#fff;border-right:1px solid #EDE9E4;display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto}
+#logo-area{padding:18px 16px 16px;border-bottom:1px solid #EDE9E4;cursor:default}
+.logo-main{font-size:19px;font-weight:800;color:var(--blue);letter-spacing:-.4px;line-height:1.1}
+.logo-main .sep{color:#9ca3af;font-weight:300;margin:0 1px}
+.logo-sub{font-size:10.5px;color:#6b7280;margin-top:3px;letter-spacing:.3px;font-style:italic}
+#nav{padding:10px 0;flex:1}
+.nav-section{padding:10px 14px 3px;font-size:10px;color:#9ca3af;text-transform:uppercase;letter-spacing:1.2px;font-weight:600}
+.nav-item{display:flex;align-items:center;gap:9px;padding:9px 16px;color:#374151;cursor:pointer;border-left:3px solid transparent;transition:all .15s;font-size:13px;user-select:none}
+.nav-item:hover{background:#f3f4f6;color:#111827}
+.nav-item.active{background:#eff6ff;color:var(--blue);border-left-color:var(--blue);font-weight:600}
+.nav-item .ico{font-size:15px;width:19px;text-align:center;flex-shrink:0}
+.nav-sub{padding:6px 16px 6px 44px;color:#6b7280;cursor:pointer;font-size:12px;transition:all .15s;border-left:3px solid transparent;user-select:none}
+.nav-sub:hover{color:#374151;background:#f3f4f6}
+.nav-sub.active{color:var(--blue);font-weight:600}
+.nav-footer{padding:12px 14px;border-top:1px solid #EDE9E4;font-size:11px;color:#9ca3af}
+
+/* MAIN */
+#main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+#topbar{height:var(--topbar);background:var(--white);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 22px;gap:12px;flex-shrink:0;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+#topbar h1{font-size:17px;font-weight:700;color:var(--blue);flex:1}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 15px;border-radius:var(--r);border:none;cursor:pointer;font-size:13px;font-weight:500;transition:all .15s;white-space:nowrap}
+.btn-primary{background:var(--blue);color:#fff}
+.btn-primary:hover{background:var(--blue-mid)}
+.btn-secondary{background:#fff;color:var(--blue);border:1.5px solid var(--blue)}
+.btn-secondary:hover{background:var(--blue-light)}
+.btn-sm{padding:5px 10px;font-size:12px}
+.btn:disabled{opacity:.5;cursor:default}
+
+#content{flex:1;overflow-y:auto;padding:0}
+
+/* TABS PRINCIPALS */
+.main-tabs{display:flex;background:#fff;border-bottom:2px solid var(--border);padding:0 22px;gap:2px;flex-shrink:0}
+.main-tab{padding:12px 18px;border:none;background:none;cursor:pointer;font-size:13px;color:var(--muted);border-bottom:3px solid transparent;margin-bottom:-2px;font-weight:500;transition:all .15s;white-space:nowrap}
+.main-tab:hover{color:var(--blue)}
+.main-tab.active{color:var(--blue);border-bottom-color:var(--blue);font-weight:700}
+
+.tab-content{display:none;padding:20px 22px;height:100%;overflow-y:auto}
+.tab-content.active{display:block}
+
+/* REPORT SELECTOR */
+.report-selector{background:#fff;border-radius:var(--r);box-shadow:var(--shadow);margin-bottom:16px;padding:14px 18px}
+.report-selector-row{display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap}
+.report-selector select,.report-selector input{padding:6px 10px;border:1.5px solid var(--border);border-radius:var(--r);font-size:13px;background:#fff;color:var(--text)}
+.report-selector select:focus,.report-selector input:focus{outline:none;border-color:var(--blue)}
+.form-group{display:flex;flex-direction:column;gap:3px}
+.form-group label{font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.4px}
+
+/* REPORT AREA */
+.report-area{background:#fff;border-radius:var(--r);box-shadow:var(--shadow)}
+.report-header{padding:14px 20px;border-bottom:1px solid var(--border-light);display:flex;align-items:center;gap:10px}
+.report-header h2{font-size:14px;font-weight:700;color:var(--blue);flex:1;text-transform:uppercase;letter-spacing:.3px}
+.report-body{padding:0}
+
+/* TAULA REPORT */
+.rtbl{width:100%;border-collapse:collapse;font-size:12.5px}
+.rtbl th{padding:8px 12px;text-align:left;font-size:10.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;border-bottom:2px solid var(--border);white-space:nowrap;background:#fafbfc}
+.rtbl th.r{text-align:right}
+.rtbl td{padding:8px 12px;border-bottom:1px solid var(--border-light);vertical-align:middle}
+.rtbl td.r{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.rtbl td.bold{font-weight:700}
+.rtbl tbody tr:hover td{background:var(--blue-light)}
+
+/* FILES DE SUBTOTAL */
+.rtbl tr.subtotal td{background:#f0f4fa;font-weight:700;font-size:11.5px;color:var(--blue);border-top:1px solid #c8d8f0;border-bottom:1px solid #c8d8f0}
+.rtbl tr.subtotal td.r{text-align:right}
+.rtbl tr.total-final td{background:#1a3a6b;color:#fff;font-weight:700;font-size:12px}
+.rtbl tr.total-final td.r{text-align:right}
+
+/* PENDENT en vermell */
+.neg{color:var(--red);font-weight:600}
+.pos{color:var(--green)}
+
+/* LOADING / EMPTY */
+.rpt-loading{padding:40px;text-align:center;color:var(--muted);font-size:13px}
+.rpt-empty{padding:40px;text-align:center;color:var(--muted)}
+.rpt-empty .eico{font-size:36px;margin-bottom:8px;opacity:.4}
+
+/* TOAST */
+#toast{position:fixed;bottom:20px;right:20px;z-index:999;display:flex;flex-direction:column;gap:6px}
+.toast{padding:10px 16px;border-radius:var(--r);font-size:13px;font-weight:500;color:#fff;box-shadow:0 4px 12px rgba(0,0,0,.2);animation:fadeIn .2s}
+.toast.ok{background:#1a8c42}
+.toast.err{background:#c0392b}
+.toast.inf{background:#1a54a0}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* PRINT */
+@page{size:A4 landscape;margin:12mm 10mm}
+@media print{
+  #sidebar,#topbar,.main-tabs,.report-selector,.report-header .btn,#toast{display:none!important}
+  #app,#main,#content,.tab-content{display:block!important;overflow:visible!important;height:auto!important}
+  .tab-content{display:none!important}
+  .tab-content.active{display:block!important}
+  .report-area{box-shadow:none;border:none}
+  body{font-size:11px}
+  .rtbl th,.rtbl td{padding:5px 8px}
+  .print-header{display:flex!important}
+}
+.print-header{display:none;justify-content:space-between;align-items:flex-start;margin-bottom:10mm;padding-bottom:4mm;border-bottom:1.5px solid #1a3a6b}
+.print-header .ph-logo .brand{font-size:20px;font-weight:900;color:#1a1a1a}
+.print-header .ph-logo .tag{font-size:9px;color:#666;font-style:italic}
+.print-header .ph-info{text-align:right;font-size:9px;color:#555;line-height:1.5}
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- SIDEBAR -->
+<nav id="sidebar">
+  <div id="logo-area">
+    <div class="logo-main">ACR<span class="sep">|</span>Estruch</div>
+    <div class="logo-sub">export &amp; consulting</div>
+  </div>
+        <div id="nav">
+    <div class="nav-item" onclick="location.href='index.html'"><span class="ico">🏠</span> Dashboard</div>
+    <div class="nav-section">Mòduls</div>
+    <div class="nav-item" onclick="location.href='erp-facturacio.html'"><span class="ico">🧾</span> Facturació</div>
+    <div class="nav-sub" onclick="location.href='erp-facturacio.html'">Factures emeses</div>
+    <div class="nav-sub" onclick="location.href='erp-factures-rebudes.html'">Factures rebudes</div>
+    <div class="nav-item" onclick="location.href='erp-clients.html'"><span class="ico">👥</span> Clients</div>
+    <div class="nav-item" onclick="location.href='erp-proveidors.html'"><span class="ico">🏭</span> Proveïdors</div>
+    <div class="nav-item" onclick="location.href='erp-projectes.html'"><span class="ico">📋</span> Projectes</div>
+    <div class="nav-item" onclick="location.href='erp-entitats.html'"><span class="ico">🏢</span> Entitats</div>
+    <div class="nav-item" onclick="location.href='erp-tags.html'"><span class="ico">🏷️</span> Tags</div>
+    <div class="nav-section" style="margin-top:10px">Comptabilitat</div>
+    <div class="nav-item" onclick="location.href='erp-major.html'"><span class="ico">📒</span> Major</div>
+    <div class="nav-item" onclick="location.href='erp-assentaments.html'"><span class="ico">✏️</span> Assentaments</div>
+    <div class="nav-item" onclick="location.href='erp-pla-comptes.html'"><span class="ico">🗂️</span> Pla de comptes</div>
+    <div class="nav-section" style="margin-top:10px">Informes</div>
+    <div class="nav-item active" onclick="location.href='erp-reports.html'" class="active"><span class="ico">📊</span> Reports</div>
+    <div class="nav-item" onclick="location.href='erp-despeses.html'"><span class="ico">✈️</span> Despeses</div>
+</div>
+  <div class="nav-footer">ACR Estruch ERP v1.0</div>
+</nav>
+
+<!-- MAIN -->
+<main id="main">
+  <header id="topbar">
+    <h1>Reports <span style="font-size:12px;color:var(--muted);font-weight:400;margin-left:6px" id="rpt-subtitle"></span></h1>
+    <button class="btn btn-secondary btn-sm" onclick="window.print()">🖨️ Imprimir</button>
+    <button class="btn btn-sm" style="background:#f8d7da;color:#721c24;border:1px solid #f5c6cb" onclick="location.href='erp-facturacio.html'">← Facturació</button>
+  </header>
+
+  <div id="content">
+    <!-- PESTANYES -->
+    <div class="main-tabs">
+      <button class="main-tab active" onclick="showTab('tab-llistat')">📋 Llistat factures</button>
+      <button class="main-tab" onclick="showTab('tab-mes')">📅 Per mes</button>
+      <button class="main-tab" onclick="showTab('tab-clients')">👥 Per clients</button>
+      <button class="main-tab" onclick="showTab('tab-1client')">🔍 1 Client</button>
+      <button class="main-tab" onclick="showTab('tab-pendent')">⏳ Pendent cobrament</button>
+      <button class="main-tab" onclick="showTab('tab-pend1cli')">⏳ Pendent 1 client</button>
+      <button class="main-tab" onclick="showTab('tab-pendfra')">📌 Pendent facturar</button>
+      <button class="main-tab" onclick="showTab('tab-rebut')">🧾 Rebut</button>
+      <button class="main-tab" onclick="showTab('tab-desp-viatge')">✈️ Despeses Viatge</button>
+      <button class="main-tab" onclick="showTab('tab-desp-tickets')">📋 Llistat Despeses</button>
+    </div>
+
+    <!-- ══ TAB: LLISTAT FACTURES ══ -->
+    <div class="tab-content active" id="tab-llistat">
+      <div class="print-header">
+        <div class="ph-logo"><div class="brand">ACR|Estruch</div><div class="tag">export &amp; consulting</div></div>
+        <div class="ph-info">Muntaner, 440, 1-1B · 08006 Barcelona<br>+34 609852478 · info@acrestruch.com</div>
+      </div>
+      <div class="report-selector">
+        <div class="report-selector-row">
+          <div class="form-group">
+            <label>Des de</label>
+            <input type="date" id="ll-de" onchange="runLlistat()">
+          </div>
+          <div class="form-group">
+            <label>Fins a</label>
+            <input type="date" id="ll-fins" onchange="runLlistat()">
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="runLlistat()">▶ Generar</button>
+          <button class="btn btn-secondary btn-sm" onclick="clearDates('ll-de','ll-fins');runLlistat()">✕ Netejar</button>
+        </div>
+      </div>
+      <div class="report-area">
+        <div class="report-header">
+          <h2>Llistat Factures</h2>
+        </div>
+        <div class="report-body" id="rpt-llistat"><div class="rpt-loading">Carregant...</div></div>
+      </div>
+    </div>
+
+    <!-- ══ TAB: PER MES ══ -->
+    <div class="tab-content" id="tab-mes">
+      <div class="print-header">
+        <div class="ph-logo"><div class="brand">ACR|Estruch</div><div class="tag">export &amp; consulting</div></div>
+        <div class="ph-info">Muntaner, 440, 1-1B · 08006 Barcelona<br>+34 609852478 · info@acrestruch.com</div>
+      </div>
+      <div class="report-selector">
+        <div class="report-selector-row">
+          <div class="form-group">
+            <label>Any</label>
+            <select id="mes-any" onchange="runMes()">
+              <option value="2026">2026</option>
+              <option value="2025">2025</option>
+              <option value="2024">2024</option>
+            </select>
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="runMes()">▶ Generar</button>
+        </div>
+      </div>
+      <div class="report-area">
+        <div class="report-header"><h2>Llistat Factures — Totals Mensuals</h2></div>
+        <div class="report-body" id="rpt-mes"><div class="rpt-loading">Carregant...</div></div>
+      </div>
+    </div>
+
+    <!-- ══ TAB: TOT PER CLIENTS ══ -->
+    <div class="tab-content" id="tab-clients">
+      <div class="print-header">
+        <div class="ph-logo"><div class="brand">ACR|Estruch</div><div class="tag">export &amp; consulting</div></div>
+        <div class="ph-info">Muntaner, 440, 1-1B · 08006 Barcelona<br>+34 609852478 · info@acrestruch.com</div>
+      </div>
+      <div class="report-selector">
+        <div class="report-selector-row">
+          <div class="form-group">
+            <label>Des de</label>
+            <input type="date" id="cli-de" onchange="runClients()">
+          </div>
+          <div class="form-group">
+            <label>Fins a</label>
+            <input type="date" id="cli-fins" onchange="runClients()">
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="runClients()">▶ Generar</button>
+          <button class="btn btn-secondary btn-sm" onclick="clearDates('cli-de','cli-fins');runClients()">✕ Netejar</button>
+        </div>
+      </div>
+      <div class="report-area">
+        <div class="report-header"><h2>Factures Totals per Client</h2></div>
+        <div class="report-body" id="rpt-clients"><div class="rpt-loading">Carregant...</div></div>
+      </div>
+    </div>
+
+    <!-- ══ TAB: FACTURES 1 CLIENT ══ -->
+    <div class="tab-content" id="tab-1client">
+      <div class="print-header">
+        <div class="ph-logo"><div class="brand">ACR|Estruch</div><div class="tag">export &amp; consulting</div></div>
+        <div class="ph-info">Muntaner, 440, 1-1B · 08006 Barcelona<br>+34 609852478 · info@acrestruch.com</div>
+      </div>
+      <div class="report-selector">
+        <div class="report-selector-row">
+          <div class="form-group">
+            <label>Client</label>
+            <select id="sel-1cli" onchange="run1Client()"><option value="">— Selecciona —</option></select>
+          </div>
+          <div class="form-group">
+            <label>Des de</label>
+            <input type="date" id="c1-de">
+          </div>
+          <div class="form-group">
+            <label>Fins a</label>
+            <input type="date" id="c1-fins">
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="run1Client()">▶ Generar</button>
+        </div>
+      </div>
+      <div class="report-area">
+        <div class="report-header"><h2>Factures Client</h2></div>
+        <div class="report-body" id="rpt-1client"><div class="rpt-empty"><div class="eico">🔍</div><p>Selecciona un client</p></div></div>
+      </div>
+    </div>
+
+    <!-- ══ TAB: PENDENT COBRAMENT ══ -->
+    <div class="tab-content" id="tab-pendent">
+      <div class="print-header">
+        <div class="ph-logo"><div class="brand">ACR|Estruch</div><div class="tag">export &amp; consulting</div></div>
+        <div class="ph-info">Muntaner, 440, 1-1B · 08006 Barcelona<br>+34 609852478 · info@acrestruch.com</div>
+      </div>
+      <div class="report-area">
+        <div class="report-header"><h2>Factures Pendents Cobrament</h2></div>
+        <div class="report-body" id="rpt-pendent"><div class="rpt-loading">Carregant...</div></div>
+      </div>
+    </div>
+
+    <!-- ══ TAB: PENDENT COBRAMENT 1 CLIENT ══ -->
+    <div class="tab-content" id="tab-pend1cli">
+      <div class="print-header">
+        <div class="ph-logo"><div class="brand">ACR|Estruch</div><div class="tag">export &amp; consulting</div></div>
+        <div class="ph-info">Muntaner, 440, 1-1B · 08006 Barcelona<br>+34 609852478 · info@acrestruch.com</div>
+      </div>
+      <div class="report-selector">
+        <div class="report-selector-row">
+          <div class="form-group">
+            <label>Client</label>
+            <select id="sel-pend1cli" onchange="runPend1Cli()"><option value="">— Selecciona —</option></select>
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="runPend1Cli()">▶ Generar</button>
+        </div>
+      </div>
+      <div class="report-area">
+        <div class="report-header"><h2>Factures Pendents Cobrament — 1 Client</h2></div>
+        <div class="report-body" id="rpt-pend1cli"><div class="rpt-empty"><div class="eico">🔍</div><p>Selecciona un client</p></div></div>
+      </div>
+    </div>
+
+    <!-- ══ TAB: PENDENT FACTURAR ══ -->
+    <div class="tab-content" id="tab-pendfra">
+      <div class="print-header">
+        <div class="ph-logo"><div class="brand">ACR|Estruch</div><div class="tag">export &amp; consulting</div></div>
+        <div class="ph-info">Muntaner, 440, 1-1B · 08006 Barcelona<br>+34 609852478 · info@acrestruch.com</div>
+      </div>
+      <div class="report-area">
+        <div class="report-header"><h2>Llistat Pendents Facturar</h2></div>
+        <div class="report-body" id="rpt-pendfra"><div class="rpt-loading">Carregant...</div></div>
+      </div>
+    </div>
+
+    <!-- ══ TAB: REBUT ══ -->
+    <div class="tab-content" id="tab-rebut">
+      <div class="print-header">
+        <div class="ph-logo"><div class="brand">ACR|Estruch</div><div class="tag">export &amp; consulting</div></div>
+        <div class="ph-info">Muntaner, 440, 1-1B · 08006 Barcelona<br>+34 609852478 · info@acrestruch.com</div>
+      </div>
+      <div class="report-selector">
+        <div class="report-selector-row">
+          <div class="form-group">
+            <label>Núm. Factura</label>
+            <input type="text" id="rebut-no" placeholder="Ex: 26017" style="width:130px">
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="runRebut()">▶ Generar Rebut</button>
+        </div>
+      </div>
+      <div class="report-area" id="rebut-area" style="display:none">
+        <div class="report-body" id="rpt-rebut"></div>
+      </div>
+    </div>
+
+
+    <!-- ══ TAB: DESPESES VIATGE ══ -->
+    <div class="tab-content" id="tab-desp-viatge">
+      <div class="print-header">
+        <div class="ph-logo"><div class="brand">ACR|Estruch</div><div class="tag">export &amp; consulting</div></div>
+        <div class="ph-info">Muntaner, 440, 1-1B · 08006 Barcelona<br>+34 609852478 · info@acrestruch.com</div>
+      </div>
+      <div class="report-selector">
+        <div class="report-selector-row">
+          <div class="form-group"><label>Ref. Viatge</label><input type="text" id="dv-ref" placeholder="Ex: 221114" style="width:130px"></div>
+          <button class="btn btn-primary btn-sm" onclick="runDespViatge()">&#9658; Generar</button>
+        </div>
+      </div>
+      <div class="report-area" id="dv-area" style="display:none">
+        <div class="report-header"><h2 id="dv-title">Despeses Viatge</h2></div>
+        <div class="report-body" id="rpt-desp-viatge"></div>
+      </div>
+    </div>
+
+    <!-- ══ TAB: LLISTAT DESPESES (TICKETS) ══ -->
+    <div class="tab-content" id="tab-desp-tickets">
+      <div class="print-header">
+        <div class="ph-logo"><div class="brand">ACR|Estruch</div><div class="tag">export &amp; consulting</div></div>
+        <div class="ph-info">Muntaner, 440, 1-1B · 08006 Barcelona<br>+34 609852478 · info@acrestruch.com</div>
+      </div>
+      <div class="report-selector">
+        <div class="report-selector-row">
+          <div class="form-group"><label>Any</label>
+            <select id="dt-any">
+              <option value="2026">2026</option><option value="2025">2025</option>
+              <option value="2024">2024</option><option value="2023">2023</option>
+              <option value="2022">2022</option><option value="2019">2019</option>
+            </select>
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="runDespTickets()">&#9658; Generar</button>
+        </div>
+      </div>
+      <div class="report-area">
+        <div class="report-header"><h2>Llistat Despeses</h2></div>
+        <div class="report-body" id="rpt-desp-tickets"><div class="rpt-loading">Selecciona l'any i clica Generar</div></div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</main>
+</div>
+
+<div id="toast"></div>
+
+<script>
+const SB_URL = 'https://ftuaeaghnnlusigqtoqv.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ0dWFlYWdobm5sdXNpZ3F0b3F2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAxNjI0MjIsImV4cCI6MjA5NTczODQyMn0.9n1gWnq_QfrLIWU7sIBReXgQAGA-NPFOpsdDp-jbDW8';
+
+async function sbGet(table, qs=''){
+  const r = await fetch(`${SB_URL}/rest/v1/${table}?${qs}`,{
+    headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}
+  });
+  if(!r.ok) throw new Error(await r.text());
+  return r.json();
+}
+
+// Formateig
+const fm = (n,d=2) => {
+  if(n===null||n===undefined||isNaN(n)) return '—';
+  return Number(n).toLocaleString('ca-ES',{minimumFractionDigits:d,maximumFractionDigits:d});
+};
+const fd = s => {
+  if(!s) return '—';
+  const d = new Date(s+'T00:00:00');
+  return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
+};
+const fmes = s => {
+  if(!s) return '';
+  const mesos = ['Gener','Febrer','Març','Abril','Maig','Juny','Juliol','Agost','Setembre','Octubre','Novembre','Desembre'];
+  const d = new Date(s+'T00:00:00');
+  return `${mesos[d.getMonth()]} ${d.getFullYear()}`;
+};
+
+// Pestanyes
+let activeTab = 'tab-llistat';
+function showTab(id){
+  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.main-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  event.target.classList.add('active');
+  activeTab = id;
+  // Carregar si cal
+  if(id==='tab-pendent' && !document.getElementById('rpt-pendent').dataset.loaded) runPendent();
+  if(id==='tab-pendfra' && !document.getElementById('rpt-pendfra').dataset.loaded) runPendFra();
+  if(id==='tab-mes' && !document.getElementById('rpt-mes').dataset.loaded) runMes();
+}
+
+function clearDates(a,b){
+  document.getElementById(a).value='';
+  document.getElementById(b).value='';
+}
+
+function toast(msg,type='inf'){
+  const el=document.createElement('div');
+  el.className=`toast ${type}`;
+  el.textContent=msg;
+  document.getElementById('toast').appendChild(el);
+  setTimeout(()=>el.remove(),3000);
+}
+
+// ══════════════════════════════
+// LLISTAT FACTURES
+// ══════════════════════════════
+async function runLlistat(){
+  const el = document.getElementById('rpt-llistat');
+  el.innerHTML='<div class="rpt-loading">⏳ Carregant...</div>';
+  try{
+    let qs = 'select=*,clients(codi,rao_social)&order=id_in.desc.nullslast';
+    const de = document.getElementById('ll-de').value;
+    const fins = document.getElementById('ll-fins').value;
+    if(de) qs += `&data_fra=gte.${de}`;
+    if(fins) qs += `&data_fra=lte.${fins}`;
+    const rows = await sbGet('factures', qs);
+    if(!rows.length){ el.innerHTML='<div class="rpt-empty"><div class="eico">📭</div><p>Sense resultats</p></div>'; return; }
+    let totBase=0,totIva=0,totIrpf=0,totImp=0;
+    let html=`<table class="rtbl"><thead><tr>
+      <th>IdClient</th><th>Client</th><th>NoFactura</th><th>DataFact</th><th>PJ</th>
+      <th class="r">Base Imp</th><th class="r">IVA</th><th class="r">IRPF</th><th class="r">Import</th>
+    </tr></thead><tbody>`;
+    rows.forEach(r=>{
+      const bi=parseFloat(r.base_imposable)||0;
+      const iva=parseFloat(r.import_iva)||0;
+      const irpf=parseFloat(r.import_irpf)||0;
+      const imp=parseFloat(r.total_factura)||0;
+      totBase+=bi; totIva+=iva; totIrpf+=irpf; totImp+=imp;
+      html+=`<tr>
+        <td>${r.clients?.codi||'—'}</td>
+        <td>${r.clients?.rao_social||'—'}</td>
+        <td class="bold">${r.no_factura}</td>
+        <td>${fd(r.data_fra)}</td>
+        <td>${r.id_projecte||'—'}</td>
+        <td class="r">${fm(bi)}</td>
+        <td class="r">${fm(iva)}</td>
+        <td class="r">${irpf?fm(irpf):'—'}</td>
+        <td class="r bold">${fm(imp)}</td>
+      </tr>`;
+    });
+    html+=`</tbody><tfoot><tr class="total-final">
+      <td colspan="5">Total factures: ${rows.length}</td>
+      <td class="r">${fm(totBase)}</td>
+      <td class="r">${fm(totIva)}</td>
+      <td class="r">${fm(totIrpf)}</td>
+      <td class="r">${fm(totImp)}</td>
+    </tr></tfoot></table>`;
+    el.innerHTML=html;
+  }catch(e){ el.innerHTML=`<div class="rpt-empty">Error: ${e.message}</div>`; }
+}
+
+// ══════════════════════════════
+// LLISTAT PER MES
+// ══════════════════════════════
+async function runMes(){
+  const el = document.getElementById('rpt-mes');
+  el.dataset.loaded='1';
+  el.innerHTML='<div class="rpt-loading">⏳ Carregant...</div>';
+  const any = document.getElementById('mes-any').value;
+  try{
+    const rows = await sbGet('factures',
+      `select=*,clients(codi,rao_social)&data_fra=gte.${any}-01-01&data_fra=lte.${any}-12-31&order=id_in.asc.nullslast`);
+    if(!rows.length){ el.innerHTML='<div class="rpt-empty"><div class="eico">📭</div><p>Sense resultats</p></div>'; return; }
+    // Agrupar per mes
+    const grups = {};
+    rows.forEach(r=>{
+      const mk = r.data_fra.substring(0,7);
+      if(!grups[mk]) grups[mk]=[];
+      grups[mk].push(r);
+    });
+    let totBase=0,totIva=0,totIrpf=0,totImp=0,totCount=0;
+    let html=`<table class="rtbl"><thead><tr>
+      <th>IdClient</th><th>Client</th><th>NoFactura</th><th>DataFact</th><th>PJ</th>
+      <th class="r">Base Imp</th><th class="r">IVA</th><th class="r">IRPF</th><th class="r">Import</th>
+    </tr></thead><tbody>`;
+    Object.keys(grups).sort().forEach(mk=>{
+      const gRows = grups[mk];
+      let gBase=0,gIva=0,gIrpf=0,gImp=0;
+      gRows.forEach(r=>{
+        const bi=parseFloat(r.base_imposable)||0;
+        const iva=parseFloat(r.import_iva)||0;
+        const irpf=parseFloat(r.import_irpf)||0;
+        const imp=parseFloat(r.total_factura)||0;
+        gBase+=bi; gIva+=iva; gIrpf+=irpf; gImp+=imp;
+        totBase+=bi; totIva+=iva; totIrpf+=irpf; totImp+=imp; totCount++;
+        html+=`<tr>
+          <td>${r.clients?.codi||'—'}</td>
+          <td>${r.clients?.rao_social||'—'}</td>
+          <td class="bold">${r.no_factura}</td>
+          <td>${fd(r.data_fra)}</td>
+          <td>${r.id_projecte||'—'}</td>
+          <td class="r">${fm(bi)}</td>
+          <td class="r">${fm(iva)}</td>
+          <td class="r">${irpf?fm(irpf):'—'}</td>
+          <td class="r bold">${fm(imp)}</td>
+        </tr>`;
+      });
+      html+=`<tr class="subtotal">
+        <td colspan="5">No. factures: ${gRows.length} — ${fmes(gRows[0].data_fra)}</td>
+        <td class="r">${fm(gBase)}</td>
+        <td class="r">${fm(gIva)}</td>
+        <td class="r">${gIrpf?fm(gIrpf):'—'}</td>
+        <td class="r">${fm(gImp)}</td>
+      </tr>`;
+    });
+    html+=`</tbody><tfoot><tr class="total-final">
+      <td colspan="5">Total factures: ${totCount}</td>
+      <td class="r">${fm(totBase)}</td><td class="r">${fm(totIva)}</td>
+      <td class="r">${fm(totIrpf)}</td><td class="r">${fm(totImp)}</td>
+    </tr></tfoot></table>`;
+    el.innerHTML=html;
+  }catch(e){ el.innerHTML=`<div class="rpt-empty">Error: ${e.message}</div>`; }
+}
+
+// ══════════════════════════════
+// FACTURES TOT PER CLIENTS
+// ══════════════════════════════
+async function runClients(){
+  const el = document.getElementById('rpt-clients');
+  el.innerHTML='<div class="rpt-loading">⏳ Carregant...</div>';
+  try{
+    let qs = 'select=*,clients(codi,rao_social)&order=id_in.desc.nullslast';
+    const de = document.getElementById('cli-de').value;
+    const fins = document.getElementById('cli-fins').value;
+    if(de) qs += `&data_fra=gte.${de}`;
+    if(fins) qs += `&data_fra=lte.${fins}`;
+    const rows = await sbGet('factures', qs);
+    if(!rows.length){ el.innerHTML='<div class="rpt-empty"><div class="eico">📭</div><p>Sense resultats</p></div>'; return; }
+    // Agrupar per client
+    const grups = {};
+    rows.forEach(r=>{
+      const ck = r.clients?.codi || r.id_client;
+      if(!grups[ck]) grups[ck]={nom:r.clients?.rao_social||'—',codi:r.clients?.codi||'—',rows:[]};
+      grups[ck].rows.push(r);
+    });
+    let totBase=0,totIva=0,totIrpf=0,totImp=0,totCount=0;
+    let html=`<table class="rtbl"><thead><tr>
+      <th>IdClient</th><th>Client</th><th>NoFactura</th><th>DataFact</th><th>PJ</th>
+      <th class="r">Base Imp</th><th class="r">IVA</th><th class="r">IRPF</th><th class="r">Import</th>
+    </tr></thead><tbody>`;
+    Object.values(grups).sort((a,b)=>a.codi.localeCompare(b.codi)).forEach(g=>{
+      let gBase=0,gIva=0,gIrpf=0,gImp=0;
+      g.rows.forEach(r=>{
+        const bi=parseFloat(r.base_imposable)||0;
+        const iva=parseFloat(r.import_iva)||0;
+        const irpf=parseFloat(r.import_irpf)||0;
+        const imp=parseFloat(r.total_factura)||0;
+        gBase+=bi; gIva+=iva; gIrpf+=irpf; gImp+=imp;
+        totBase+=bi; totIva+=iva; totIrpf+=irpf; totImp+=imp; totCount++;
+        html+=`<tr>
+          <td>${g.codi}</td><td>${g.nom}</td>
+          <td class="bold">${r.no_factura}</td>
+          <td>${fd(r.data_fra)}</td>
+          <td>${r.id_projecte||'—'}</td>
+          <td class="r">${fm(bi)}</td>
+          <td class="r">${fm(iva)}</td>
+          <td class="r">${irpf?fm(irpf):'—'}</td>
+          <td class="r bold">${fm(imp)}</td>
+        </tr>`;
+      });
+      html+=`<tr class="subtotal">
+        <td colspan="5">No. factures: ${g.rows.length}</td>
+        <td class="r">${fm(gBase)}</td><td class="r">${fm(gIva)}</td>
+        <td class="r">${gIrpf?fm(gIrpf):'—'}</td><td class="r">${fm(gImp)}</td>
+      </tr>`;
+    });
+    html+=`</tbody><tfoot><tr class="total-final">
+      <td colspan="5">Total factures final: ${totCount}</td>
+      <td class="r">${fm(totBase)}</td><td class="r">${fm(totIva)}</td>
+      <td class="r">${fm(totIrpf)}</td><td class="r">${fm(totImp)}</td>
+    </tr></tfoot></table>`;
+    el.innerHTML=html;
+  }catch(e){ el.innerHTML=`<div class="rpt-empty">Error: ${e.message}</div>`; }
+}
+
+// ══════════════════════════════
+// FACTURES 1 CLIENT
+// ══════════════════════════════
+async function run1Client(){
+  const cliId = document.getElementById('sel-1cli').value;
+  const el = document.getElementById('rpt-1client');
+  if(!cliId){ el.innerHTML='<div class="rpt-empty"><div class="eico">🔍</div><p>Selecciona un client</p></div>'; return; }
+  el.innerHTML='<div class="rpt-loading">⏳ Carregant...</div>';
+  try{
+    let qs = `select=*,clients(codi,rao_social,nif_vat)&id_client=eq.${cliId}&order=data_fra.asc`;
+    const de = document.getElementById('c1-de').value;
+    const fins = document.getElementById('c1-fins').value;
+    if(de) qs += `&data_fra=gte.${de}`;
+    if(fins) qs += `&data_fra=lte.${fins}`;
+    const rows = await sbGet('factures', qs);
+    if(!rows.length){ el.innerHTML='<div class="rpt-empty"><div class="eico">📭</div><p>Sense factures</p></div>'; return; }
+    const cli = rows[0].clients||{};
+    let totBase=0,totIva=0,totIrpf=0,totImp=0,totCob=0;
+    let html=`<table class="rtbl"><thead><tr>
+      <th>IdCli</th><th>Client</th><th>NoFact</th><th>DataFact</th><th>PJ</th>
+      <th class="r">Base Imp</th><th class="r">IVA</th><th class="r">IRPF</th>
+      <th class="r">Total Fra</th><th>DataCob</th><th class="r">Cobrat</th>
+    </tr></thead><tbody>`;
+    rows.forEach(r=>{
+      const bi=parseFloat(r.base_imposable)||0;
+      const iva=parseFloat(r.import_iva)||0;
+      const irpf=parseFloat(r.import_irpf)||0;
+      const imp=parseFloat(r.total_factura)||0;
+      const cob=parseFloat(r.import_cobrat)||0;
+      totBase+=bi; totIva+=iva; totIrpf+=irpf; totImp+=imp; totCob+=cob;
+      html+=`<tr>
+        <td>${cli.codi||'—'}</td>
+        <td>${cli.rao_social||'—'}</td>
+        <td class="bold">${r.no_factura}</td>
+        <td>${fd(r.data_fra)}</td>
+        <td>${r.id_projecte||'—'}</td>
+        <td class="r">${fm(bi)}</td>
+        <td class="r">${fm(iva)}</td>
+        <td class="r">${irpf?fm(irpf):'—'}</td>
+        <td class="r bold">${fm(imp)}</td>
+        <td>${fd(r.data_cob)}</td>
+        <td class="r">${cob?fm(cob):'—'}</td>
+      </tr>`;
+    });
+    const saldo = totCob - totImp;
+    html+=`</tbody><tfoot>
+      <tr class="total-final">
+        <td colspan="5">Total factures: ${rows.length}</td>
+        <td class="r">${fm(totBase)}</td><td class="r">${fm(totIva)}</td>
+        <td class="r">${fm(totIrpf)}</td><td class="r">${fm(totImp)}</td>
+        <td></td><td class="r">${fm(totCob)}</td>
+      </tr>
+      <tr class="subtotal">
+        <td colspan="10" style="text-align:right;font-weight:700">Saldo</td>
+        <td class="r ${saldo<0?'neg':'pos'}">${fm(saldo)}</td>
+      </tr>
+    </tfoot></table>`;
+    el.innerHTML=html;
+  }catch(e){ el.innerHTML=`<div class="rpt-empty">Error: ${e.message}</div>`; }
+}
+
+// ══════════════════════════════
+// PENDENT COBRAMENT
+// ══════════════════════════════
+async function runPendent(){
+  const el = document.getElementById('rpt-pendent');
+  el.dataset.loaded='1';
+  el.innerHTML='<div class="rpt-loading">⏳ Carregant...</div>';
+  try{
+    const rows = await sbGet('factures',
+      `select=*,clients(codi,rao_social)&estat=neq.COBRAT&estat=neq.ANULADA&estat=neq.RECTIFICATIVA&order=data_venciment.asc`);
+    if(!rows.length){ el.innerHTML='<div class="rpt-empty"><div class="eico">✅</div><p>Tot cobrat!</p></div>'; return; }
+    // Agrupar per client
+    const grups={};
+    rows.forEach(r=>{
+      const ck=r.id_client;
+      if(!grups[ck]) grups[ck]={nom:r.clients?.rao_social||'—',codi:r.clients?.codi||'—',rows:[]};
+      grups[ck].rows.push(r);
+    });
+    let totImp=0,totCob=0,totPend=0,totCount=0;
+    let html=`<table class="rtbl"><thead><tr>
+      <th>IdClient</th><th>Client</th><th>NoFact</th>
+      <th>DataVenc</th><th>DataFact</th><th>PJ</th>
+      <th class="r">Total Fra</th><th class="r">Cobrat</th><th class="r">Pendent</th>
+    </tr></thead><tbody>`;
+    Object.values(grups).forEach(g=>{
+      let gImp=0,gCob=0,gPend=0;
+      g.rows.forEach(r=>{
+        const imp=parseFloat(r.total_factura)||0;
+        const cob=parseFloat(r.import_cobrat)||0;
+        const pend=imp-cob;
+        gImp+=imp; gCob+=cob; gPend+=pend;
+        totImp+=imp; totCob+=cob; totPend+=pend; totCount++;
+        html+=`<tr>
+          <td>${g.codi}</td><td>${g.nom}</td>
+          <td class="bold">${r.no_factura}</td>
+          <td class="bold">${fd(r.data_venciment)}</td>
+          <td>${fd(r.data_fra)}</td>
+          <td>${r.id_projecte||'—'}</td>
+          <td class="r">${fm(imp)}</td>
+          <td class="r">${cob?fm(cob):'—'}</td>
+          <td class="r ${pend>0?'neg':''}">${fm(pend)}</td>
+        </tr>`;
+      });
+      html+=`<tr class="subtotal">
+        <td colspan="6"></td>
+        <td class="r">${fm(gImp)}</td>
+        <td class="r">${fm(gCob)}</td>
+        <td class="r neg">${fm(gPend)}</td>
+      </tr>`;
+    });
+    html+=`</tbody><tfoot><tr class="total-final">
+      <td colspan="6">Total factures: ${totCount}</td>
+      <td class="r">${fm(totImp)}</td>
+      <td class="r">${fm(totCob)}</td>
+      <td class="r">${fm(totPend)}</td>
+    </tr></tfoot></table>`;
+    el.innerHTML=html;
+  }catch(e){ el.innerHTML=`<div class="rpt-empty">Error: ${e.message}</div>`; }
+}
+
+// ══════════════════════════════
+// PENDENT COBRAMENT 1 CLIENT
+// ══════════════════════════════
+async function runPend1Cli(){
+  const cliId = document.getElementById('sel-pend1cli').value;
+  const el = document.getElementById('rpt-pend1cli');
+  if(!cliId){ el.innerHTML='<div class="rpt-empty"><div class="eico">🔍</div><p>Selecciona un client</p></div>'; return; }
+  el.innerHTML='<div class="rpt-loading">⏳ Carregant...</div>';
+  try{
+    const rows = await sbGet('factures',
+      `select=*,clients(codi,rao_social)&id_client=eq.${cliId}&estat=neq.COBRAT&estat=neq.ANULADA&order=data_venciment.asc`);
+    if(!rows.length){ el.innerHTML='<div class="rpt-empty"><div class="eico">✅</div><p>Cap pendent per aquest client</p></div>'; return; }
+    let totImp=0,totCob=0,totSaldo=0;
+    const cli=rows[0].clients||{};
+    let html=`<table class="rtbl"><thead><tr>
+      <th>IdClient</th><th>Client</th><th>NoFact</th>
+      <th>DataVenc</th><th>DataFact</th><th>PJ</th>
+      <th class="r">Total Fra</th><th class="r">Cobrat</th><th class="r">Saldo</th>
+    </tr></thead><tbody>`;
+    rows.forEach(r=>{
+      const imp=parseFloat(r.total_factura)||0;
+      const cob=parseFloat(r.import_cobrat)||0;
+      const saldo=imp-cob;
+      totImp+=imp; totCob+=cob; totSaldo+=saldo;
+      html+=`<tr>
+        <td>${cli.codi||'—'}</td><td>${cli.rao_social||'—'}</td>
+        <td class="bold">${r.no_factura}</td>
+        <td class="bold">${fd(r.data_venciment)}</td>
+        <td>${fd(r.data_fra)}</td>
+        <td>${r.id_projecte||'—'}</td>
+        <td class="r">${fm(imp)}</td>
+        <td class="r">${cob?fm(cob):'—'}</td>
+        <td class="r neg">${fm(saldo)}</td>
+      </tr>`;
+    });
+    html+=`</tbody><tfoot>
+      <tr class="subtotal"><td colspan="5">No. factures: ${rows.length}</td>
+        <td></td><td class="r">${fm(totImp)}</td><td class="r">${fm(totCob)}</td><td class="r neg">${fm(totSaldo)}</td></tr>
+      <tr class="total-final"><td colspan="6">Total factures: ${rows.length}</td>
+        <td class="r">${fm(totImp)}</td><td class="r">${fm(totCob)}</td><td class="r">${fm(totSaldo)}</td></tr>
+    </tfoot></table>`;
+    el.innerHTML=html;
+  }catch(e){ el.innerHTML=`<div class="rpt-empty">Error: ${e.message}</div>`; }
+}
+
+// ══════════════════════════════
+// PENDENT FACTURAR
+// ══════════════════════════════
+async function runPendFra(){
+  const el = document.getElementById('rpt-pendfra');
+  el.dataset.loaded='1';
+  el.innerHTML='<div class="rpt-loading">⏳ Carregant...</div>';
+  try{
+    // Projectes actius sense factura o amb import_fra < import
+    const pjs = await sbGet('projectes',
+      `select=*,clients(codi,rao_social)&estat=neq.TANCAT&estat=neq.CANCELAT&order=codi.asc`);
+    if(!pjs.length){ el.innerHTML='<div class="rpt-empty"><div class="eico">✅</div><p>Sense projectes pendents</p></div>'; return; }
+    let html=`<table class="rtbl"><thead><tr>
+      <th>IdCli</th><th>Client</th><th>PJ</th><th>Descripció</th>
+      <th class="r">Import PJ</th><th class="r">Import Fra</th><th class="r">ACR</th>
+    </tr></thead><tbody>`;
+    let tot=0,totFra=0,totAcr=0,count=0;
+    pjs.forEach(p=>{
+      const imp=parseFloat(p.import)||0;
+      const fra=parseFloat(p.acr_import)||0;
+      const acr=parseFloat(p.acr_import)||0;
+      tot+=imp; totFra+=fra; totAcr+=acr; count++;
+      html+=`<tr>
+        <td>${p.clients?.codi||'—'}</td>
+        <td>${p.clients?.rao_social||'—'}</td>
+        <td class="bold">${p.codi||'—'}</td>
+        <td>${p.nom||p.descripcio||'—'}</td>
+        <td class="r">${fm(imp)}</td>
+        <td class="r">${fra?fm(fra):'—'}</td>
+        <td class="r">${acr?fm(acr):'—'}</td>
+      </tr>`;
+    });
+    html+=`</tbody><tfoot><tr class="total-final">
+      <td colspan="4">Total projectes: ${count}</td>
+      <td class="r">${fm(tot)}</td>
+      <td class="r">${fm(totFra)}</td>
+      <td class="r">${fm(totAcr)}</td>
+    </tr></tfoot></table>`;
+    el.innerHTML=html;
+  }catch(e){ el.innerHTML=`<div class="rpt-empty">Error: ${e.message}</div>`; }
+}
+
+// ══════════════════════════════
+// REBUT
+// ══════════════════════════════
+async function runRebut(){
+  const noFra = document.getElementById('rebut-no').value.trim();
+  if(!noFra){ toast('Introdueix el núm. de factura','err'); return; }
+  const el = document.getElementById('rpt-rebut');
+  const area = document.getElementById('rebut-area');
+  el.innerHTML='<div class="rpt-loading">⏳ Carregant...</div>';
+  area.style.display='block';
+  try{
+    const rows = await sbGet('factures',
+      `select=*,clients(codi,rao_social,nif_vat,adreca,cp,ciutat,pais)&no_factura=eq.${encodeURIComponent(noFra)}`);
+    if(!rows.length){ el.innerHTML='<div class="rpt-empty"><div class="eico">❌</div><p>Factura no trobada</p></div>'; return; }
+    const r=rows[0];
+    const cli=r.clients||{};
+    const adr=[cli.adreca, cli.cp?`ES-${cli.cp}`:'', cli.ciutat, cli.pais&&cli.pais!=='ESP'?cli.pais:''].filter(Boolean);
+    el.innerHTML=`
+    <div style="display:flex;gap:0;padding:20px 30px 30px">
+      <!-- Esquerra: ACR -->
+      <div style="width:200px;flex-shrink:0;padding-right:20px;border-right:1px solid #ddd">
+        <div style="font-size:22px;font-weight:900;color:#1a3a6b;letter-spacing:-1px">ACR|Estruch</div>
+        <div style="font-size:10px;color:#666;font-style:italic;margin-bottom:12px">export &amp; consulting</div>
+        <div style="font-size:10px;line-height:1.7;color:#444">
+          Muntaner, 440, 1-1B.<br>08006 Barcelona<br>Tel. +34 609 852 478<br>
+          Jaume Estruch Sánchez.<br>NIF-VAT No. ES38549541-T
+        </div>
+        <div style="margin-top:16px;font-size:32px;color:#1a3a6b;font-style:italic;font-family:Georgia,serif">Jaume Estruch</div>
+      </div>
+      <!-- Dreta: REBUT -->
+      <div style="flex:1;padding-left:28px">
+        <div style="font-size:18px;font-weight:800;color:#1a3a6b;border-bottom:2px solid #1a3a6b;padding-bottom:6px;margin-bottom:14px">RECEIP</div>
+        <div style="font-weight:700;font-size:13px">${cli.rao_social||'—'}</div>
+        <div style="font-size:12px;color:#555;line-height:1.6;margin-bottom:10px">
+          ${cli.codi||''}<br>${cli.nif_vat?`ES-${cli.nif_vat}`:''}<br>${adr.join('<br>')}
+        </div>
+        <div style="font-size:11px;color:#888;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid #ddd">${r.id_projecte||''}</div>
+        <table style="font-size:12px;border-collapse:collapse;width:100%">
+          <tr><td style="padding:4px 0;color:#555;width:140px">Invoice no.</td><td style="font-weight:700;font-size:14px">${r.no_factura}</td></tr>
+          <tr><td style="padding:4px 0;color:#555">Invoice date</td><td>${fd(r.data_fra)}</td></tr>
+          <tr><td style="padding:4px 0;color:#555">Payment term</td><td style="text-transform:uppercase">${r.forma_pag||'—'}</td></tr>
+          <tr><td style="padding:4px 0;color:#555">Import</td><td>${fm(r.total_factura)} €</td></tr>
+        </table>
+        <div style="margin-top:14px;font-weight:700;font-size:12px">Paid on</div>
+        <div style="margin-top:4px;height:2px;width:100%;background:#1a3a6b;max-width:200px"></div>
+        ${r.data_cob?`<div style="margin-top:6px;font-size:13px;font-weight:700;color:#1a8c42">${fd(r.data_cob)}</div>`:''}
+      </div>
+    </div>`;
+  }catch(e){ el.innerHTML=`<div class="rpt-empty">Error: ${e.message}</div>`; }
+}
+
+// ══════════════════════════════
+// INIT: Carregar clients per selectors
+// ══════════════════════════════
+async function init(){
+  try{
+    const clis = await sbGet('clients','select=id,codi,rao_social&order=rao_social.asc');
+    ['sel-1cli','sel-pend1cli'].forEach(sid=>{
+      const sel=document.getElementById(sid);
+      clis.forEach(c=>{
+        const o=document.createElement('option');
+        o.value=c.id;
+        o.textContent=`${c.codi||''} — ${c.rao_social}`;
+        sel.appendChild(o);
+      });
+    });
+    // Carregar tabs inicials
+    runLlistat();
+  }catch(e){ toast('Error connectant Supabase: '+e.message,'err'); }
+}
+
+init();
+
+// ══════════════════════════════
+// DESPESES VIATGE — REPORT
+// ══════════════════════════════
+async function runDespViatge(){
+  const ref = document.getElementById('dv-ref').value.trim();
+  if(!ref){ alert('Introdueix la ref. del viatge'); return; }
+  const el = document.getElementById('rpt-desp-viatge');
+  const area = document.getElementById('dv-area');
+  el.innerHTML='<div class="rpt-loading">Carregant...</div>';
+  area.style.display='block';
+  try{
+    const rows = await sbGet('viatges', `id_te=eq.${encodeURIComponent(ref)}&select=*,clients(codi,rao_social)`);
+    if(!rows.length){ el.innerHTML='<div class="rpt-empty"><div class="eico">❌</div><p>Viatge no trobat</p></div>'; return; }
+    const v = rows[0];
+    const lines = await sbGet('viatge_lines', `id_te=eq.${encodeURIComponent(ref)}&order=id.asc`);
+    document.getElementById('dv-title').textContent = `Despeses Viatge — ${v.descripcio||ref}`;
+
+    // Separar línies EUR i línies divisa
+    const linesEur = lines.filter(l => !l.import_div1 && !l.import_div2 && (l.import_eur||0) > 0);
+    const linesDiv = lines.filter(l => (l.import_div1||0) > 0 || (l.import_div2||0) > 0);
+
+    let totEur=0, totDiv=0, totDivEur=0;
+    let html = '';
+
+    // Capçalera info
+    html += `<div style="padding:16px 20px;border-bottom:1px solid var(--border-light);display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:12px">
+      <div><span style="color:var(--muted)">Viatge:</span> <strong>${v.descripcio||'—'}</strong><br>
+           <span style="color:var(--muted)">País:</span> ${v.pais||'—'}<br>
+           <span style="color:var(--muted)">Data:</span> ${fd(v.data)}</div>
+      <div><span style="color:var(--muted)">Viatge Ref.:</span> <strong style="color:var(--blue)">${v.id_te}</strong><br>
+           <span style="color:var(--muted)">PJ Ref:</span> ${v.id_projecte||'—'}<br>
+           <span style="color:var(--muted)">Canvi Divisa:</span> ${v.divisa||''} ${v.canvi_mig||''}</div>
+    </div>`;
+
+    if(v.notes) html += `<div style="padding:10px 20px;font-size:12px;font-style:italic;color:#555;border-bottom:1px solid var(--border-light)"><strong>Observacions:</strong> ${v.notes}</div>`;
+
+    html += `<table class="rtbl"><thead><tr><th style="width:60%">Concepte</th><th class="r">Imports EUR</th></tr></thead><tbody>`;
+
+    // Línies EUR
+    if(linesEur.length){
+      linesEur.forEach(l => {
+        totEur += parseFloat(l.import_eur)||0;
+        html += `<tr><td>${l.despesa_linia||'—'}</td><td class="r">${fm(l.import_eur)}</td></tr>`;
+      });
+      html += `<tr class="subtotal"><td>Subtot ${linesEur.length}</td><td class="r">${fm(totEur)}</td></tr>`;
+    }
+
+    // Línies Divisa
+    if(linesDiv.length){
+      html += `</tbody></table>`;
+      html += `<table class="rtbl"><thead><tr><th style="width:50%">Concepte</th><th class="r">DIV/1</th><th class="r">Euros</th></tr></thead><tbody>`;
+      linesDiv.forEach(l => {
+        const div1 = parseFloat(l.import_div1)||0;
+        const divEur = parseFloat(l.div_eur)||0;
+        totDiv += div1; totDivEur += divEur;
+        html += `<tr><td>${l.despesa_linia||'—'}</td><td class="r">${fm(div1)}</td><td class="r">${fm(divEur)}</td></tr>`;
+      });
+      html += `<tr class="subtotal"><td>Subtot ${linesDiv.length}</td><td class="r">${fm(totDiv)}</td><td class="r">${fm(totDivEur)}</td></tr>`;
+      html += `</tbody></table>`;
+      html += `<table class="rtbl"><tbody>`;
+    }
+
+    const total = totEur + totDivEur;
+    html += `<tr class="total-final"><td colspan="${linesDiv.length?2:1}">Total Despeses &nbsp; <span style="font-weight:400;font-size:11px">Total ${lines.length}</span></td>`;
+    if(linesDiv.length) html += `<td class="r">${fm(totDiv)}</td>`;
+    html += `<td class="r">${fm(total)}</td></tr>`;
+    html += `</tbody></table>`;
+
+    el.innerHTML = html;
+  }catch(e){ el.innerHTML=`<div class="rpt-empty">Error: ${e.message}</div>`; }
+}
+
+// ══════════════════════════════
+// LLISTAT DESPESES (TICKETS)
+// ══════════════════════════════
+async function runDespTickets(){
+  const any = document.getElementById('dt-any').value;
+  const el = document.getElementById('rpt-desp-tickets');
+  el.innerHTML='<div class="rpt-loading">Carregant...</div>';
+  try{
+    // Tickets de l'any
+    const tickets = await sbGet('tickets', `data=gte.${any}-01-01&data=lte.${any}-12-31&order=data.asc`);
+    // Viatges de l'any (com a línies del llistat)
+    const viatges = await sbGet('viatges', `data=gte.${any}-01-01&data=lte.${any}-12-31&order=data.asc`);
+
+    // Unir: cada viatge es tracta com un ticket (locomocio = total_eur, tipus SP)
+    const totsRegistres = [
+      ...tickets.map(t=>({
+        data:t.data, concepte:t.concepte, tipus:t.tipus_ne, cnce:t.cnce,
+        id_projecte:t.id_projecte,
+        tiquet:parseFloat(t.tiquet)||0,
+        correus:parseFloat(t.correus)||0,
+        impresos:parseFloat(t.impresos)||0,
+        locomocio:parseFloat(t.locomocio)||0,
+        reparacions:parseFloat(t.reparacions)||0,
+        mat_oficina:parseFloat(t.mat_oficina)||0,
+        varis:parseFloat(t.varis)||0,
+        especial:(parseFloat(t.especial)||0)+(parseFloat(t.especial_mig)||0),
+        esViatge:false
+      })),
+      ...viatges.map(v=>({
+        data:v.data, concepte:`Despeses viatge ${v.descripcio||v.id_te}, Ref ${v.id_te}`,
+        tipus:'SP', cnce:'CE', id_projecte:v.id_projecte,
+        tiquet:0,correus:0,impresos:0,
+        locomocio:parseFloat(v.total_eur)||0,
+        reparacions:0,mat_oficina:0,varis:0,especial:0,
+        esViatge:true
+      }))
+    ].sort((a,b)=>a.data.localeCompare(b.data));
+
+    if(!totsRegistres.length){
+      el.innerHTML='<div class="rpt-empty"><div class="eico">📭</div><p>Sense despeses per aquest any</p></div>';
+      return;
+    }
+
+    // Agrupar per trimestre i CN/CE
+    const trims = {1:[],2:[],3:[],4:[]};
+    totsRegistres.forEach(r=>{
+      const mes = new Date(r.data+'T00:00:00').getMonth()+1;
+      const trim = Math.ceil(mes/3);
+      trims[trim].push(r);
+    });
+
+    const cols = ['tiquet','correus','impresos','locomocio','reparacions','mat_oficina','varis','especial'];
+    const colLabels = ['TIQ COMP','CORREUS','IMPRESOS','LOCOMOC','REPARAC','MAT OFI','VARIS','ESPECIAL'];
+
+    let html = `<table class="rtbl"><thead><tr>
+      <th>DATA</th><th>CONCEPTE</th>
+      ${colLabels.map(l=>`<th class="r">${l}</th>`).join('')}
+    </tr></thead><tbody>`;
+
+    let totals = Object.fromEntries(cols.map(c=>[c,0]));
+    let grandTotal = 0;
+
+    [1,2,3,4].forEach(t=>{
+      const rows = trims[t];
+      if(!rows.length) return;
+
+      // CN i CE separats
+      const cn = rows.filter(r=>r.cnce==='CN');
+      const ce = rows.filter(r=>r.cnce==='CE');
+
+      html += `<tr><td colspan="${2+cols.length}" style="padding:6px 12px;font-weight:700;color:var(--blue);background:#f0f4fa">T${t} ${any}</td></tr>`;
+
+      const renderGrup = (grup, label) => {
+        if(!grup.length) return;
+        html += `<tr><td colspan="${2+cols.length}" style="padding:4px 12px 2px;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase">${label}</td></tr>`;
+        let subtots = Object.fromEntries(cols.map(c=>[c,0]));
+        grup.forEach(r=>{
+          html += `<tr ${r.esViatge?'style="font-style:italic"':''}>
+            <td>${fd(r.data)}</td>
+            <td style="max-width:300px">${r.concepte||'—'}</td>
+            ${cols.map(c=>{
+              const v=r[c]||0;
+              subtots[c]+=v;
+              totals[c]+=v;
+              return `<td class="r">${v?fm(v):''}</td>`;
+            }).join('')}
+          </tr>`;
+        });
+        const subtot = cols.reduce((s,c)=>s+subtots[c],0);
+        grandTotal += subtot;
+        html += `<tr class="subtotal"><td colspan="2">Subtotals T${t} ${any}</td>
+          ${cols.map(c=>`<td class="r">${subtots[c]?fm(subtots[c]):''}</td>`).join('')}
+        </tr>`;
+      };
+
+      if(cn.length){ html += renderGrupHeader('DOMÈSTIQUES'); renderGrup(cn,''); }
+      if(ce.length){ html += renderGrupHeader('ESTRANGER'); renderGrup(ce,'Suplerts'); }
+    });
+
+    html += `<tr class="total-final">
+      <td colspan="2">Total Despeses</td>
+      ${cols.map(c=>`<td class="r">${totals[c]?fm(totals[c]):''}</td>`).join('')}
+    </tr>`;
+    html += `</tbody></table>`;
+    el.innerHTML = html;
+
+  }catch(e){ el.innerHTML=`<div class="rpt-empty">Error: ${e.message}</div>`; }
+}
+
+function renderGrupHeader(label){
+  return `<tr><td colspan="10" style="padding:3px 12px;font-size:11px;font-weight:800;color:#333">${label}</td></tr>`;
+}
+
+</script>
+</body>
+</html>

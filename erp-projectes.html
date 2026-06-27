@@ -666,6 +666,16 @@ function applyFilters(){
 }
 function clearFilters(){document.getElementById('f-cerca').value='';document.getElementById('f-estat').value='';renderTable(allPJ);}
 
+function nextIdPJ(){
+  const aa=String(new Date().getFullYear()).slice(-2);
+  const seqs=allPJ
+    .map(p=>p.IdPJ)
+    .filter(id=>id&&/^\d{8}$/.test(id))
+    .map(id=>parseInt(id.substring(2,6)));
+  const maxSeq=seqs.length?Math.max(...seqs):0;
+  return aa+String(maxSeq+1).padStart(4,'0')+'00';
+}
+
 function openModal(idpj){
   curIdPJ=idpj; showTab('tp-gen');
   if(idpj){
@@ -676,6 +686,7 @@ function openModal(idpj){
   }else{
     document.getElementById('m-title').textContent='Nou projecte';
     resetForm();
+    document.getElementById('m-idpj').value=nextIdPJ();
   }
   document.getElementById('overlay').classList.add('open');
 }

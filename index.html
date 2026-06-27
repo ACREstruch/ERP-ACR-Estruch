@@ -272,6 +272,7 @@ const fd=d=>d?new Date(d+'T00:00:00').toLocaleDateString('ca-ES',{day:'2-digit',
 
 function getEstatFra(inv){
   if(inv.estat==='COBRAT')return'COBRAT';
+  if((inv.total_factura||0)<0)return'COBRAT';
   const today=new Date();today.setHours(0,0,0,0);
   if(!inv.data_venciment)return'PENDENT';
   const v=new Date(inv.data_venciment+'T00:00:00');

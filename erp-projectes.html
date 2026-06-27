@@ -259,8 +259,9 @@ input[type=number]{-moz-appearance:textfield}
           </div>
           <div class="fg">
             <label>TAG</label>
-            <input type="text" id="m-tag" placeholder="Tag del projecte" list="tag-list">
-            <datalist id="tag-list"></datalist>
+            <select id="m-tag">
+              <option value="">— Sense tag —</option>
+            </select>
           </div>
 
           <!-- BLOC 2: Procedència -->
@@ -522,8 +523,7 @@ function badgeHtml(estat){
 
 async function init(){
   if(!requireAuth()) return;
-  await Promise.all([loadClients(), loadEntitats(), loadPaisos(), loadProveniments(), loadProjectes()]);
-  loadTags();
+  await Promise.all([loadClients(), loadEntitats(), loadPaisos(), loadProveniments(), loadProjectes(), loadTags()]);
 }
 
 async function loadClients(){
@@ -592,10 +592,16 @@ async function loadProveniments(){
   }catch(e){console.error('Error proveniments:',e);}
 }
 
-function loadTags(){
-  const dl=document.getElementById('tag-list');
-  const tags=[...new Set(allPJ.map(p=>p.TAG).filter(Boolean))].sort();
-  dl.innerHTML=tags.map(t=>`<option value="${t}">`).join('');
+async function loadTags(){
+  try{
+    const tags=await sbGet('tags','select=nom&tipus=eq.PROJECTES&order=nom');
+    const sel=document.getElementById('m-tag');
+    tags.forEach(t=>{
+      const o=document.createElement('option');
+      o.value=t.nom; o.textContent=t.nom;
+      sel.appendChild(o);
+    });
+  }catch(e){ console.warn('No s\'han pogut carregar tags:',e.message); }
 }
 
 async function loadProjectes(){
@@ -825,7 +831,6 @@ async function saveProjecte(){
     else{await sbPost('projectes',data);}
     toast('Projecte guardat','ok');
     await Promise.all([loadEntitats(),loadPaisos(),loadProveniments(),loadProjectes()]);
-    loadTags();
     closeModal();
   }catch(e){toast('Error: '+e.message,'err');}
   finally{btn.disabled=false;btn.innerHTML='💾 Guardar';}

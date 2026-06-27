@@ -1345,7 +1345,7 @@ function recalcCob(){
   const irpf = curBi * irpfPc/100;
   const tot  = curBi + iva - irpf;
   const cob  = parseFloat(document.getElementById('m-cobrat').value)||0;
-  const pend = tot - cob;
+  const pend = tot < 0 ? 0 : tot - cob;
   document.getElementById('m-pendent').value = pend.toLocaleString('ca-ES',{minimumFractionDigits:2}) + ' EUR';
 }
 

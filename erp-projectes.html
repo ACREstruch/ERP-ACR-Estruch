@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ca">
 <head>
 <meta charset="UTF-8">
@@ -110,6 +110,9 @@ th.amt{text-align:right}
 input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
 input[type=number]{-moz-appearance:textfield}
 ::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:rgba(0,0,0,.2);border-radius:3px}
+/* sticky header */
+.tbl-wrap{overflow-x:auto;overflow-y:auto;max-height:calc(100vh - 280px)}
+.main-tbl thead th{position:sticky;top:0;z-index:3;background:#f0f4f8;box-shadow:0 2px 0 var(--border)}
 </style>
 </head>
 <body>

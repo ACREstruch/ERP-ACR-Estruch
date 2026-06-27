@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ca">
 <head>
 <meta charset="UTF-8">
@@ -47,6 +47,9 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;font-size:14px;ba
 .toast.ok{background:var(--green)}.toast.err{background:var(--red)}.toast.inf{background:var(--blue)}
 @keyframes tin{from{transform:translateX(110%);opacity:0}to{transform:translateX(0);opacity:1}}
 ::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:rgba(0,0,0,.2);border-radius:3px}
+/* sticky header */
+.tbl-wrap{overflow-x:auto;overflow-y:auto;max-height:calc(100vh - 280px)}
+.main-tbl thead th{position:sticky;top:0;z-index:3;background:#f0f4f8;box-shadow:0 2px 0 var(--border)}
 
 /* Layout tags */
 .tags-layout{display:grid;grid-template-columns:260px 1fr;gap:16px;height:calc(100vh - var(--topbar) - 36px)}

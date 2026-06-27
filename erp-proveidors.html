@@ -376,8 +376,7 @@ async function init(){
 
 async function loadCatTags(){
   try{
-    const tipus=encodeURIComponent('Tag Proveïdors — Categoria');
-    const tags=await sbGet('tags',`select=nom&tipus=eq.${tipus}&order=nom`);
+    const tags=await sbGet('tags','select=nom&tipus=eq.PROVEIDORS&order=nom');
     const sel=document.getElementById('m-categoria');
     tags.forEach(t=>{
       const o=document.createElement('option');

@@ -184,6 +184,7 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;font-size:14px;ba
       <button class="main-tab" onclick="showTab('tab-rebut')">🧾 Rebut</button>
       <button class="main-tab" onclick="showTab('tab-desp-viatge')">✈️ Despeses Viatge</button>
       <button class="main-tab" onclick="showTab('tab-desp-tickets')">📋 Llistat Despeses</button>
+      <button class="main-tab" onclick="showTab('tab-projectes')">📋 Estat Projectes</button>
     </div>
 
     <!-- ══ TAB: LLISTAT FACTURES ══ -->
@@ -399,6 +400,46 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;font-size:14px;ba
       <div class="report-area">
         <div class="report-header"><h2>Llistat Despeses</h2></div>
         <div class="report-body" id="rpt-desp-tickets"><div class="rpt-loading">Selecciona l'any i clica Generar</div></div>
+      </div>
+    </div>
+
+    <!-- ══ TAB: ESTAT PROJECTES ══ -->
+    <div class="tab-content" id="tab-projectes">
+      <div class="print-header">
+        <div class="ph-logo"><div class="brand">ACR|Estruch</div><div class="tag">export &amp; consulting</div></div>
+        <div class="ph-info">Muntaner, 440, 1-1B · 08006 Barcelona<br>+34 609852478 · info@acrestruch.com</div>
+      </div>
+      <div class="report-selector">
+        <div class="report-selector-row">
+          <div class="form-group">
+            <label>Estat</label>
+            <select id="pj-estat" onchange="runProjectes()">
+              <option value="">Tots els estats</option>
+              <option value="ACTIU">Actiu</option>
+              <option value="PAUSAT">Pausat</option>
+              <option value="COMPLETAT">Completat</option>
+              <option value="CANCEL·LAT">Cancel·lat</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Any inici</label>
+            <select id="pj-any" onchange="runProjectes()">
+              <option value="">Tots</option>
+              <option value="2026">2026</option>
+              <option value="2025">2025</option>
+              <option value="2024">2024</option>
+              <option value="2023">2023</option>
+              <option value="2022">2022</option>
+              <option value="2021">2021</option>
+              <option value="2020">2020</option>
+            </select>
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="runProjectes()">▶ Generar</button>
+        </div>
+      </div>
+      <div class="report-area">
+        <div class="report-header"><h2>Estat de Projectes</h2></div>
+        <div class="report-body" id="rpt-projectes"><div class="rpt-loading">Selecciona els filtres i clica Generar</div></div>
       </div>
     </div>
 
@@ -1100,6 +1141,103 @@ async function runDespTickets(){
 
 function renderGrupHeader(label){
   return `<tr><td colspan="10" style="padding:3px 12px;font-size:11px;font-weight:800;color:#333">${label}</td></tr>`;
+}
+
+// ══════════════════════════════
+// ESTAT PROJECTES
+// ══════════════════════════════
+async function runProjectes(){
+  const el = document.getElementById('rpt-projectes');
+  const filtEstat = document.getElementById('pj-estat').value;
+  const filtAny   = document.getElementById('pj-any').value;
+  el.innerHTML = '<div class="rpt-loading">Carregant...</div>';
+
+  try{
+    let qs = 'select=IdPJ,Descripcio,EmpresaPJ,TipusPJ,estat,data_inici,data_entrada,data_finalitzat,import&order=IdPJ.desc.nullslast';
+    if(filtEstat) qs += `&estat=eq.${encodeURIComponent(filtEstat)}`;
+    const pjs = await sbGet('projectes', qs);
+
+    const fmtId = id => id ? String(id).padStart(8,'0') : '—';
+    const fd = d => d ? new Date(d+'T00:00:00').toLocaleDateString('ca-ES',{day:'2-digit',month:'2-digit',year:'numeric'}) : '—';
+    const fe = n => n ? Number(n).toLocaleString('ca-ES',{minimumFractionDigits:2}) : '—';
+
+    const ESTAT_CFG = {
+      'ACTIU':     {cls:'bg', lbl:'Actiu'},
+      'PAUSAT':    {cls:'by', lbl:'Pausat'},
+      'COMPLETAT': {cls:'bb', lbl:'Completat'},
+      'CANCEL·LAT':{cls:'bx', lbl:'Cancel·lat'},
+    };
+    const badge = e => {const c=ESTAT_CFG[e]||{cls:'bx',lbl:e}; return `<span class="badge ${c.cls}">${c.lbl}</span>`;};
+
+    // filtre per any (sobre data_inici o data_entrada)
+    const rows = filtAny
+      ? pjs.filter(p => {const d=p.data_inici||p.data_entrada||''; return d.startsWith(filtAny);})
+      : pjs;
+
+    if(!rows.length){
+      el.innerHTML='<div class="rpt-empty"><div class="eico">📋</div><p>Cap projecte amb aquests filtres.</p></div>';
+      return;
+    }
+
+    // Agrupar per estat en ordre: ACTIU → PAUSAT → COMPLETAT → CANCEL·LAT → altres
+    const ORDRE = ['ACTIU','PAUSAT','COMPLETAT','CANCEL·LAT'];
+    const grups = {};
+    rows.forEach(p => {
+      const k = p.estat || 'ALTRES';
+      (grups[k] = grups[k]||[]).push(p);
+    });
+
+    const colHead = `<tr>
+      <th>IdPJ</th><th>Descripció</th><th>Client / Empresa</th><th>Tipus</th>
+      <th>Data entrada</th><th>Data inici</th><th>Data fi</th>
+      <th class="r">Import</th><th>Estat</th>
+    </tr>`;
+
+    let html = '';
+    const keysOrdered = [...ORDRE.filter(k=>grups[k]), ...Object.keys(grups).filter(k=>!ORDRE.includes(k))];
+    let grandTotal = 0;
+
+    keysOrdered.forEach(estat => {
+      const llista = grups[estat];
+      const subtotal = llista.reduce((s,p)=>s+(Number(p.import)||0),0);
+      grandTotal += subtotal;
+      const cfg = ESTAT_CFG[estat]||{cls:'bx',lbl:estat};
+      html += `
+        <tr style="background:#eef2f8">
+          <td colspan="9" style="padding:5px 12px;font-size:11px;font-weight:800;color:var(--blue);text-transform:uppercase;letter-spacing:.5px">
+            ${cfg.lbl} — ${llista.length} projecte${llista.length!==1?'s':''}
+          </td>
+        </tr>`;
+      llista.forEach(p => {
+        html += `<tr>
+          <td class="bold">${fmtId(p.IdPJ)}</td>
+          <td style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${p.Descripcio||''}">${p.Descripcio||'—'}</td>
+          <td style="font-size:12px;color:var(--muted)">${p.EmpresaPJ||'—'}</td>
+          <td style="font-size:12px">${p.TipusPJ||'—'}</td>
+          <td style="font-size:12px">${fd(p.data_entrada)}</td>
+          <td style="font-size:12px">${fd(p.data_inici)}</td>
+          <td style="font-size:12px">${fd(p.data_finalitzat)}</td>
+          <td class="r">${fe(p.import)}</td>
+          <td>${badge(p.estat)}</td>
+        </tr>`;
+      });
+      html += `<tr class="subtotal">
+        <td colspan="7"></td>
+        <td class="r">${fe(subtotal)}</td>
+        <td></td>
+      </tr>`;
+    });
+
+    html += `<tr class="total-final">
+      <td colspan="7">TOTAL</td>
+      <td class="r">${fe(grandTotal)}</td>
+      <td></td>
+    </tr>`;
+
+    el.innerHTML = `<table class="rtbl"><thead>${colHead}</thead><tbody>${html}</tbody></table>`;
+  } catch(e){
+    el.innerHTML = `<div class="rpt-empty"><p style="color:var(--red)">Error: ${e.message}</p></div>`;
+  }
 }
 
 </script>

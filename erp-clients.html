@@ -711,7 +711,7 @@ async function loadClientFactures(){
     const badge = s=>`<span style="font-size:11px;font-weight:700;color:${EC[s]||'var(--muted)'}">${EL[s]||s||'—'}</span>`;
     const totImp = fras.reduce((s,f)=>s+(f.total_factura||0),0);
     const totCob = fras.reduce((s,f)=>s+(f.import_cobrat||0),0);
-    const totPend = Math.max(0, totImp-totCob);
+    const totPend = fras.reduce((s,f)=>f.estat==='COBRAT'?s:s+Math.max(0,(f.total_factura||0)-(f.import_cobrat||0)),0);
     el.innerHTML=`
       <div style="display:flex;gap:24px;padding:12px 0 14px;font-size:13px;flex-wrap:wrap">
         <span><strong>${fras.length}</strong> factures</span>
@@ -725,7 +725,7 @@ async function loadClientFactures(){
         <th style="text-align:right">Cobrat</th><th style="text-align:right">Pendent</th><th>Data Cob.</th><th>Estat</th>
       </tr></thead><tbody>
       ${fras.map(f=>{
-        const pend=Math.max(0,(f.total_factura||0)-(f.import_cobrat||0));
+        const pend=f.estat==='COBRAT'?0:Math.max(0,(f.total_factura||0)-(f.import_cobrat||0));
         const idpj = f.n_ref || f.id_projecte || '—';
         return `<tr>
           <td><strong>${f.no_factura||'—'}</strong></td>

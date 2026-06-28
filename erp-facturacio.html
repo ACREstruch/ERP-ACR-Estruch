@@ -425,6 +425,7 @@ input[type=number]{-moz-appearance:textfield}
           <option value="">Tots els estats</option>
           <option value="COBRAT">COB — Cobrat</option>
           <option value="PENDENT">PEND — Pendent</option>
+          <option value="PARCIAL">PARC — Cobrat parcialment</option>
           <option value="PROXIM">VENÇ &lt;7 — Proper venciment</option>
           <option value="RECTIFICATIVA">RECTF — Rectificativa</option>
         </select>
@@ -508,6 +509,7 @@ input[type=number]{-moz-appearance:textfield}
           <select id="m-estat" onchange="updateBadge()">
             <option value="PENDENT">PEND — Pendent</option>
             <option value="COBRAT">COB — Cobrat</option>
+            <option value="PARCIAL">PARC — Cobrat parcialment</option>
             <option value="RECTIFICATIVA">RECTF — Rectificativa</option>
           </select>
         </div>
@@ -594,7 +596,10 @@ input[type=number]{-moz-appearance:textfield}
     <!-- ── TAB FINANCER ── -->
     <div class="tab-panel" id="tp-fin">
       <div class="grid3">
-        <div class="sec">Cobrament</div>
+        <div class="sec" style="display:flex;align-items:center;justify-content:space-between">
+          Cobrament
+          <button type="button" class="btn btn-primary btn-sm" onclick="cobrarAra()" style="font-size:12px;padding:4px 12px">✓ Cobrar ara</button>
+        </div>
         <div class="fg">
           <label>Import cobrat (EUR)</label>
           <input type="number" id="m-cobrat" step="0.01" value="0" onchange="recalcCob()">
@@ -971,6 +976,7 @@ async function refreshData(){
 // ════════════════════════════════════════════════
 function getEstat(inv){
   if(inv.estat === 'COBRAT')        return 'COBRAT';
+  if(inv.estat === 'PARCIAL')       return 'PARCIAL';
   if(inv.estat === 'RECTIFICATIVA') return 'RECTIFICATIVA';
   const today = new Date(); today.setHours(0,0,0,0);
   if(!inv.data_venciment)           return 'PENDENT';
@@ -982,8 +988,9 @@ function getEstat(inv){
 
 const ESTAT_MAP = {
   COBRAT:       ['bg','COB'],
+  PARCIAL:      ['ba','PARC'],
   PENDENT:      ['br','PEND'],
-  PROXIM:       ['ba','VENÇ <7'],
+  PROXIM:       ['br','VENÇ <7'],
   RECTIFICATIVA:['bx','RECTF'],
 };
 
@@ -996,12 +1003,13 @@ function badgeHtml(inv){
 // STATS
 // ════════════════════════════════════════════════
 function renderStats(){
-  let n={COBRAT:0,PENDENT:0,PROXIM:0,RECTIFICATIVA:0};
-  let e={COBRAT:0,PENDENT:0,PROXIM:0,RECTIFICATIVA:0};
+  let n={COBRAT:0,PENDENT:0,PARCIAL:0,PROXIM:0,RECTIFICATIVA:0};
+  let e={COBRAT:0,PENDENT:0,PARCIAL:0,PROXIM:0,RECTIFICATIVA:0};
   allInvoices.forEach(inv=>{
     const s = getEstat(inv);
     if(n[s]!==undefined){ n[s]++; e[s]+=(inv.total_factura||0); }
   });
+  n.PENDENT += n.PARCIAL; e.PENDENT += e.PARCIAL;
   const f = v => v.toLocaleString('ca-ES',{minimumFractionDigits:2})+' €';
   document.getElementById('s-cob').textContent = n.COBRAT;
   document.getElementById('s-cob-e').textContent = f(e.COBRAT);
@@ -1369,7 +1377,32 @@ function recalcCob(){
   const cob  = parseFloat(document.getElementById('m-cobrat').value)||0;
   const pend = tot < 0 ? 0 : tot - cob;
   document.getElementById('m-pendent').value = pend.toLocaleString('ca-ES',{minimumFractionDigits:2}) + ' EUR';
+
+  if(tot > 0){
+    const estatEl = document.getElementById('m-estat');
+    if(estatEl.value !== 'RECTIFICATIVA'){
+      if(cob <= 0){
+        estatEl.value = 'PENDENT';
+      } else if(cob >= tot){
+        estatEl.value = 'COBRAT';
+        if(!document.getElementById('m-dcob').value)
+          document.getElementById('m-dcob').value = new Date().toISOString().slice(0,10);
+      } else {
+        estatEl.value = 'PARCIAL';
+      }
+      updateBadge();
+    }
+  }
   updatePreview();
+}
+
+function cobrarAra(){
+  const ivaPc  = parseFloat(document.getElementById('m-iva').value)||0;
+  const irpfPc = parseFloat(document.getElementById('m-irpf').value)||0;
+  const tot = Math.round((curBi + curBi*ivaPc/100 - curBi*irpfPc/100)*100)/100;
+  document.getElementById('m-cobrat').value = tot.toFixed(2);
+  document.getElementById('m-dcob').value = new Date().toISOString().slice(0,10);
+  recalcCob();
 }
 
 function recalcLiq(){

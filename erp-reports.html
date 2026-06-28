@@ -863,7 +863,7 @@ async function runPendFra(){
     const fe = n => Number(n||0).toLocaleString('ca-ES',{minimumFractionDigits:2});
 
     const pendents   = pjsAll.filter(p=>p.facturar==='SI');
-    const periodiques= pjsAll.filter(p=>p.facturar==='FACT. PERIÒDICA');
+    const periodiques= pjsAll.filter(p=>p.facturar==='FRA. PERIÒDICA');
 
     if(!pendents.length && !periodiques.length){
       el.innerHTML='<div class="rpt-empty"><div class="eico">✅</div><p>Sense projectes pendents de facturar.</p></div>';

@@ -268,15 +268,26 @@ th.amt{text-align:right}
 .full{grid-column:1/-1}
 .sec{grid-column:1/-1;font-size:11px;font-weight:800;color:var(--blue);text-transform:uppercase;letter-spacing:.8px;padding:4px 0 2px;border-bottom:1.5px solid var(--blue-dim);margin-bottom:2px}
 
+/* ── FRA HEADER (2 rows compact) ── */
+.fra-hdr{border:1.5px solid var(--border);border-radius:var(--r);background:#fdfdfd;margin-bottom:10px;padding:10px 14px;display:flex;flex-direction:column;gap:7px}
+.fra-row{display:flex;gap:10px;align-items:flex-end}
+.fra-cell{display:flex;flex-direction:column;gap:3px;flex:1;min-width:0}
+.fra-cell.sm{flex:.65;min-width:70px}.fra-cell.md{flex:1.4}.fra-cell.lg{flex:2.5}
+.fra-cell label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;white-space:nowrap}
+.fra-cell input,.fra-cell select{padding:5px 8px;border:1.5px solid var(--border);border-radius:4px;font-size:13px;background:#fff;color:var(--text);width:100%;transition:border-color .12s;font-family:inherit}
+.fra-cell input:focus,.fra-cell select:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 2px rgba(0,56,124,.06)}
+
 /* ── LINES TABLE ── */
 table.ltbl{width:100%;border-collapse:collapse}
 .ltbl th{padding:7px 10px;font-size:10.5px;color:var(--muted);text-transform:uppercase;font-weight:700;border-bottom:2px solid var(--border);background:#f8f9fa}
-.ltbl td{padding:5px 8px;border-bottom:1px solid var(--border-light)}
-.ltbl input{width:100%;border:1.5px solid transparent;padding:5px 7px;border-radius:4px;background:transparent;font-size:13px;font-family:inherit;transition:border-color .12s}
+.ltbl td{padding:4px 6px;border-bottom:1px solid var(--border-light);vertical-align:top}
+.ltbl input{width:100%;border:1.5px solid transparent;padding:4px 6px;border-radius:4px;background:transparent;font-size:13px;font-family:inherit;transition:border-color .12s}
 .ltbl input:focus{border-color:var(--blue);background:#fff;outline:none}
-.ltbl .w80{width:80px}.ltbl .w70{width:70px}.ltbl .w50{width:50px}
-.ltbl .rgt{text-align:right}
-.ltbl .del-btn{background:none;border:none;cursor:pointer;color:var(--red);font-size:16px;padding:2px 4px;opacity:.6}
+.ltbl textarea{width:100%;border:1.5px solid transparent;padding:4px 6px;border-radius:4px;background:transparent;font-size:13px;font-family:inherit;line-height:1.45;resize:none;overflow:hidden;min-height:30px;transition:border-color .12s;display:block}
+.ltbl textarea:focus{border-color:var(--blue);background:#fff;outline:none}
+.ltbl .w80{width:82px}.ltbl .w70{width:72px}.ltbl .w50{width:52px}
+.ltbl .rgt{text-align:right}.ltbl .vtop{vertical-align:top;padding-top:7px}
+.ltbl .del-btn{background:none;border:none;cursor:pointer;color:var(--red);font-size:16px;padding:2px 4px;opacity:.6;margin-top:3px}
 .ltbl .del-btn:hover{opacity:1}
 
 /* ── TOTALS ── */
@@ -489,72 +500,79 @@ input[type=number]{-moz-appearance:textfield}
 
     <!-- ── TAB FACTURA ── -->
     <div class="tab-panel on" id="tp-fra">
-      <div class="grid4">
-        <div class="sec">Capçalera</div>
 
-        <div class="fg">
-          <label>Nº Factura *</label>
-          <input type="text" id="m-no" placeholder="26001" oninput="updatePreview()">
+      <!-- Capçalera compacta: 2 files -->
+      <div class="fra-hdr">
+        <div class="fra-row">
+          <div class="fra-cell sm">
+            <label>Nº Factura *</label>
+            <input type="text" id="m-no" placeholder="26001" oninput="updatePreview()">
+          </div>
+          <div class="fra-cell lg">
+            <label>Client *</label>
+            <select id="m-client" onchange="onClientChange()">
+              <option value="">— Selecciona client —</option>
+            </select>
+          </div>
+          <div class="fra-cell md">
+            <label>N/Ref (nostre projecte)</label>
+            <select id="m-nref">
+              <option value="">— Sense projecte —</option>
+            </select>
+          </div>
+          <div class="fra-cell sm">
+            <label>Data factura *</label>
+            <input type="date" id="m-data" onchange="onDataFraChange(this.value)">
+          </div>
+          <div class="fra-cell sm">
+            <label>Estat</label>
+            <select id="m-estat" onchange="updateBadge()">
+              <option value="PENDENT">PEND — Pendent</option>
+              <option value="COBRAT">COB — Cobrat</option>
+              <option value="PARCIAL">PARC — Cobrat parc.</option>
+              <option value="RECTIFICATIVA">RECTF — Rectificativa</option>
+            </select>
+          </div>
         </div>
-        <div class="fg">
-          <label>Data factura *</label>
-          <input type="date" id="m-data" onchange="onDataFraChange(this.value)">
+        <div class="fra-row">
+          <div class="fra-cell sm">
+            <label>S/Ref (client)</label>
+            <input type="text" id="m-sref">
+          </div>
+          <div class="fra-cell lg">
+            <label>Forma de pagament</label>
+            <select id="m-fpag">
+              <option>Transferència</option>
+              <option>Rebut domiciliat</option>
+              <option>Efectiu</option>
+              <option>Xec</option>
+            </select>
+          </div>
+          <div class="fra-cell md">
+            <label>Divisa</label>
+            <select id="m-div">
+              <option value="EUR">EUR</option>
+              <option value="USD">USD</option>
+              <option value="GBP">GBP</option>
+              <option value="MXN">MXN</option>
+            </select>
+          </div>
+          <div class="fra-cell sm">
+            <label>Data venciment</label>
+            <input type="date" id="m-venc">
+          </div>
+          <div class="fra-cell sm">
+            <label>Classe</label>
+            <select id="m-classe">
+              <option>Normal</option>
+              <option>Rectificativa</option>
+              <option>Abono</option>
+            </select>
+          </div>
         </div>
-        <div class="fg">
-          <label>Data venciment</label>
-          <input type="date" id="m-venc">
-        </div>
-        <div class="fg">
-          <label>Estat</label>
-          <select id="m-estat" onchange="updateBadge()">
-            <option value="PENDENT">PEND — Pendent</option>
-            <option value="COBRAT">COB — Cobrat</option>
-            <option value="PARCIAL">PARC — Cobrat parcialment</option>
-            <option value="RECTIFICATIVA">RECTF — Rectificativa</option>
-          </select>
-        </div>
-
-        <div class="sec">Client i Projecte</div>
-
-        <div class="fg full">
-          <label>Client *</label>
-          <select id="m-client" onchange="onClientChange()">
-            <option value="">— Selecciona client —</option>
-          </select>
-        </div>
-        <div class="fg">
-          <label>N/Ref (nostre projecte)</label>
-          <select id="m-nref">
-            <option value="">— Sense projecte —</option>
-          </select>
-        </div>
-        <div class="fg">
-          <label>S/Ref (referència client)</label>
-          <input type="text" id="m-sref">
-        </div>
-        <div class="fg">
-          <label>Forma de pagament</label>
-          <select id="m-fpag">
-            <option>Transferència</option>
-            <option>Rebut domiciliat</option>
-            <option>Efectiu</option>
-            <option>Xec</option>
-          </select>
-        </div>
-        <div class="fg">
-          <label>Divisa</label>
-          <select id="m-div">
-            <option value="EUR">EUR</option>
-            <option value="USD">USD</option>
-            <option value="GBP">GBP</option>
-            <option value="MXN">MXN</option>
-          </select>
-        </div>
-
-        <div class="sec">Línies de factura</div>
       </div>
 
-      <!-- Lines -->
+      <!-- Línies -->
       <table class="ltbl">
         <thead>
           <tr>
@@ -781,14 +799,6 @@ input[type=number]{-moz-appearance:textfield}
         <div class="fg">
           <label>Import suplerts (EUR)</label>
           <input type="number" id="m-imp-sup" step="0.01" value="0">
-        </div>
-        <div class="fg">
-          <label>Classe factura</label>
-          <select id="m-classe">
-            <option>Normal</option>
-            <option>Rectificativa</option>
-            <option>Abono</option>
-          </select>
         </div>
         <div class="fg full">
           <label>Notes (s'imprimeixen a la factura)</label>
@@ -1308,21 +1318,22 @@ function renderLines(){
   const fe = (n,d=2)=>(n||0).toLocaleString('ca-ES',{minimumFractionDigits:d});
   document.getElementById('lines-body').innerHTML = curLines.map((l,i)=>`
     <tr>
-      <td><textarea placeholder="Descripció del servei..." rows="2"
-          style="width:100%;resize:vertical;border:1.5px solid transparent;padding:5px 7px;border-radius:4px;background:transparent;font-size:13px;font-family:inherit;line-height:1.4"
+      <td><textarea placeholder="Descripció del servei..."
+          oninput="upLine(${i},'descripcio',this.value);this.style.height='auto';this.style.height=this.scrollHeight+'px'"
           onfocus="this.style.borderColor='var(--blue)';this.style.background='#fff'"
           onblur="this.style.borderColor='transparent';this.style.background='transparent'"
-          onchange="upLine(${i},'descripcio',this.value)"
           >${escHtml(l.descripcio||'')}</textarea></td>
-      <td class="rgt w80"><input type="number" value="${(l.quantitat??1).toFixed(2)}" step="0.01" style="text-align:right;width:100%"
+      <td class="rgt w80 vtop"><input type="number" value="${(l.quantitat??1).toFixed(2)}" step="0.01" style="text-align:right;width:100%"
           onchange="upLine(${i},'quantitat',this.value)"></td>
-      <td class="rgt w80"><input type="number" value="${(l.preu_unitari??0).toFixed(2)}" step="0.01" style="text-align:right;width:100%"
+      <td class="rgt w80 vtop"><input type="number" value="${(l.preu_unitari??0).toFixed(2)}" step="0.01" style="text-align:right;width:100%"
           onchange="upLine(${i},'preu_unitari',this.value)"></td>
-      <td class="rgt w70"><input type="number" value="${(l.descompte??0).toFixed(2)}" step="0.01" min="0" max="100" style="text-align:right;width:100%"
+      <td class="rgt w70 vtop"><input type="number" value="${(l.descompte??0).toFixed(2)}" step="0.01" min="0" max="100" style="text-align:right;width:100%"
           onchange="upLine(${i},'descompte',this.value)"></td>
-      <td class="rgt w80" style="font-weight:600">${fe(l.import_linia)}</td>
-      <td><button class="del-btn" onclick="delLine(${i})" title="Eliminar línia">✕</button></td>
+      <td class="rgt w80 vtop" style="font-weight:600;padding-top:8px">${fe(l.import_linia)}</td>
+      <td class="vtop"><button class="del-btn" onclick="delLine(${i})" title="Eliminar línia">✕</button></td>
     </tr>`).join('');
+  // auto-altura de textareas
+  document.querySelectorAll('#lines-body textarea').forEach(t=>{t.style.height='auto';t.style.height=t.scrollHeight+'px';});
   recalc();
 }
 

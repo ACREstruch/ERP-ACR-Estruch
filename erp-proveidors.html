@@ -185,6 +185,8 @@ input[type=number]{-moz-appearance:textfield}
               <th>País</th>
               <th>Tel / Email</th>
               <th>IVA %</th>
+              <th>IRPF %</th>
+              <th>CNCE</th>
               <th>Divisa</th>
               <th>Forma pag.</th>
               <th></th>
@@ -321,8 +323,19 @@ input[type=number]{-moz-appearance:textfield}
           <label>% IVA per defecte</label>
           <input type="number" id="m-iva" value="21" min="0" max="100" step="0.1">
         </div>
-        <div class="fg"><!-- spacer --></div>
-        <div class="fg"><!-- spacer --></div>
+        <div class="fg">
+          <label>% IRPF per defecte</label>
+          <input type="number" id="m-irpf" value="0" min="0" max="100" step="0.1">
+        </div>
+        <div class="fg">
+          <label>CNCE (classificació fiscal)</label>
+          <select id="m-cnce">
+            <option value="">— No definit —</option>
+            <option value="CN">CN — Nacional</option>
+            <option value="CE">CE — Comunitari (UE)</option>
+            <option value="EX">EX — Extracomunitari</option>
+          </select>
+        </div>
         <div class="sec">Dades bancàries</div>
         <div class="fg">
           <label>Banc</label>
@@ -430,6 +443,8 @@ function renderTable(rows){
     <td>${p.pais||'—'}</td>
     <td style="font-size:12px">${[p.tel,p.email].filter(Boolean).join(' · ')||'—'}</td>
     <td style="text-align:right">${p.tipus_iva??21}%</td>
+    <td style="text-align:right">${p.tipus_irpf??0}%</td>
+    <td>${p.cnce||'—'}</td>
     <td>${p.divisa||'EUR'}</td>
     <td>${p.forma_pag||'—'}</td>
     <td onclick="event.stopPropagation()" style="white-space:nowrap">
@@ -476,6 +491,8 @@ function fillForm(p){
   s('m-dies',p.dies_pag??30);
   s('m-div',p.divisa||'EUR');
   s('m-iva',p.tipus_iva??21);
+  s('m-irpf',p.tipus_irpf??0);
+  s('m-cnce',p.cnce||'');
   s('m-banc',p.banc); s('m-iban',p.iban_bic);
   s('m-categoria',p.categoria);
   s('m-notes',p.notes);
@@ -489,6 +506,8 @@ function resetForm(){
   document.getElementById('m-dies').value=30;
   document.getElementById('m-div').value='EUR';
   document.getElementById('m-iva').value=21;
+  document.getElementById('m-irpf').value=0;
+  document.getElementById('m-cnce').value='';
 }
 
 async function saveProv(){
@@ -512,6 +531,8 @@ async function saveProv(){
     dies_pag:parseInt(document.getElementById('m-dies').value)||30,
     divisa:document.getElementById('m-div').value,
     tipus_iva:parseFloat(document.getElementById('m-iva').value)||0,
+    tipus_irpf:parseFloat(document.getElementById('m-irpf').value)||0,
+    cnce:document.getElementById('m-cnce').value||null,
     banc:document.getElementById('m-banc').value||null,
     iban_bic:document.getElementById('m-iban').value||null,
     categoria:document.getElementById('m-categoria').value||null,

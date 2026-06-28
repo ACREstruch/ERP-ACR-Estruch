@@ -872,7 +872,7 @@ async function loadClients(demo){
   if(demo){ allClients = demoClients(); }
   else {
     try{
-      allClients = await sbGet('clients','select=id,rao_social,sinonim,nif_vat,tipus_iva,tipus_irpf,forma_pag,banc,iban_bic&order=rao_social');
+      allClients = await sbGet('clients','select=id,rao_social,sinonim,nif_vat,tipus_iva,tipus_irpf,cnce,forma_pag,banc,iban_bic&order=rao_social');
     }catch(e){ console.error(e); allClients = []; }
   }
   const sel = document.getElementById('m-client');
@@ -883,6 +883,7 @@ async function loadClients(demo){
     o.textContent = c.rao_social + (c.sinonim ? ` (${c.sinonim})` : '');
     o.dataset.iva      = c.tipus_iva ?? 21;
     o.dataset.irpf     = c.tipus_irpf ?? 0;
+    o.dataset.cnce     = c.cnce || '';
     o.dataset.banc     = c.banc || '';
     o.dataset.iban     = c.iban_bic || '';
     o.dataset.formapag = c.forma_pag || '';
@@ -893,8 +894,10 @@ async function loadClients(demo){
 function onClientChange(){
   const opt = document.getElementById('m-client').selectedOptions[0];
   if(!opt || !opt.value) return;
-  document.getElementById('m-iva').value  = opt.dataset.iva;
-  document.getElementById('m-irpf').value = opt.dataset.irpf;
+  const cnce = opt.dataset.cnce || 'CN';
+  const noTax = cnce === 'CE' || cnce === 'EX';
+  document.getElementById('m-iva').value  = noTax ? 0 : opt.dataset.iva;
+  document.getElementById('m-irpf').value = noTax ? 0 : opt.dataset.irpf;
   if(opt.dataset.banc)     document.getElementById('m-banc').value = opt.dataset.banc;
   if(opt.dataset.iban)     document.getElementById('m-iban').value = opt.dataset.iban;
   if(opt.dataset.formapag) document.getElementById('m-fpag').value = opt.dataset.formapag;

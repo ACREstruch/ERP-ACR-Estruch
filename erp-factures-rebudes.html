@@ -304,7 +304,7 @@ input[type=number]{-moz-appearance:textfield}
         <div class="sec">Proveïdor i dates</div>
         <div class="fg full">
           <label>Proveïdor</label>
-          <select id="m-prov">
+          <select id="m-prov" onchange="onProvChange()">
             <option value="">— Selecciona proveïdor —</option>
           </select>
         </div>
@@ -496,15 +496,27 @@ async function init(){
 
 async function loadProveidors(){
   try{
-    allProv = await sbGet('proveidors','select=id,nom,sinonim&order=nom');
+    allProv = await sbGet('proveidors','select=id,nom,sinonim,tipus_iva,tipus_irpf,cnce&order=nom');
     const sel = document.getElementById('m-prov');
     sel.innerHTML = '<option value="">— Selecciona proveïdor —</option>';
     allProv.forEach(p=>{
       const o=document.createElement('option');
       o.value=p.id; o.textContent=p.nom+(p.sinonim?` (${p.sinonim})`:'');
+      o.dataset.iva  = p.tipus_iva ?? 21;
+      o.dataset.irpf = p.tipus_irpf ?? 0;
+      o.dataset.cnce = p.cnce || '';
       sel.appendChild(o);
     });
   }catch(e){console.error(e)}
+}
+
+function onProvChange(){
+  const opt = document.getElementById('m-prov').selectedOptions[0];
+  if(!opt || !opt.value) return;
+  const cnce = opt.dataset.cnce || 'CN';
+  const noTax = cnce === 'CE' || cnce === 'EX';
+  document.getElementById('m-iva').value = noTax ? 0 : (opt.dataset.iva ?? 21);
+  recalc();
 }
 
 async function loadFactures(){

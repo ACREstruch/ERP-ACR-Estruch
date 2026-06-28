@@ -297,6 +297,9 @@ table.ltbl{width:100%;border-collapse:collapse}
 .ass-tbl .rgt{text-align:right;font-variant-numeric:tabular-nums;font-weight:600}
 .ass-tbl .deure{color:var(--green)}
 .ass-tbl .haver{color:var(--red-txt)}
+.ass-box{display:inline-flex;align-items:center;gap:10px;border:2px solid var(--blue);border-radius:var(--r);padding:10px 16px;background:var(--blue-light);cursor:pointer;margin-top:4px}
+.ass-box label{font-size:13px;font-weight:700;color:var(--blue);cursor:pointer;user-select:none}
+.ass-box input[type=checkbox]{width:17px;height:17px;accent-color:var(--blue);cursor:pointer;flex-shrink:0}
 
 /* ── TOAST ── */
 #toast{position:fixed;bottom:22px;right:22px;z-index:999;display:flex;flex-direction:column;gap:8px;pointer-events:none}
@@ -719,17 +722,17 @@ input[type=number]{-moz-appearance:textfield}
           <label>IRPF retingut (4751)</label>
           <input type="text" id="m-cte-irpf" placeholder="4751" value="4751">
         </div>
-        <div class="fg">
-          <label>Assentat</label>
-          <select id="m-assentat">
-            <option value="false">No</option>
-            <option value="true">Sí</option>
-          </select>
+        <div class="fg" style="grid-column:1/-1">
+          <label>Marcatge comptable</label>
+          <div class="ass-box">
+            <input type="checkbox" id="m-assentat">
+            <label for="m-assentat">ASSENTAT</label>
+          </div>
         </div>
       </div>
 
       <div style="margin-top:22px">
-        <div class="sec" style="border:none;margin-bottom:10px">Assentament comptable (previsió)</div>
+        <div class="sec" style="border:none;margin-bottom:10px">Assentament factura (previsió)</div>
         <table class="ass-tbl">
           <thead>
             <tr>
@@ -741,9 +744,25 @@ input[type=number]{-moz-appearance:textfield}
           </thead>
           <tbody id="ass-body"></tbody>
         </table>
-        <div style="margin-top:10px;font-size:12px;color:var(--muted)">
-          ℹ️ L'assentament real es genera quan marquis <strong>Assentat = Sí</strong> i guardis la factura.
-        </div>
+      </div>
+
+      <div id="cob-section" style="margin-top:18px;display:none">
+        <div class="sec" style="border:none;margin-bottom:10px">Assentament cobrament (previsió)</div>
+        <table class="ass-tbl">
+          <thead>
+            <tr>
+              <th style="width:100px">Compte</th>
+              <th>Concepte</th>
+              <th class="rgt" style="width:120px">Deure</th>
+              <th class="rgt" style="width:120px">Haver</th>
+            </tr>
+          </thead>
+          <tbody id="cob-body"></tbody>
+        </table>
+      </div>
+
+      <div style="margin-top:10px;font-size:12px;color:var(--muted)">
+        ℹ️ L'assentament real es genera quan marquis <strong>ASSENTAT</strong> i guardis la factura.
       </div>
     </div><!-- /tp-cpt -->
 
@@ -1198,7 +1217,7 @@ function fillForm(inv){
   s('m-cte-ven', inv.compte_vendes||'700');
   s('m-cte-iva', inv.compte_iva||'477');
   s('m-cte-irpf', inv.compte_irpf||'4751');
-  s('m-assentat', inv.assentat?'true':'false');
+  document.getElementById('m-assentat').checked = !!inv.assentat;
   s('m-suplerts', inv.suplerts);
   s('m-imp-sup', inv.import_suplerts??0);
   s('m-classe', inv.classe_fra||'Normal');
@@ -1241,7 +1260,7 @@ function resetForm(){
   document.getElementById('m-cte-ven').value='700';
   document.getElementById('m-cte-iva').value='477';
   document.getElementById('m-cte-irpf').value='4751';
-  document.getElementById('m-assentat').value='false';
+  document.getElementById('m-assentat').checked=false;
   document.getElementById('m-suplerts').value='';
   document.getElementById('m-imp-sup').value=0;
   document.getElementById('m-classe').value='Normal';
@@ -1350,6 +1369,7 @@ function recalcCob(){
   const cob  = parseFloat(document.getElementById('m-cobrat').value)||0;
   const pend = tot < 0 ? 0 : tot - cob;
   document.getElementById('m-pendent').value = pend.toLocaleString('ca-ES',{minimumFractionDigits:2}) + ' EUR';
+  updatePreview();
 }
 
 function recalcLiq(){
@@ -1399,6 +1419,27 @@ function updatePreview(){
     <td class="rgt deure">${r.dr>0?fe(r.dr):''}</td>
     <td class="rgt haver">${r.hr>0?fe(r.hr):''}</td>
   </tr>`).join('');
+
+  const cobrat = parseFloat(document.getElementById('m-cobrat')?.value)||0;
+  const cobSec = document.getElementById('cob-section');
+  const cobBody = document.getElementById('cob-body');
+  if(cobSec && cobBody){
+    if(cobrat > 0){
+      cobSec.style.display = '';
+      const cobRows = [
+        {c:'572', desc:`Cobrament Fra. ${noFra}`, dr:cobrat, hr:0},
+        {c:cCli,  desc:`Client — Fra. ${noFra}`,  dr:0,      hr:cobrat},
+      ];
+      cobBody.innerHTML = cobRows.map(r=>`<tr>
+        <td class="compte">${r.c}</td>
+        <td>${r.desc}</td>
+        <td class="rgt deure">${r.dr>0?fe(r.dr):''}</td>
+        <td class="rgt haver">${r.hr>0?fe(r.hr):''}</td>
+      </tr>`).join('');
+    } else {
+      cobSec.style.display = 'none';
+    }
+  }
 }
 
 // ════════════════════════════════════════════════
@@ -1480,7 +1521,7 @@ async function saveInvoice(){
     compte_vendes: document.getElementById('m-cte-ven').value,
     compte_iva:    document.getElementById('m-cte-iva').value,
     compte_irpf:   document.getElementById('m-cte-irpf').value,
-    assentat:      document.getElementById('m-assentat').value==='true',
+    assentat:      document.getElementById('m-assentat').checked,
     import_suplerts: parseFloat(document.getElementById('m-imp-sup').value)||0,
     suplerts:     document.getElementById('m-suplerts').value,
     classe_fra:   document.getElementById('m-classe').value,

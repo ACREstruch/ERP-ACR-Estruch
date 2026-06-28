@@ -119,6 +119,9 @@ th.amt{text-align:right}
 .ass-tbl td{padding:8px 10px;border-bottom:1px solid var(--border-light)}
 .ass-tbl .compte{font-weight:700;color:var(--blue);font-size:12px}
 .ass-tbl .rgt{text-align:right;font-variant-numeric:tabular-nums;font-weight:600}
+.ass-box{display:inline-flex;align-items:center;gap:10px;border:2px solid var(--blue);border-radius:var(--r);padding:10px 16px;background:var(--blue-light);cursor:pointer;margin-top:4px}
+.ass-box label{font-size:13px;font-weight:700;color:var(--blue);cursor:pointer;user-select:none}
+.ass-box input[type=checkbox]{width:17px;height:17px;accent-color:var(--blue);cursor:pointer;flex-shrink:0}
 .totals-box{background:#f8f9fa;border:1.5px solid var(--border);border-radius:var(--r);padding:12px 16px;margin-top:12px;max-width:320px;margin-left:auto}
 .tot-row{display:flex;align-items:center;gap:8px;padding:3px 0;font-size:13px}
 .tot-row .tl{flex:1;color:var(--muted)}
@@ -429,16 +432,16 @@ input[type=number]{-moz-appearance:textfield}
           <label>IVA suportat (472)</label>
           <input type="text" id="m-cte-iva" value="472">
         </div>
-        <div class="fg">
-          <label>Assentat</label>
-          <select id="m-assentat">
-            <option value="false">No</option>
-            <option value="true">Sí</option>
-          </select>
+        <div class="fg" style="grid-column:1/-1">
+          <label>Marcatge comptable</label>
+          <div class="ass-box">
+            <input type="checkbox" id="m-assentat">
+            <label for="m-assentat">ASSENTAT</label>
+          </div>
         </div>
       </div>
       <div style="margin-top:22px">
-        <div class="sec" style="border:none;margin-bottom:10px">Assentament comptable (previsió)</div>
+        <div class="sec" style="border:none;margin-bottom:10px">Assentament factura (previsió)</div>
         <table class="ass-tbl">
           <thead>
             <tr>
@@ -450,6 +453,25 @@ input[type=number]{-moz-appearance:textfield}
           </thead>
           <tbody id="ass-body"></tbody>
         </table>
+      </div>
+
+      <div id="pag-section" style="margin-top:18px;display:none">
+        <div class="sec" style="border:none;margin-bottom:10px">Assentament pagament (previsió)</div>
+        <table class="ass-tbl">
+          <thead>
+            <tr>
+              <th style="width:100px">Compte</th>
+              <th>Concepte</th>
+              <th class="rgt" style="width:120px">Deure</th>
+              <th class="rgt" style="width:120px">Haver</th>
+            </tr>
+          </thead>
+          <tbody id="pag-body"></tbody>
+        </table>
+      </div>
+
+      <div style="margin-top:10px;font-size:12px;color:var(--muted)">
+        ℹ️ L'assentament real es genera quan marquis <strong>ASSENTAT</strong> i guardis la factura.
       </div>
     </div>
 
@@ -715,7 +737,7 @@ function fillForm(fr){
   s('m-concepte',fr.concepte); s('m-bi',fr.base_imposable??0); s('m-iva',fr.tipus_iva??21);
   s('m-div',fr.divisa||'EUR'); s('m-tc',fr.tc_divisa??1);
   s('m-cte-prov',fr.compte_prov||'400'); s('m-cte-desp',fr.compte_despeses||'600');
-  s('m-cte-iva',fr.compte_iva_sup||'472'); s('m-assentat',fr.assentat?'true':'false');
+  s('m-cte-iva',fr.compte_iva_sup||'472'); document.getElementById('m-assentat').checked=!!fr.assentat;
   s('m-notes',fr.notes);
   curBi=fr.base_imposable||0;
   updateBadge(); recalc();
@@ -737,7 +759,7 @@ function resetForm(){
   document.getElementById('m-cte-prov').value='400';
   document.getElementById('m-cte-desp').value='600';
   document.getElementById('m-cte-iva').value='472';
-  document.getElementById('m-assentat').value='false';
+  document.getElementById('m-assentat').checked=false;
   document.getElementById('m-notes').value='';
   curBi=0; updateBadge(); recalc(); renderPagaments();
 }
@@ -889,6 +911,26 @@ function updateAssentament(){
     <td class="rgt" style="color:var(--green)">${r.dr>0?fe(r.dr):''}</td>
     <td class="rgt" style="color:var(--red-txt)">${r.hr>0?fe(r.hr):''}</td>
   </tr>`).join('');
+
+  const pagat = curPagaments.reduce((s,p)=>s+(p.import||0),0);
+  const pagSec = document.getElementById('pag-section');
+  const pagBody = document.getElementById('pag-body');
+  if(pagSec && pagBody){
+    if(pagat > 0){
+      pagSec.style.display = '';
+      const pagRows = [
+        {c:cProv, desc:`Proveïdor — Fra. ${noFra}`, dr:pagat, hr:0},
+        {c:'572', desc:`Pagament Fra. ${noFra}`,     dr:0,     hr:pagat},
+      ];
+      pagBody.innerHTML = pagRows.map(r=>`<tr>
+        <td class="compte">${r.c}</td><td>${r.desc}</td>
+        <td class="rgt" style="color:var(--green)">${r.dr>0?fe(r.dr):''}</td>
+        <td class="rgt" style="color:var(--red-txt)">${r.hr>0?fe(r.hr):''}</td>
+      </tr>`).join('');
+    } else {
+      pagSec.style.display = 'none';
+    }
+  }
 }
 
 // ── GUARDAR ──
@@ -921,7 +963,7 @@ async function saveFactura(){
     compte_prov:document.getElementById('m-cte-prov').value,
     compte_despeses:document.getElementById('m-cte-desp').value,
     compte_iva_sup:document.getElementById('m-cte-iva').value,
-    assentat:document.getElementById('m-assentat').value==='true',
+    assentat:document.getElementById('m-assentat').checked,
     notes:document.getElementById('m-notes').value||null,
     updated_at:new Date().toISOString(),
   };

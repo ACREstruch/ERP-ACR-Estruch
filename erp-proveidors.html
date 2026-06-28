@@ -214,6 +214,7 @@ input[type=number]{-moz-appearance:textfield}
     <button class="tab" data-tab="tp-con">Contacte</button>
     <button class="tab" data-tab="tp-fin">Financer</button>
     <button class="tab" data-tab="tp-not">Notes</button>
+    <button class="tab" data-tab="tp-fra">Factures</button>
   </div>
   <div class="modal-body">
 
@@ -354,6 +355,13 @@ input[type=number]{-moz-appearance:textfield}
           <label>Notes</label>
           <textarea id="m-notes" rows="5"></textarea>
         </div>
+      </div>
+    </div>
+
+    <!-- TAB FACTURES -->
+    <div class="tab-panel" id="tp-fra">
+      <div id="fra-content" style="min-height:120px">
+        <div style="text-align:center;padding:30px;color:var(--muted)">Seleccioneu la pestanya per carregar les factures.</div>
       </div>
     </div>
 
@@ -560,6 +568,55 @@ async function confirmDel(id){
 function showTab(tabId){
   document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('on',t.dataset.tab===tabId));
   document.querySelectorAll('.tab-panel').forEach(p=>p.classList.toggle('on',p.id===tabId));
+  if(tabId==='tp-fra') loadProvFactures();
+}
+
+async function loadProvFactures(){
+  const el = document.getElementById('fra-content');
+  if(!curId){
+    el.innerHTML='<p style="padding:20px;color:var(--muted)">Guarda el proveïdor primer per veure les seves factures.</p>';
+    return;
+  }
+  el.innerHTML='<div style="text-align:center;padding:30px;color:var(--muted)">Carregant...</div>';
+  try{
+    const fras = await sbGet('factures_rebudes',`select=no_factura,data_fra,total_factura,import_pagat,estat&id_prov=eq.${curId}&order=no_factura.desc`);
+    if(!fras.length){
+      el.innerHTML='<p style="padding:20px;color:var(--muted)">Cap factura rebuda d\'aquest proveïdor.</p>';
+      return;
+    }
+    const fd = d=>d?new Date(d+'T00:00:00').toLocaleDateString('ca-ES',{day:'2-digit',month:'2-digit',year:'numeric'}):'—';
+    const fe = n=>(n||0).toLocaleString('ca-ES',{minimumFractionDigits:2});
+    const EC = {PAGAT:'var(--green)',PARCIALMENT:'#d97706',PENDENT:'var(--red)',VENCUDA:'var(--red)'};
+    const EL = {PAGAT:'PAG',PARCIALMENT:'PARC',PENDENT:'PEND',VENCUDA:'VENÇ'};
+    const badge = s=>`<span style="font-size:11px;font-weight:700;color:${EC[s]||'var(--muted)'}">${EL[s]||s||'—'}</span>`;
+    const totImp = fras.reduce((s,f)=>s+(f.total_factura||0),0);
+    const totPag = fras.reduce((s,f)=>s+(f.import_pagat||0),0);
+    const totPend = Math.max(0, totImp-totPag);
+    el.innerHTML=`
+      <div style="display:flex;gap:24px;padding:12px 0 14px;font-size:13px;flex-wrap:wrap">
+        <span><strong>${fras.length}</strong> factures</span>
+        <span>Total rebut: <strong>${fe(totImp)} €</strong></span>
+        <span style="color:var(--green)">Pagat: <strong>${fe(totPag)} €</strong></span>
+        <span style="color:var(--red)">Pendent: <strong>${fe(totPend)} €</strong></span>
+      </div>
+      <div class="tbl-wrap" style="max-height:300px">
+      <table class="main-tbl"><thead><tr>
+        <th>Nº Factura</th><th>Data</th><th style="text-align:right">Total</th>
+        <th style="text-align:right">Pagat</th><th style="text-align:right">Pendent</th><th>Estat</th>
+      </tr></thead><tbody>
+      ${fras.map(f=>{
+        const pend=Math.max(0,(f.total_factura||0)-(f.import_pagat||0));
+        return `<tr>
+          <td><strong>${f.no_factura||'—'}</strong></td>
+          <td>${fd(f.data_fra)}</td>
+          <td style="text-align:right">${fe(f.total_factura)}</td>
+          <td style="text-align:right;color:var(--green)">${fe(f.import_pagat)}</td>
+          <td style="text-align:right;color:var(--red-txt)">${fe(pend)}</td>
+          <td>${badge(f.estat)}</td>
+        </tr>`;
+      }).join('')}
+      </tbody></table></div>`;
+  }catch(e){ el.innerHTML=`<p style="padding:20px;color:var(--red)">Error: ${e.message}</p>`; }
 }
 document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>showTab(t.dataset.tab)));
 

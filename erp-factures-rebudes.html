@@ -488,6 +488,7 @@ input[type=number]{-moz-appearance:textfield}
   </div>
   <div class="modal-ftr">
     <button class="btn btn-secondary" onclick="closeModal()">Cancel·lar</button>
+    <button class="btn btn-secondary" id="btn-repeat" style="display:none;margin-right:auto" onclick="repeatFactura()">🔁 Repetir factura</button>
     <button class="btn btn-primary" id="btn-save" onclick="saveFactura()">💾 Guardar</button>
   </div>
 </div>
@@ -715,6 +716,7 @@ function nextNoIntern(){
 async function openModal(id){
   curId=id; curPagaments=[];
   showTab('tp-fra');
+  document.getElementById('btn-repeat').style.display = id ? '' : 'none';
   if(id){
     const fr=allFra.find(x=>x.id===id);
     if(!fr) return;
@@ -934,6 +936,26 @@ function updateAssentament(){
 }
 
 // ── GUARDAR ──
+function repeatFactura(){
+  const g = id => document.getElementById(id)?.value ?? '';
+  const snap = {
+    prov:     g('m-prov'),      concepte: g('m-concepte'),
+    bi:       g('m-bi'),        iva:      g('m-iva'),
+    div:      g('m-div'),       tc:       g('m-tc'),
+    cte_prov: g('m-cte-prov'),  cte_desp: g('m-cte-desp'),
+    cte_iva:  g('m-cte-iva'),   notes:    g('m-notes'),
+  };
+  openModal(null);
+  const s = (id,v) => { const el=document.getElementById(id); if(el) el.value=(v??''); };
+  s('m-prov',     snap.prov);     s('m-concepte', snap.concepte);
+  s('m-bi',       snap.bi);       s('m-iva',       snap.iva);
+  s('m-div',      snap.div);      s('m-tc',         snap.tc);
+  s('m-cte-prov', snap.cte_prov); s('m-cte-desp',  snap.cte_desp);
+  s('m-cte-iva',  snap.cte_iva);  s('m-notes',      snap.notes);
+  curBi = parseFloat(snap.bi)||0;
+  recalc(); updateAssentament();
+}
+
 async function saveFactura(){
   if(curId!=null){const pin=prompt('🔒 PIN per guardar:');if(pin!==PIN){toast('PIN incorrecte','err');return;}}
   const noFra=document.getElementById('m-no').value.trim();

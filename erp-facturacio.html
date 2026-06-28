@@ -805,6 +805,7 @@ input[type=number]{-moz-appearance:textfield}
 
   <div class="modal-ftr">
     <button class="btn btn-secondary" onclick="closeModal()">Cancel·lar</button>
+    <button class="btn btn-secondary" id="btn-repeat" style="display:none;margin-right:auto" onclick="repeatInvoice()">🔁 Repetir factura</button>
     <button class="btn btn-primary" id="btn-save" onclick="saveInvoice()">💾 Guardar</button>
   </div>
 
@@ -1143,6 +1144,7 @@ function editProtected(id){
 async function openModal(id){
   curId = id;
   showTab('tp-fra');
+  document.getElementById('btn-repeat').style.display = id ? '' : 'none';
   if(id){
     const inv = allInvoices.find(i=>i.id===id);
     if(!inv) return;
@@ -1483,6 +1485,34 @@ async function nextIdIn(){
     const res = await sbGet('factures','select=id_in&order=id_in.desc&limit=1&id_in=not.is.null');
     return res.length ? (res[0].id_in + 1) : 1;
   }catch{ return null; }
+}
+
+function repeatInvoice(){
+  const g = id => document.getElementById(id)?.value ?? '';
+  const snap = {
+    client:     g('m-client'),   nref:     g('m-nref'),     sref:     g('m-sref'),
+    fpag:       g('m-fpag'),     div:      g('m-div'),      iva:      g('m-iva'),
+    irpf:       g('m-irpf'),     banc:     g('m-banc'),     bancag:   g('m-bancag'),
+    iban:       g('m-iban'),     swift:    g('m-swift'),
+    en_pc:      g('m-en-pc'),    dg_pc:    g('m-dg-pc'),    cb_pc:    g('m-cb-pc'),    tr: g('m-tr'),
+    cte_cli:    g('m-cte-cli'),  cte_ven:  g('m-cte-ven'),  cte_iva:  g('m-cte-iva'),  cte_irpf: g('m-cte-irpf'),
+    suplerts:   g('m-suplerts'), imp_sup:  g('m-imp-sup'),  classe:   g('m-classe'),
+    notes:      g('m-notes'),    notes_priv: g('m-notes-priv'),
+    lines:      curLines.map(l=>({...l})),
+  };
+  openModal(null);
+  const s = (id,v) => { const el=document.getElementById(id); if(el) el.value=(v??''); };
+  s('m-client',    snap.client);   s('m-nref',      snap.nref);   s('m-sref',    snap.sref);
+  s('m-fpag',      snap.fpag);     s('m-div',        snap.div);    s('m-iva',     snap.iva);
+  s('m-irpf',      snap.irpf);     s('m-banc',       snap.banc);   s('m-bancag',  snap.bancag);
+  s('m-iban',      snap.iban);     s('m-swift',       snap.swift);
+  s('m-en-pc',     snap.en_pc);    s('m-dg-pc',       snap.dg_pc); s('m-cb-pc',   snap.cb_pc); s('m-tr', snap.tr);
+  s('m-cte-cli',   snap.cte_cli);  s('m-cte-ven',     snap.cte_ven);
+  s('m-cte-iva',   snap.cte_iva);  s('m-cte-irpf',    snap.cte_irpf);
+  s('m-suplerts',  snap.suplerts); s('m-imp-sup',     snap.imp_sup); s('m-classe', snap.classe);
+  s('m-notes',     snap.notes);    s('m-notes-priv',  snap.notes_priv);
+  curLines = snap.lines;
+  renderLines(); recalc();
 }
 
 async function saveInvoice(){

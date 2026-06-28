@@ -1413,6 +1413,18 @@ async function saveInvoice(){
   const dataFra= document.getElementById('m-data').value;
   if(!noFra || !dataFra){ toast('Número de factura i data són obligatoris','err'); return; }
 
+  // Validació correlativitat de dates (requisit legal)
+  const noNum = parseFloat(noFra);
+  if(!isNaN(noNum)){
+    const anterior = allInvoices
+      .filter(f => parseFloat(f.no_factura) < noNum && f.data_fra)
+      .sort((a,b) => parseFloat(b.no_factura) - parseFloat(a.no_factura))[0];
+    if(anterior && dataFra < anterior.data_fra){
+      toast(`La data no pot ser anterior a la factura ${anterior.no_factura} (${fd(anterior.data_fra)})`, 'err');
+      return;
+    }
+  }
+
   const ivaPc  = parseFloat(document.getElementById('m-iva').value)||0;
   const irpfPc = parseFloat(document.getElementById('m-irpf').value)||0;
   const iva    = curBi * ivaPc/100;

@@ -473,8 +473,12 @@ async function loadGrupTags(){
 
 async function loadClients(){
   try{
-    allClients = await sbGet('clients','select=*&order=codi.desc.nullslast');
-    renderStats();
+    [allClients] = await Promise.all([
+      sbGet('clients','select=*&order=codi.desc.nullslast'),
+    ]);
+    const pendFras = await sbGet('factures','select=id_client&estat=in.(PENDENT,PARCIAL)&total_factura=gt.0');
+    const clientsAmbPendent = new Set(pendFras.map(f=>f.id_client)).size;
+    renderStats(clientsAmbPendent);
     renderTable(allClients);
     populatePaisFilter();
   } catch(e){
@@ -490,12 +494,12 @@ async function refreshData(){
   toast('Actualitzat','ok');
 }
 
-function renderStats(){
+function renderStats(clientsAmbPendent=0){
   const total = allClients.length;
   const paisos = new Set(allClients.map(c=>c.pais).filter(Boolean)).size;
   document.getElementById('s-total').textContent = total;
   document.getElementById('s-total-sub').textContent = total === 1 ? 'client' : 'clients';
-  document.getElementById('s-amb-fra').textContent = '—';
+  document.getElementById('s-amb-fra').textContent = clientsAmbPendent || '—';
   document.getElementById('s-paisos').textContent = paisos;
 }
 

@@ -57,6 +57,7 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;font-size:14px;ba
 table.main-tbl{width:100%;border-collapse:collapse;font-size:13px}
 .main-tbl th{padding:9px 14px;text-align:left;font-size:10.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;border-bottom:2px solid var(--border);white-space:nowrap;background:#fafbfc}
 .main-tbl td{padding:11px 14px;border-bottom:1px solid var(--border-light);vertical-align:middle}
+#fra-content .main-tbl td,#fra-content .main-tbl th{padding:5px 10px}
 .main-tbl tbody tr:hover td{background:var(--blue-light);cursor:pointer}
 .main-tbl tbody tr:last-child td{border-bottom:none}
 .prov-nom{font-weight:700;color:var(--blue)}
@@ -579,7 +580,7 @@ async function loadProvFactures(){
   }
   el.innerHTML='<div style="text-align:center;padding:30px;color:var(--muted)">Carregant...</div>';
   try{
-    const fras = await sbGet('factures_rebudes',`select=no_factura,data_fra,total_factura,import_pagat,estat&id_prov=eq.${curId}&order=no_factura.desc`);
+    const fras = await sbGet('factures_rebudes',`select=no_factura,data_fra,data_pag,n_ref,id_projecte,total_factura,import_pagat,estat&id_prov=eq.${curId}&order=no_factura.desc`);
     if(!fras.length){
       el.innerHTML='<p style="padding:20px;color:var(--muted)">Cap factura rebuda d\'aquest proveïdor.</p>';
       return;
@@ -591,7 +592,7 @@ async function loadProvFactures(){
     const badge = s=>`<span style="font-size:11px;font-weight:700;color:${EC[s]||'var(--muted)'}">${EL[s]||s||'—'}</span>`;
     const totImp = fras.reduce((s,f)=>s+(f.total_factura||0),0);
     const totPag = fras.reduce((s,f)=>s+(f.import_pagat||0),0);
-    const totPend = Math.max(0, totImp-totPag);
+    const totPend = fras.reduce((s,f)=>f.estat==='PAGAT'?s:s+Math.max(0,(f.total_factura||0)-(f.import_pagat||0)),0);
     el.innerHTML=`
       <div style="display:flex;gap:24px;padding:12px 0 14px;font-size:13px;flex-wrap:wrap">
         <span><strong>${fras.length}</strong> factures</span>
@@ -601,17 +602,20 @@ async function loadProvFactures(){
       </div>
       <div class="tbl-wrap" style="max-height:300px">
       <table class="main-tbl"><thead><tr>
-        <th>Nº Factura</th><th>Data</th><th style="text-align:right">Total</th>
-        <th style="text-align:right">Pagat</th><th style="text-align:right">Pendent</th><th>Estat</th>
+        <th>Nº Factura</th><th>Data Fra.</th><th>IdPJ</th><th style="text-align:right">Total</th>
+        <th style="text-align:right">Pagat</th><th style="text-align:right">Pendent</th><th>Data Pag.</th><th>Estat</th>
       </tr></thead><tbody>
       ${fras.map(f=>{
-        const pend=Math.max(0,(f.total_factura||0)-(f.import_pagat||0));
+        const pend=f.estat==='PAGAT'?0:Math.max(0,(f.total_factura||0)-(f.import_pagat||0));
+        const idpj = f.n_ref || f.id_projecte || '—';
         return `<tr>
           <td><strong>${f.no_factura||'—'}</strong></td>
           <td>${fd(f.data_fra)}</td>
+          <td style="color:var(--muted)">${idpj}</td>
           <td style="text-align:right">${fe(f.total_factura)}</td>
           <td style="text-align:right;color:var(--green)">${fe(f.import_pagat)}</td>
           <td style="text-align:right;color:var(--red-txt)">${fe(pend)}</td>
+          <td style="font-size:12px">${fd(f.data_pag||f.data_fra)}</td>
           <td>${badge(f.estat)}</td>
         </tr>`;
       }).join('')}

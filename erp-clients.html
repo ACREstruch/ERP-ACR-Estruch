@@ -734,7 +734,7 @@ async function loadClientFactures(){
           <td style="text-align:right">${fe(f.total_factura)}</td>
           <td style="text-align:right;color:var(--green)">${fe(f.import_cobrat)}</td>
           <td style="text-align:right;color:var(--red-txt)">${fe(pend)}</td>
-          <td style="font-size:12px">${fd(f.data_cob)}</td>
+          <td style="font-size:12px">${fd(f.data_cob||f.data_fra)}</td>
           <td>${badge(f.estat)}</td>
         </tr>`;
       }).join('')}

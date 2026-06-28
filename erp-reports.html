@@ -935,8 +935,6 @@ async function runPendFra(){
       });
       let sImp=0,sFra=0,sDg=0,sAcr=0;
       Object.keys(byClient).forEach(k=>{
-        const cli=cliMap[k]||{};
-        if(k!=='__SENSE_CLIENT__') html+=cliHdr(k, cli.sinonim||cli.rao_social||k);
         byClient[k].forEach(p=>{
           const {row,imp,fra,dg,acr}=pjRow(p);
           html+=row; sImp+=imp;sFra+=fra;sDg+=dg;sAcr+=acr;

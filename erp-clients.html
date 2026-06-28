@@ -698,7 +698,7 @@ async function loadClientFactures(){
   }
   el.innerHTML='<div style="text-align:center;padding:30px;color:var(--muted)">Carregant...</div>';
   try{
-    const fras = await sbGet('factures',`select=no_factura,data_fra,total_factura,import_cobrat,estat&id_client=eq.${curId}&order=no_factura.desc`);
+    const fras = await sbGet('factures',`select=no_factura,data_fra,data_cob,n_ref,id_projecte,total_factura,import_cobrat,estat&id_client=eq.${curId}&order=no_factura.desc`);
     if(!fras.length){
       el.innerHTML='<p style="padding:20px;color:var(--muted)">Cap factura emesa per aquest client.</p>';
       return;
@@ -720,17 +720,20 @@ async function loadClientFactures(){
       </div>
       <div class="tbl-wrap" style="max-height:300px">
       <table class="main-tbl"><thead><tr>
-        <th>Nº Factura</th><th>Data</th><th style="text-align:right">Total</th>
-        <th style="text-align:right">Cobrat</th><th style="text-align:right">Pendent</th><th>Estat</th>
+        <th>Nº Factura</th><th>Data Fra.</th><th>IdPJ</th><th style="text-align:right">Total</th>
+        <th style="text-align:right">Cobrat</th><th style="text-align:right">Pendent</th><th>Data Cob.</th><th>Estat</th>
       </tr></thead><tbody>
       ${fras.map(f=>{
         const pend=Math.max(0,(f.total_factura||0)-(f.import_cobrat||0));
+        const idpj = f.n_ref || f.id_projecte || '—';
         return `<tr>
           <td><strong>${f.no_factura||'—'}</strong></td>
           <td>${fd(f.data_fra)}</td>
+          <td style="font-size:11px;color:var(--muted)">${idpj}</td>
           <td style="text-align:right">${fe(f.total_factura)}</td>
           <td style="text-align:right;color:var(--green)">${fe(f.import_cobrat)}</td>
           <td style="text-align:right;color:var(--red-txt)">${fe(pend)}</td>
+          <td style="font-size:12px">${fd(f.data_cob)}</td>
           <td>${badge(f.estat)}</td>
         </tr>`;
       }).join('')}

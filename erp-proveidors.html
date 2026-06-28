@@ -42,7 +42,7 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;font-size:14px;ba
 .btn-sm{padding:5px 10px;font-size:12px}.btn-xs{padding:3px 8px;font-size:11px}
 .btn:disabled{opacity:.5;cursor:default}
 #content{flex:1;overflow-y:auto;padding:18px 22px}
-.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:16px}
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:16px}
 .stat{background:var(--white);border-radius:var(--r);box-shadow:var(--shadow);padding:14px 18px;border-top:3px solid var(--blue);position:relative;overflow:hidden}
 .stat-label{font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;font-weight:600;margin-bottom:5px}
 .stat-value{font-size:24px;font-weight:800;color:var(--text);line-height:1}
@@ -147,6 +147,12 @@ input[type=number]{-moz-appearance:textfield}
         <div class="stat-value" id="s-total">—</div>
         <div class="stat-sub" id="s-sub">registrats</div>
         <div class="stat-icon">🏭</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Amb factures actives</div>
+        <div class="stat-value" id="s-amb-fra">—</div>
+        <div class="stat-sub">proveïdors amb pendent de pagar</div>
+        <div class="stat-icon">🧾</div>
       </div>
       <div class="stat">
         <div class="stat-label">Països</div>
@@ -412,18 +418,21 @@ async function loadCatTags(){
 async function loadProveidors(){
   try{
     allProv=await sbGet('proveidors','select=*&order=nom');
-    renderStats(); renderTable(allProv); populatePaisFilter();
+    const pendFras=await sbGet('factures_rebudes','select=id_prov&estat=in.(PENDENT,PARCIALMENT,VENCUDA,PROXIM)&total_factura=gt.0');
+    const provAmbPendent=new Set(pendFras.map(f=>f.id_prov)).size;
+    renderStats(provAmbPendent); renderTable(allProv); populatePaisFilter();
   }catch(e){ toast('Error: '+e.message,'err'); allProv=[]; renderTable([]); }
 }
 
 async function refreshData(){ toast('Actualitzant...','inf'); await loadProveidors(); toast('Actualitzat','ok'); }
 
-function renderStats(){
+function renderStats(provAmbPendent=0){
   const total=allProv.length;
   const paisos=new Set(allProv.map(p=>p.pais).filter(Boolean)).size;
   const divises=new Set(allProv.map(p=>p.divisa).filter(Boolean)).size;
   document.getElementById('s-total').textContent=total;
   document.getElementById('s-sub').textContent=total===1?'proveïdor':'proveïdors';
+  document.getElementById('s-amb-fra').textContent=provAmbPendent||'—';
   document.getElementById('s-paisos').textContent=paisos;
   document.getElementById('s-div').textContent=divises;
 }

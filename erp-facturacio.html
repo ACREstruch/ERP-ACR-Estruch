@@ -1470,7 +1470,6 @@ async function saveInvoice(){
     notes_privades: document.getElementById('m-notes-priv').value,
     anulada_per:  document.getElementById('m-anulada-per').value||null,
     rectifica_factura: document.getElementById('m-rectifica-fra').value||null,
-    updated_at:   new Date().toISOString(),
   };
   // acr_pc
   data.acr_pc = curBi>0 ? data.acr_pnl/curBi*100 : 0;

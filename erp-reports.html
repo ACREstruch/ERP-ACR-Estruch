@@ -415,7 +415,7 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;font-size:14px;ba
             <label>Estat</label>
             <select id="pj-estat" onchange="runProjectes()">
               <option value="">Tots els estats</option>
-              <option value="ACTIU">Actiu</option>
+              <option value="ACTIU" selected>Actiu</option>
               <option value="PAUSAT">Pausat</option>
               <option value="COMPLETAT">Completat</option>
               <option value="CANCEL·LAT">Cancel·lat</option>
@@ -490,6 +490,7 @@ function showTab(id){
   if(id==='tab-pendent' && !document.getElementById('rpt-pendent').dataset.loaded) runPendent();
   if(id==='tab-pendfra' && !document.getElementById('rpt-pendfra').dataset.loaded) runPendFra();
   if(id==='tab-mes' && !document.getElementById('rpt-mes').dataset.loaded) runMes();
+  if(id==='tab-projectes' && !document.getElementById('rpt-projectes').dataset.loaded){document.getElementById('rpt-projectes').dataset.loaded='1';runProjectes();}
 }
 
 function clearDates(a,b){

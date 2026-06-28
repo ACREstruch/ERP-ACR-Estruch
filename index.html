@@ -307,7 +307,7 @@ async function init(){
       const e=getEstatFra(f);
       const pendent=(f.total_factura||0)-(f.import_cobrat||0);
       if(e==='VENCUDA'){venc++;vendE+=pendent;}
-      else if(e==='PENDENT'||e==='PROXIM'){pend++;pendE+=pendent;}
+      if(e!=='COBRAT'){pend++;pendE+=pendent;}
     });
     document.getElementById('k-venc').textContent=venc;
     document.getElementById('k-venc-e').textContent=venc>0?fe(vendE)+' € pendent':'Tot cobrat ✓';

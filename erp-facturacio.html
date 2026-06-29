@@ -278,8 +278,10 @@ th.amt{text-align:right}
 .fra-field input{flex:1;border:none;padding:4px 8px;font-size:13px;background:transparent;color:var(--text);min-width:0;font-family:inherit;box-sizing:border-box}
 .fra-field select{flex:1;border:none;padding:4px 8px;font-size:13px;background:transparent;color:var(--text);min-width:0;font-family:inherit;box-sizing:border-box;-webkit-appearance:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23888' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center;padding-right:24px}
 .fra-field input:focus,.fra-field select:focus{outline:none;background-color:#fffde7}
-.fra-radios{display:flex;gap:10px;padding:5px 10px;flex-wrap:wrap;align-items:center}
-.fra-radios label{display:flex;align-items:center;gap:3px;font-size:12px;font-weight:500;cursor:pointer;color:var(--text)}
+.classe-toggle{display:flex;margin:auto 10px;border:1.5px solid var(--border);border-radius:4px;overflow:hidden}
+.ct-btn{border:none;padding:3px 16px;font-size:12px;font-weight:700;cursor:pointer;background:#f0f4f8;color:var(--muted);transition:background .12s,color .12s;border-right:1px solid var(--border)}
+.ct-btn:last-child{border-right:none}
+.ct-btn.active{background:var(--blue);color:#fff}
 
 /* ── LINES TABLE ── */
 table.ltbl{width:100%;border-collapse:collapse}
@@ -538,9 +540,9 @@ input[type=number]{-moz-appearance:textfield}
           </div>
           <div class="fra-field">
             <label>Classe</label>
-            <div class="fra-radios">
-              <label><input type="radio" name="m-classe" value="SV" onchange="document.getElementById('m-classe-hid').value=this.value" checked> SV</label>
-              <label><input type="radio" name="m-classe" value="CO" onchange="document.getElementById('m-classe-hid').value=this.value"> CO</label>
+            <div class="classe-toggle">
+              <button type="button" class="ct-btn active" data-val="SV" onclick="setClasse('SV')">SV</button>
+              <button type="button" class="ct-btn" data-val="CO" onclick="setClasse('CO')">CO</button>
             </div>
             <input type="hidden" id="m-classe-hid" value="SV">
           </div>
@@ -1228,10 +1230,12 @@ function closeModal(){
 }
 
 function setClasse(v){
-  const r = document.querySelector(`input[name="m-classe"][value="${v}"]`);
-  if(r) r.checked = true;
+  const val = v||'SV';
   const h = document.getElementById('m-classe-hid');
-  if(h) h.value = v||'SV';
+  if(h) h.value = val;
+  document.querySelectorAll('.ct-btn').forEach(b=>{
+    b.classList.toggle('active', b.dataset.val===val);
+  });
 }
 
 function fillForm(inv){

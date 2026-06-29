@@ -38,7 +38,7 @@
     /* ── FACTURA NUM ── */
     .fra-num-line{margin-bottom:3mm}
     .fra-num-line .lbl{color:#00387C;font-weight:700}
-    .fra-num-line .val{color:#00387C;font-weight:800;font-size:10pt;margin-left:6px}
+    .fra-num-line .val{color:#00387C;font-weight:400;font-size:10pt;margin-left:6px}
 
     /* ── LINES + TOTALS ── */
     /* Única ratlla: la que separa el número de factura del cos */
@@ -61,10 +61,11 @@
     /* ── FOOTER ── */
     .footer{margin-top:auto;padding-top:6mm}
     .footer-grid{
-      display:grid;grid-template-columns:1.5fr 0.95fr 1fr 0.95fr;gap:0 6mm;
-      font-size:6.5pt;color:#555;line-height:1.7;
+      display:grid;grid-template-columns:1.5fr 0.95fr 1.9fr;gap:0 6mm;
+      font-size:6.5pt;color:#555;line-height:1.4;
       padding-bottom:3mm;border-bottom:0.25pt solid #5B281A;
     }
+    .footer-col34{display:flex;gap:3mm}
     .footer-addr{
       text-align:center;font-size:8pt;color:#00387C;font-weight:300;
       font-family:'Myriad Pro','Segoe UI Light',Arial,sans-serif;
@@ -124,16 +125,18 @@
         IBAN: ES3101820269060203603140<br>
         SWIFT Code: BBVAESMMXXX
       </div>
-      <div>
-        Wise Bank<br>
-        19 W 24th Street, New York<br>
-        Holder: JAUME ESTRUCH SANCHEZ<br>
-        Account no.: 8310566838
-      </div>
-      <div>
-        Wire transfer no.: 026073008<br>
-        Bank Code (SWIFT/BIC): CMFGUS33<br>
-        Routing no. (ACH or ABA): 026073150
+      <div class="footer-col34">
+        <div>
+          Wise Bank<br>
+          19 W 24th Street, New York<br>
+          Holder: JAUME ESTRUCH SANCHEZ<br>
+          Account no.: 8310566838
+        </div>
+        <div>
+          Wire transfer no.: 026073008<br>
+          Bank Code (SWIFT/BIC): CMFGUS33<br>
+          Routing no. (ACH or ABA): 026073150
+        </div>
       </div>
     </div>
     <div class="footer-addr">

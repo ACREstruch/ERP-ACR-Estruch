@@ -60,12 +60,9 @@
 
     /* ── FOOTER ── */
     .footer{margin-top:auto;padding-top:6mm}
-    .footer-grid{
-      display:grid;grid-template-columns:1.5fr 0.95fr 1.9fr;gap:0 6mm;
-      font-size:6.5pt;color:#555;line-height:1.4;
-      padding-bottom:3mm;border-bottom:0.25pt solid #5B281A;
+    .footer-img{
+      display:block;width:100%;padding-bottom:3mm;border-bottom:0.25pt solid #5B281A;
     }
-    .footer-col34{display:flex;gap:3mm}
     .footer-addr{
       text-align:center;font-size:8pt;color:#00387C;font-weight:300;
       font-family:'Myriad Pro','Segoe UI Light',Arial,sans-serif;
@@ -113,32 +110,7 @@
   </div>
 
   <div class="footer">
-    <div class="footer-grid">
-      <div>
-        <span id="ft-denom">Denominació fiscal</span><br>
-        Jaume Estruch i Sánchez<br>
-        NIF-VAT No. ES38549541-T<br>
-        <span id="ft-nomcom">Nom comercial</span>: ACR ESTRUCH export &amp; consulting
-      </div>
-      <div>
-        Banco BBVA<br>
-        IBAN: ES3101820269060203603140<br>
-        SWIFT Code: BBVAESMMXXX
-      </div>
-      <div class="footer-col34">
-        <div>
-          Wise Bank<br>
-          19 W 24th Street, New York<br>
-          Holder: JAUME ESTRUCH SANCHEZ<br>
-          Account no.: 8310566838
-        </div>
-        <div>
-          Wire transfer no.: 026073008<br>
-          Bank Code (SWIFT/BIC): CMFGUS33<br>
-          Routing no. (ACH or ABA): 026073150
-        </div>
-      </div>
-    </div>
+    <img src="footer-peu.png" alt="Dades fiscals i bancàries" class="footer-img">
     <div class="footer-addr">
       Muntaner, 440, 1-1B &nbsp;|&nbsp; 08006 Barcelona &nbsp;|&nbsp;
       +34 609852478 &nbsp;|&nbsp; info@acrestruch.com &nbsp;|&nbsp; www.acrestruch.com
@@ -219,8 +191,6 @@ async function load(){
   // Apply static labels
   document.getElementById('lbl-factura').textContent  = t.factura;
   document.getElementById('lbl-fra-num').textContent  = t.fra_num;
-  document.getElementById('ft-denom').textContent     = t.denom;
-  document.getElementById('ft-nomcom').textContent    = t.nomcom;
 
   try{
     const [fras, lines] = await Promise.all([

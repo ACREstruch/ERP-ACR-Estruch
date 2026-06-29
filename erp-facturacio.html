@@ -274,9 +274,10 @@ th.amt{text-align:right}
 .fra-block.wide{flex:1.4}
 .fra-field{display:flex;align-items:stretch;border-bottom:1px solid var(--border-light);min-height:30px}
 .fra-field:last-child{border-bottom:none}
-.fra-field label{font-size:11px;font-weight:700;color:var(--blue);white-space:nowrap;padding:5px 8px;width:106px;flex-shrink:0;background:#f0f4f8;display:flex;align-items:center;border-right:1px solid var(--border-light)}
-.fra-field input,.fra-field select{flex:1;border:none;padding:4px 8px;font-size:13px;background:transparent;color:var(--text);min-width:0;font-family:inherit}
-.fra-field input:focus,.fra-field select:focus{outline:none;background:#fffde7}
+.fra-field label{font-size:11px;font-weight:700;color:var(--blue);white-space:nowrap;padding:5px 8px;width:110px;box-sizing:border-box;flex-shrink:0;background:#f0f4f8;display:flex;align-items:center;border-right:1px solid var(--border-light)}
+.fra-field input{flex:1;border:none;padding:4px 8px;font-size:13px;background:transparent;color:var(--text);min-width:0;font-family:inherit;box-sizing:border-box}
+.fra-field select{flex:1;border:none;padding:4px 8px;font-size:13px;background:transparent;color:var(--text);min-width:0;font-family:inherit;box-sizing:border-box;-webkit-appearance:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23888' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center;padding-right:24px}
+.fra-field input:focus,.fra-field select:focus{outline:none;background-color:#fffde7}
 .fra-radios{display:flex;gap:10px;padding:5px 10px;flex-wrap:wrap;align-items:center}
 .fra-radios label{display:flex;align-items:center;gap:3px;font-size:12px;font-weight:500;cursor:pointer;color:var(--text)}
 
@@ -540,8 +541,6 @@ input[type=number]{-moz-appearance:textfield}
             <div class="fra-radios">
               <label><input type="radio" name="m-classe" value="SV" onchange="document.getElementById('m-classe-hid').value=this.value" checked> SV</label>
               <label><input type="radio" name="m-classe" value="CO" onchange="document.getElementById('m-classe-hid').value=this.value"> CO</label>
-              <label><input type="radio" name="m-classe" value="Rectificativa" onchange="document.getElementById('m-classe-hid').value=this.value"> Rectif.</label>
-              <label><input type="radio" name="m-classe" value="Abono" onchange="document.getElementById('m-classe-hid').value=this.value"> Abono</label>
             </div>
             <input type="hidden" id="m-classe-hid" value="SV">
           </div>

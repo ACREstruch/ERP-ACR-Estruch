@@ -41,7 +41,7 @@
     .fra-num-line .val{font-weight:800;font-size:13px;margin-left:6px}
 
     /* ── LINES + TOTALS (un sol bloc envoltat) ── */
-    .invoice-body{border-top:1.5px solid #1a1a1a;border-bottom:1.5px solid #1a1a1a;padding:3mm 0;margin-bottom:8mm;flex:1}
+    .invoice-body{border-top:1px solid #555;border-bottom:1px solid #555;padding:3mm 0;margin-bottom:8mm;flex:1}
 
     /* Lines */
     .line-row{display:flex;justify-content:space-between;align-items:flex-start;padding:1.5mm 0;font-size:10.5px}
@@ -81,7 +81,9 @@
     @media print{
       body{background:#fff}
       .btn-print{display:none}
-      .page{margin:0;padding:14mm 18mm 12mm;width:100%;min-height:0}
+      .page{margin:0;padding:14mm 18mm 12mm;width:100%;height:297mm;min-height:0}
+      .invoice-body{border-width:0.5pt}
+      .footer-grid{border-bottom-width:0.3pt}
       @page{size:A4;margin:0}
     }
   </style>

@@ -16,32 +16,33 @@
     }
 
     /* ── LOGO ── */
-    .logo{text-align:center;margin-bottom:16mm}
+    .logo{text-align:center;margin-bottom:14mm}
     .logo img{height:52px;display:block;margin:0 auto}
 
     /* ── FACTURA LABEL ── */
-    .lbl-factura{color:#00387C;font-weight:800;font-size:10px;letter-spacing:2px;margin-bottom:8mm}
+    .lbl-factura{color:#00387C;font-weight:800;font-size:10px;letter-spacing:2px;margin-bottom:6mm}
 
     /* ── CLIENT ── */
-    .client-block{margin-bottom:9mm;line-height:1.65;font-size:10.5px}
+    .client-block{margin-bottom:7mm;line-height:1.65;font-size:10.5px}
     .cli-code{color:#aaa;font-size:9.5px}
     .cli-name{font-weight:700;font-size:12px}
     .cli-nif{color:#666}
 
-    /* ── INFO GRID ── */
-    .info-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:0 14mm;margin-bottom:8mm;font-size:10px}
-    .info-row{display:flex;gap:6px;line-height:1.65}
-    .info-row .k{color:#888;white-space:nowrap}
-    .info-row .v{font-weight:600}
-    .info-row .v.sub{font-weight:400;color:#666;font-size:9.5px}
+    /* ── INFO GRID: 3 columnes, valors alineats amb taula ── */
+    .info-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:0 14mm;margin-bottom:7mm;font-size:10px}
+    .info-col{display:table;width:100%}
+    .info-row{display:table-row;line-height:1.7}
+    .info-row .k{display:table-cell;color:#888;white-space:nowrap;padding-right:5px}
+    .info-row .v{display:table-cell;font-weight:600;color:#1a1a1a}
+    .nref-desc{display:block;font-weight:400;color:#666;font-size:9.5px;padding-top:0}
 
     /* ── FACTURA NUM ── */
-    .fra-num-line{margin-bottom:4mm;font-size:11px}
+    .fra-num-line{margin-bottom:3mm;font-size:11px}
     .fra-num-line .lbl{color:#00387C;font-weight:700}
     .fra-num-line .val{font-weight:800;font-size:13px;margin-left:6px}
 
-    /* ── LINES + TOTALS (un sol bloc envoltat) ── */
-    .invoice-body{border-top:1px solid #555;border-bottom:1px solid #555;padding:3mm 0;margin-bottom:8mm;flex:1}
+    /* ── LINES + TOTALS ── */
+    .invoice-body{border-top:0.25pt solid #555;padding:3mm 0;margin-bottom:0;flex:1}
 
     /* Lines */
     .line-row{display:flex;justify-content:space-between;align-items:flex-start;padding:1.5mm 0;font-size:10.5px}
@@ -49,25 +50,26 @@
     .line-art{color:#888;font-size:9.5px;margin-right:5px}
     .line-amt{white-space:nowrap;font-weight:500;text-align:right;min-width:75px}
 
-    /* Totals */
-    .totals-block{margin-top:3mm;padding-top:2mm}
-    .tot-row{display:flex;justify-content:space-between;padding:1px 0;font-size:10.5px}
+    /* Totals: dreta, separació respecte línies */
+    .totals-block{margin-top:5mm;margin-left:auto;width:55%;border-top:0.25pt solid #555;padding-top:3mm}
+    .tot-row{display:flex;justify-content:space-between;gap:10mm;padding:1px 0;font-size:10.5px}
     .tot-row .tl{color:#555}
-    .tot-row .tv{text-align:right;min-width:75px;font-weight:500}
+    .tot-row .tv{text-align:right;min-width:70px;font-weight:500}
     .tot-row .neg{color:#b00}
     .tot-grand{font-weight:800;font-size:12px;margin-top:2mm}
     .tot-grand .tl,.tot-grand .tv{color:#1a1a1a}
 
     /* ── FOOTER ── */
-    .footer{margin-top:auto}
+    .footer{margin-top:auto;padding-top:6mm}
     .footer-grid{
       display:grid;grid-template-columns:1fr 1fr 1fr;gap:0 10mm;
       font-size:8.5px;color:#555;line-height:1.65;
-      padding-bottom:3mm;border-bottom:0.5px solid #bbb;
+      padding-bottom:3mm;border-bottom:0.25pt solid #5B281A;
     }
     .footer-grid .ft{font-weight:700;color:#222;display:block;margin-bottom:1px}
     .footer-addr{
-      text-align:center;font-size:8.5px;color:#888;
+      text-align:center;font-size:10pt;color:#00387C;font-weight:300;
+      font-family:'Myriad Pro','Segoe UI Light',Arial,sans-serif;
       padding-top:2.5mm;letter-spacing:0.3px;
     }
 
@@ -82,8 +84,6 @@
       body{background:#fff}
       .btn-print{display:none}
       .page{margin:0;padding:14mm 18mm 12mm;width:100%;height:297mm;min-height:0}
-      .invoice-body{border-width:0.5pt}
-      .footer-grid{border-bottom-width:0.3pt}
       @page{size:A4;margin:0}
     }
   </style>
@@ -239,7 +239,7 @@ async function load(){
     // ── CLIENT + PROJECTE en paral·lel ──
     const [cliArr, prjArr] = await Promise.all([
       inv.id_client
-        ? sbGet('clients', `codi=eq.${inv.id_client}&select=codi,rao_social,nif_vat,adreca,cp,ciutat,pais&limit=1`)
+        ? sbGet('clients', `id=eq.${inv.id_client}&select=codi,rao_social,nif_vat,adreca,cp,ciutat,pais&limit=1`)
         : Promise.resolve([]),
       inv.n_ref
         ? sbGet('projectes', `IdPJ=eq.${encodeURIComponent(inv.n_ref)}&select=IdPJ,Descripcio&limit=1`)
@@ -265,21 +265,27 @@ async function load(){
     // ── INFO GRID ──
     const nrefVal = inv.n_ref || inv.id_projecte || '';
     const prjDesc = prj ? prj.Descripcio : '';
+    const idIN    = inv.id || '';
+
+    // N/ref: valor a la primera linia, descripció indentada a sota
+    const nrefHtml = `<div class="info-row">
+      <span class="k">${esc(t.nref)}</span>
+      <span class="v">${esc(nrefVal)}${prjDesc?`<span class="nref-desc">${esc(prjDesc)}</span>`:''}</span>
+    </div>`;
 
     document.getElementById('info-grid').innerHTML = `
-      <div>
-        ${infoRow(t.data_fra,   fd(inv.data_fra))}
-        ${infoRow(t.data_venc,  fd(inv.data_venciment))}
-        ${infoRow(t.forma_pag,  inv.forma_pag||'')}
-        ${infoRow(t.divisa,     inv.divisa||'EUR')}
+      <div class="info-col">
+        ${infoRow(t.data_fra,  fd(inv.data_fra))}
+        ${infoRow(t.data_venc, fd(inv.data_venciment))}
+        ${infoRow(t.forma_pag, inv.forma_pag||'')}
+        ${infoRow(t.divisa,    inv.divisa||'EUR')}
       </div>
-      <div>
-        ${infoRow(t.nref, nrefVal)}
-        ${prjDesc ? infoRow('', prjDesc, true) : ''}
-        ${infoRow(t.idin, inv.id_in||'')}
+      <div class="info-col">
+        ${nrefHtml}
+        ${infoRow(t.idin, idIN)}
         ${infoRow(t.sref, inv.s_ref||'')}
       </div>
-      <div>
+      <div class="info-col">
         ${infoRow(t.banco,  inv.banc||'')}
         ${infoRow(t.bancag, inv.banc_ag||'')}
         ${infoRow(t.iban,   inv.iban_bic||'')}

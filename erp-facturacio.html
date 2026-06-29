@@ -268,31 +268,34 @@ th.amt{text-align:right}
 .full{grid-column:1/-1}
 .sec{grid-column:1/-1;font-size:11px;font-weight:800;color:var(--blue);text-transform:uppercase;letter-spacing:.8px;padding:4px 0 2px;border-bottom:1.5px solid var(--blue-dim);margin-bottom:2px}
 
-/* ── FRA HEADER (2 rows compact) ── */
-.fra-hdr{border:1.5px solid var(--border);border-radius:var(--r);background:#fdfdfd;margin-bottom:10px;padding:10px 14px;display:flex;flex-direction:column;gap:7px}
-.fra-row{display:flex;gap:10px;align-items:flex-end}
-.fra-cell{display:flex;flex-direction:column;gap:3px;flex:1;min-width:0}
-.fra-cell.sm{flex:.65;min-width:70px}.fra-cell.md{flex:1.4}.fra-cell.lg{flex:2.5}
-.fra-cell label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;white-space:nowrap}
-.fra-cell input,.fra-cell select{padding:5px 8px;border:1.5px solid var(--border);border-radius:4px;font-size:13px;background:#fff;color:var(--text);width:100%;transition:border-color .12s;font-family:inherit}
-.fra-cell input:focus,.fra-cell select:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 2px rgba(0,56,124,.06)}
+/* ── FRA HEADER — 2 blocs horitzontals ── */
+.fra-blocks{display:flex;gap:24px;margin-bottom:12px}
+.fra-block{flex:1;border:1px solid var(--border);border-radius:var(--r);background:#fdfdfd;overflow:hidden}
+.fra-block.wide{flex:1.4}
+.fra-field{display:flex;align-items:stretch;border-bottom:1px solid var(--border-light);min-height:30px}
+.fra-field:last-child{border-bottom:none}
+.fra-field label{font-size:11px;font-weight:700;color:var(--blue);white-space:nowrap;padding:5px 8px;width:106px;flex-shrink:0;background:#f0f4f8;display:flex;align-items:center;border-right:1px solid var(--border-light)}
+.fra-field input,.fra-field select{flex:1;border:none;padding:4px 8px;font-size:13px;background:transparent;color:var(--text);min-width:0;font-family:inherit}
+.fra-field input:focus,.fra-field select:focus{outline:none;background:#fffde7}
+.fra-radios{display:flex;gap:10px;padding:5px 10px;flex-wrap:wrap;align-items:center}
+.fra-radios label{display:flex;align-items:center;gap:3px;font-size:12px;font-weight:500;cursor:pointer;color:var(--text)}
 
 /* ── LINES TABLE ── */
 table.ltbl{width:100%;border-collapse:collapse}
-.ltbl th{padding:7px 10px;font-size:10.5px;color:var(--muted);text-transform:uppercase;font-weight:700;border-bottom:2px solid var(--border);background:#f8f9fa}
-.ltbl td{padding:4px 6px;border-bottom:1px solid var(--border-light);vertical-align:top}
-.ltbl input{width:100%;border:1.5px solid transparent;padding:4px 6px;border-radius:4px;background:transparent;font-size:13px;font-family:inherit;transition:border-color .12s}
+.ltbl th{padding:5px 8px;font-size:10.5px;color:var(--muted);text-transform:uppercase;font-weight:700;border-bottom:2px solid var(--border);background:#f8f9fa}
+.ltbl td{padding:2px 4px;border-bottom:1px solid var(--border-light);vertical-align:top}
+.ltbl input{width:100%;border:1.5px solid transparent;padding:3px 5px;border-radius:4px;background:transparent;font-size:13px;font-family:inherit;transition:border-color .12s}
 .ltbl input:focus{border-color:var(--blue);background:#fff;outline:none}
-.ltbl textarea{width:100%;border:1.5px solid transparent;padding:4px 6px;border-radius:4px;background:transparent;font-size:13px;font-family:inherit;line-height:1.45;resize:none;overflow:hidden;min-height:30px;transition:border-color .12s;display:block}
+.ltbl textarea{width:100%;border:1.5px solid transparent;padding:3px 5px;border-radius:4px;background:transparent;font-size:13px;font-family:inherit;line-height:1.4;resize:none;overflow:hidden;min-height:26px;transition:border-color .12s;display:block}
 .ltbl textarea:focus{border-color:var(--blue);background:#fff;outline:none}
-.ltbl .w80{width:82px}.ltbl .w70{width:72px}.ltbl .w50{width:52px}
-.ltbl .rgt{text-align:right}.ltbl .vtop{vertical-align:top;padding-top:7px}
-.ltbl .del-btn{background:none;border:none;cursor:pointer;color:var(--red);font-size:16px;padding:2px 4px;opacity:.6;margin-top:3px}
+.ltbl .w90{width:92px}.ltbl .w80{width:82px}.ltbl .w70{width:72px}.ltbl .w50{width:52px}.ltbl .w32{width:32px}
+.ltbl .rgt{text-align:right}.ltbl .vtop{vertical-align:top;padding-top:5px}
+.ltbl .del-btn{background:none;border:none;cursor:pointer;color:var(--red);font-size:14px;padding:2px 3px;opacity:.6;margin-top:2px}
 .ltbl .del-btn:hover{opacity:1}
 
 /* ── TOTALS ── */
-.totals-box{background:#f8f9fa;border:1.5px solid var(--border);border-radius:var(--r);padding:12px 16px;margin-top:12px;max-width:340px;margin-left:auto}
-.tot-row{display:flex;align-items:center;gap:8px;padding:3px 0;font-size:13px}
+.totals-box{background:#f8f9fa;border:1.5px solid var(--border);border-radius:var(--r);padding:8px 14px;margin-top:10px;max-width:340px;margin-left:auto}
+.tot-row{display:flex;align-items:center;gap:8px;padding:2px 0;font-size:13px}
 .tot-row .tl{flex:1;color:var(--muted)}
 .tot-row .pct-inp{width:48px;border:1.5px solid var(--border);border-radius:4px;padding:3px 5px;font-size:12px;text-align:right;background:#fff}
 .tot-row .pct-inp:focus{outline:none;border-color:var(--blue)}
@@ -501,88 +504,76 @@ input[type=number]{-moz-appearance:textfield}
     <!-- ── TAB FACTURA ── -->
     <div class="tab-panel on" id="tp-fra">
 
-      <!-- Capçalera compacta: 2 files -->
-      <div class="fra-hdr">
-        <div class="fra-row">
-          <div class="fra-cell sm">
+      <!-- Capçalera: 2 blocs horitzontals -->
+      <div class="fra-blocks">
+        <!-- Bloc esquerra -->
+        <div class="fra-block wide">
+          <div class="fra-field">
             <label>Nº Factura *</label>
             <input type="text" id="m-no" placeholder="26001" oninput="updatePreview()">
           </div>
-          <div class="fra-cell lg">
+          <div class="fra-field">
             <label>Client *</label>
             <select id="m-client" onchange="onClientChange()">
               <option value="">— Selecciona client —</option>
             </select>
           </div>
-          <div class="fra-cell md">
-            <label>N/Ref (nostre projecte)</label>
+          <div class="fra-field">
+            <label>N/Ref</label>
             <select id="m-nref">
               <option value="">— Sense projecte —</option>
             </select>
           </div>
-          <div class="fra-cell sm">
+        </div>
+        <!-- Bloc dreta -->
+        <div class="fra-block">
+          <div class="fra-field">
             <label>Data factura *</label>
             <input type="date" id="m-data" onchange="onDataFraChange(this.value)">
           </div>
-          <div class="fra-cell sm">
-            <label>Estat</label>
-            <select id="m-estat" onchange="updateBadge()">
-              <option value="PENDENT">PEND — Pendent</option>
-              <option value="COBRAT">COB — Cobrat</option>
-              <option value="PARCIAL">PARC — Cobrat parc.</option>
-              <option value="RECTIFICATIVA">RECTF — Rectificativa</option>
-            </select>
-          </div>
-        </div>
-        <div class="fra-row">
-          <div class="fra-cell sm">
-            <label>S/Ref (client)</label>
-            <input type="text" id="m-sref">
-          </div>
-          <div class="fra-cell lg">
-            <label>Forma de pagament</label>
-            <select id="m-fpag">
-              <option>Transferència</option>
-              <option>Rebut domiciliat</option>
-              <option>Efectiu</option>
-              <option>Xec</option>
-            </select>
-          </div>
-          <div class="fra-cell md">
-            <label>Divisa</label>
-            <select id="m-div">
-              <option value="EUR">EUR</option>
-              <option value="USD">USD</option>
-              <option value="GBP">GBP</option>
-              <option value="MXN">MXN</option>
-            </select>
-          </div>
-          <div class="fra-cell sm">
+          <div class="fra-field">
             <label>Data venciment</label>
             <input type="date" id="m-venc">
           </div>
-          <div class="fra-cell sm">
+          <div class="fra-field">
             <label>Classe</label>
-            <select id="m-classe">
-              <option>SV</option>
-              <option>CO</option>
-              <option>Rectificativa</option>
-              <option>Abono</option>
-            </select>
+            <div class="fra-radios">
+              <label><input type="radio" name="m-classe" value="SV" onchange="document.getElementById('m-classe-hid').value=this.value" checked> SV</label>
+              <label><input type="radio" name="m-classe" value="CO" onchange="document.getElementById('m-classe-hid').value=this.value"> CO</label>
+              <label><input type="radio" name="m-classe" value="Rectificativa" onchange="document.getElementById('m-classe-hid').value=this.value"> Rectif.</label>
+              <label><input type="radio" name="m-classe" value="Abono" onchange="document.getElementById('m-classe-hid').value=this.value"> Abono</label>
+            </div>
+            <input type="hidden" id="m-classe-hid" value="SV">
           </div>
         </div>
       </div>
+
+      <!-- Camps ocults (mantenen el JS existent) -->
+      <select id="m-estat" onchange="updateBadge()" style="display:none">
+        <option value="PENDENT">PENDENT</option>
+        <option value="COBRAT">COBRAT</option>
+        <option value="PARCIAL">PARCIAL</option>
+        <option value="RECTIFICATIVA">RECTIFICATIVA</option>
+      </select>
+      <select id="m-fpag" style="display:none">
+        <option>Transferència</option><option>Rebut domiciliat</option><option>Efectiu</option><option>Xec</option>
+      </select>
+      <select id="m-div" style="display:none">
+        <option value="EUR">EUR</option><option value="USD">USD</option><option value="GBP">GBP</option><option value="MXN">MXN</option>
+      </select>
+      <input type="hidden" id="m-sref">
 
       <!-- Línies -->
       <table class="ltbl">
         <thead>
           <tr>
-            <th>Descripció del servei</th>
-            <th class="rgt w80">Quantitat</th>
-            <th class="rgt w80">Preu unit.</th>
-            <th class="rgt w50">Dte %</th>
-            <th class="rgt w80">Import</th>
-            <th class="w50"></th>
+            <th class="w80">Article</th>
+            <th>Descripció</th>
+            <th class="rgt w70">Quantitat</th>
+            <th class="rgt w90">Import</th>
+            <th class="rgt w50">%</th>
+            <th class="rgt w90">Total línia</th>
+            <th class="w32"></th>
           </tr>
         </thead>
         <tbody id="lines-body"></tbody>
@@ -615,6 +606,38 @@ input[type=number]{-moz-appearance:textfield}
     <!-- ── TAB FINANCER ── -->
     <div class="tab-panel" id="tp-fin">
       <div class="grid3">
+        <div class="sec">Dades generals</div>
+        <div class="fg">
+          <label>Estat</label>
+          <select id="m-estat-fin" onchange="document.getElementById('m-estat').value=this.value;updateBadge()">
+            <option value="PENDENT">PEND — Pendent</option>
+            <option value="COBRAT">COB — Cobrat</option>
+            <option value="PARCIAL">PARC — Cobrat parc.</option>
+            <option value="RECTIFICATIVA">RECTF — Rectificativa</option>
+          </select>
+        </div>
+        <div class="fg">
+          <label>S/Ref (client)</label>
+          <input type="text" id="m-sref-fin" oninput="document.getElementById('m-sref').value=this.value">
+        </div>
+        <div class="fg">
+          <label>Forma de pagament</label>
+          <select id="m-fpag-fin" onchange="document.getElementById('m-fpag').value=this.value">
+            <option>Transferència</option>
+            <option>Rebut domiciliat</option>
+            <option>Efectiu</option>
+            <option>Xec</option>
+          </select>
+        </div>
+        <div class="fg">
+          <label>Divisa</label>
+          <select id="m-div-fin" onchange="document.getElementById('m-div').value=this.value">
+            <option value="EUR">EUR</option>
+            <option value="USD">USD</option>
+            <option value="GBP">GBP</option>
+            <option value="MXN">MXN</option>
+          </select>
+        </div>
         <div class="sec" style="display:flex;align-items:center;justify-content:space-between">
           Cobrament
           <button type="button" class="btn btn-primary btn-sm" onclick="cobrarAra()" style="font-size:12px;padding:4px 12px">✓ Cobrar ara</button>
@@ -1173,7 +1196,7 @@ async function openModal(id){
     if(minDate) dataEl.min = minDate;
     // Venciment = data factura per defecte
     document.getElementById('m-venc').value = dataEl.value;
-    curLines = [{ordre:1,descripcio:'',quantitat:1,preu_unitari:0,descompte:0,import_linia:0}];
+    curLines = [{ordre:1,article:'',descripcio:'',quantitat:1,preu_unitari:0,descompte:0,import_linia:0}];
     renderLines();
   }
   document.getElementById('overlay').classList.add('open');
@@ -1205,18 +1228,25 @@ function closeModal(){
   curId = null; curLines = [];
 }
 
+function setClasse(v){
+  const r = document.querySelector(`input[name="m-classe"][value="${v}"]`);
+  if(r) r.checked = true;
+  const h = document.getElementById('m-classe-hid');
+  if(h) h.value = v||'SV';
+}
+
 function fillForm(inv){
   const s = (id,v) => { const el=document.getElementById(id); if(el) el.value=(v??''); };
   s('m-no', inv.no_factura);
   s('m-data', inv.data_fra);
   s('m-venc', inv.data_venciment);
-  s('m-estat', inv.estat);
+  s('m-estat', inv.estat);       s('m-estat-fin', inv.estat);
   s('m-client', inv.id_client);
   const nrefVal = String(inv.n_ref || inv.id_projecte || '').padStart(8,'0').replace(/^0{8}$/,'');
   document.getElementById('m-nref').value = nrefVal;
-  s('m-sref', inv.s_ref);
-  s('m-fpag', inv.forma_pag);
-  s('m-div', inv.divisa||'EUR');
+  s('m-sref', inv.s_ref);       s('m-sref-fin', inv.s_ref);
+  s('m-fpag', inv.forma_pag);   s('m-fpag-fin', inv.forma_pag);
+  s('m-div', inv.divisa||'EUR'); s('m-div-fin', inv.divisa||'EUR');
   s('m-iva', inv.tipus_iva??21);
   s('m-irpf', inv.tipus_irpf??0);
   s('m-cobrat', inv.import_cobrat??0);
@@ -1241,7 +1271,7 @@ function fillForm(inv){
   document.getElementById('m-assentat').checked = !!inv.assentat;
   s('m-suplerts', inv.suplerts);
   s('m-imp-sup', inv.import_suplerts??0);
-  s('m-classe', inv.classe_fra||'Normal');
+  setClasse(inv.classe_fra||'SV');
   s('m-notes', inv.notes);
   s('m-notes-priv', inv.notes_privades);
   updateBadge();
@@ -1254,12 +1284,12 @@ function resetForm(){
   document.getElementById('m-data').min='';
   document.getElementById('m-venc').value=today;
   document.getElementById('m-venc').min=today;
-  document.getElementById('m-estat').value='PENDENT';
+  document.getElementById('m-estat').value='PENDENT';     document.getElementById('m-estat-fin').value='PENDENT';
   document.getElementById('m-client').value='';
   document.getElementById('m-nref').value='';
-  document.getElementById('m-sref').value='';
-  document.getElementById('m-fpag').value='Transferència';
-  document.getElementById('m-div').value='EUR';
+  document.getElementById('m-sref').value='';             document.getElementById('m-sref-fin').value='';
+  document.getElementById('m-fpag').value='Transferència'; document.getElementById('m-fpag-fin').value='Transferència';
+  document.getElementById('m-div').value='EUR';           document.getElementById('m-div-fin').value='EUR';
   document.getElementById('m-iva').value=21;
   document.getElementById('m-irpf').value=0;
   document.getElementById('m-cobrat').value=0;
@@ -1284,7 +1314,7 @@ function resetForm(){
   document.getElementById('m-assentat').checked=false;
   document.getElementById('m-suplerts').value='';
   document.getElementById('m-imp-sup').value=0;
-  document.getElementById('m-classe').value='Normal';
+  setClasse('SV');
   document.getElementById('m-notes').value='';
   document.getElementById('m-notes-priv').value='';
   curBi=0;
@@ -1311,7 +1341,7 @@ async function loadLines(noFra){
     }
   }catch{ curLines=[]; }
   if(!curLines.length)
-    curLines=[{ordre:1,descripcio:'',quantitat:1,preu_unitari:0,descompte:0,import_linia:0}];
+    curLines=[{ordre:1,article:'',descripcio:'',quantitat:1,preu_unitari:0,descompte:0,import_linia:0}];
   renderLines();
 }
 
@@ -1319,27 +1349,28 @@ function renderLines(){
   const fe = (n,d=2)=>(n||0).toLocaleString('ca-ES',{minimumFractionDigits:d});
   document.getElementById('lines-body').innerHTML = curLines.map((l,i)=>`
     <tr>
-      <td><textarea placeholder="Descripció del servei..."
+      <td class="w80 vtop"><input type="text" value="${escHtml(l.article||'')}" placeholder="Ref."
+          style="width:100%" oninput="upLine(${i},'article',this.value)"></td>
+      <td class="vtop"><textarea placeholder="Descripció..."
           oninput="upLine(${i},'descripcio',this.value);this.style.height='auto';this.style.height=this.scrollHeight+'px'"
           onfocus="this.style.borderColor='var(--blue)';this.style.background='#fff'"
           onblur="this.style.borderColor='transparent';this.style.background='transparent'"
           >${escHtml(l.descripcio||'')}</textarea></td>
-      <td class="rgt w80 vtop"><input type="number" value="${(l.quantitat??1).toFixed(2)}" step="0.01" style="text-align:right;width:100%"
+      <td class="rgt w70 vtop"><input type="number" value="${(l.quantitat??1).toFixed(2)}" step="0.01" style="text-align:right;width:100%"
           onchange="upLine(${i},'quantitat',this.value)"></td>
-      <td class="rgt w80 vtop"><input type="number" value="${(l.preu_unitari??0).toFixed(2)}" step="0.01" style="text-align:right;width:100%"
+      <td class="rgt w90 vtop"><input type="number" value="${(l.preu_unitari??0).toFixed(2)}" step="0.01" style="text-align:right;width:100%"
           onchange="upLine(${i},'preu_unitari',this.value)"></td>
-      <td class="rgt w70 vtop"><input type="number" value="${(l.descompte??0).toFixed(2)}" step="0.01" min="0" max="100" style="text-align:right;width:100%"
+      <td class="rgt w50 vtop"><input type="number" value="${(l.descompte??0).toFixed(2)}" step="0.01" min="0" max="100" style="text-align:right;width:100%"
           onchange="upLine(${i},'descompte',this.value)"></td>
-      <td class="rgt w80 vtop" style="font-weight:600;padding-top:8px">${fe(l.import_linia)}</td>
-      <td class="vtop"><button class="del-btn" onclick="delLine(${i})" title="Eliminar línia">✕</button></td>
+      <td class="rgt w90 vtop" style="font-weight:600;padding-top:6px">${fe(l.import_linia)}</td>
+      <td class="w32 vtop"><button class="del-btn" onclick="delLine(${i})" title="Eliminar línia">✕</button></td>
     </tr>`).join('');
-  // auto-altura de textareas
   document.querySelectorAll('#lines-body textarea').forEach(t=>{t.style.height='auto';t.style.height=t.scrollHeight+'px';});
   recalc();
 }
 
 function upLine(i,field,val){
-  curLines[i][field] = field==='descripcio' ? val : parseFloat(val)||0;
+  curLines[i][field] = (field==='descripcio'||field==='article') ? val : parseFloat(val)||0;
   const l = curLines[i];
   const dte = Math.max(0, Math.min(100, l.descompte||0));
   l.import_linia = Math.round((l.quantitat||1) * (l.preu_unitari||0) * (1 - dte/100) * 100) / 100;
@@ -1347,13 +1378,13 @@ function upLine(i,field,val){
 }
 
 function addLine(){
-  curLines.push({ordre:curLines.length+1,descripcio:'',quantitat:1,preu_unitari:0,descompte:0,import_linia:0});
+  curLines.push({ordre:curLines.length+1,article:'',descripcio:'',quantitat:1,preu_unitari:0,descompte:0,import_linia:0});
   renderLines();
 }
 
 function delLine(i){
   if(curLines.length<=1){
-    curLines=[{ordre:1,descripcio:'',quantitat:1,preu_unitari:0,descompte:0,import_linia:0}];
+    curLines=[{ordre:1,article:'',descripcio:'',quantitat:1,preu_unitari:0,descompte:0,import_linia:0}];
   } else { curLines.splice(i,1); }
   renderLines();
 }
@@ -1508,7 +1539,7 @@ function repeatInvoice(){
     iban:       g('m-iban'),     swift:    g('m-swift'),
     en_pc:      g('m-en-pc'),    dg_pc:    g('m-dg-pc'),    cb_pc:    g('m-cb-pc'),    tr: g('m-tr'),
     cte_cli:    g('m-cte-cli'),  cte_ven:  g('m-cte-ven'),  cte_iva:  g('m-cte-iva'),  cte_irpf: g('m-cte-irpf'),
-    suplerts:   g('m-suplerts'), imp_sup:  g('m-imp-sup'),  classe:   g('m-classe'),
+    suplerts:   g('m-suplerts'), imp_sup:  g('m-imp-sup'),  classe:   g('m-classe-hid'),
     notes:      g('m-notes'),    notes_priv: g('m-notes-priv'),
     lines:      curLines.map(l=>({...l})),
   };
@@ -1521,7 +1552,7 @@ function repeatInvoice(){
   s('m-en-pc',     snap.en_pc);    s('m-dg-pc',       snap.dg_pc); s('m-cb-pc',   snap.cb_pc); s('m-tr', snap.tr);
   s('m-cte-cli',   snap.cte_cli);  s('m-cte-ven',     snap.cte_ven);
   s('m-cte-iva',   snap.cte_iva);  s('m-cte-irpf',    snap.cte_irpf);
-  s('m-suplerts',  snap.suplerts); s('m-imp-sup',     snap.imp_sup); s('m-classe', snap.classe);
+  s('m-suplerts',  snap.suplerts); s('m-imp-sup',     snap.imp_sup); setClasse(snap.classe||'SV');
   s('m-notes',     snap.notes);    s('m-notes-priv',  snap.notes_priv);
   curLines = snap.lines;
   renderLines(); recalc();
@@ -1599,7 +1630,7 @@ async function saveInvoice(){
     assentat:      document.getElementById('m-assentat').checked,
     import_suplerts: parseFloat(document.getElementById('m-imp-sup').value)||0,
     suplerts:     document.getElementById('m-suplerts').value,
-    classe_fra:   document.getElementById('m-classe').value,
+    classe_fra:   document.getElementById('m-classe-hid').value,
     notes:        document.getElementById('m-notes').value,
     notes_privades: document.getElementById('m-notes-priv').value,
     anulada_per:  document.getElementById('m-anulada-per').value||null,
@@ -1641,6 +1672,7 @@ async function saveLines(noFra){
     .map((l,i)=>({
       no_factura: noFra,
       ordre: i+1,
+      article:    l.article||null,
       descripcio: l.descripcio,
       quantitat:  l.quantitat||1,
       preu_unitari: l.preu_unitari||0,
@@ -1736,7 +1768,7 @@ function demoLines(noFra){
     '26014':[{ordre:1,descripcio:'Intermediació comercial Fira ISM 2025 — comissió tramitació',quantitat:1,preu_unitari:3500,descompte:0,import_linia:3500}],
     '26013':[{ordre:1,descripcio:'Consultoria estratègica export — fase 2',quantitat:2,preu_unitari:400,descompte:0,import_linia:800}],
   };
-  return map[noFra] || [{ordre:1,descripcio:'',quantitat:1,preu_unitari:0,descompte:0,import_linia:0}];
+  return map[noFra] || [{ordre:1,article:'',descripcio:'',quantitat:1,preu_unitari:0,descompte:0,import_linia:0}];
 }
 
 // ════════════════════════════════════════════════

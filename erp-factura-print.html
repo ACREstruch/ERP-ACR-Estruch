@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Factura</title>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:'Segoe UI',Arial,sans-serif;font-size:11px;color:#1a1a1a;background:#d0d0d0}
+
+    /* ── A4 PAGE ── */
+    .page{
+      width:210mm;min-height:297mm;background:#fff;
+      margin:10mm auto;padding:18mm 20mm 14mm;
+      display:flex;flex-direction:column;
+    }
+
+    /* ── LOGO ── */
+    .logo{text-align:center;margin-bottom:20mm}
+    .logo-name{font-size:26px;font-weight:800;letter-spacing:-0.5px;color:#111;line-height:1}
+    .logo-name .bar{font-weight:200;color:#00387C;margin:0 1px}
+    .logo-name .light{font-weight:400}
+    .logo-sub{font-size:9.5px;color:#777;letter-spacing:2.5px;margin-top:3px;text-transform:lowercase}
+
+    /* ── FACTURA LABEL ── */
+    .lbl-factura{color:#00387C;font-weight:800;font-size:10px;letter-spacing:2px;margin-bottom:7mm}
+
+    /* ── CLIENT BLOCK ── */
+    .client-block{margin-bottom:8mm;line-height:1.65;font-size:10.5px}
+    .client-block .cli-code{color:#999;font-size:9.5px;margin-bottom:1px}
+    .client-block .cli-name{font-weight:700;font-size:12px}
+    .client-block .cli-nif{color:#555}
+
+    /* ── INFO GRID (3 columns) ── */
+    .info-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:0 14mm;margin-bottom:7mm;font-size:10px}
+    .info-row{display:flex;gap:5px;margin-bottom:2px;line-height:1.5}
+    .info-row .k{color:#888;white-space:nowrap;min-width:0}
+    .info-row .v{font-weight:600;color:#1a1a1a}
+    .info-row .v.sub{font-weight:400;color:#555;font-size:9.5px}
+
+    /* ── FACTURA NUM ── */
+    .fra-num-line{margin-bottom:5mm;font-size:11px}
+    .fra-num-line .lbl{color:#00387C;font-weight:700}
+    .fra-num-line .val{font-weight:800;font-size:13px;margin-left:6px}
+
+    /* ── LINES ── */
+    .lines-section{border-top:1.5px solid #1a1a1a;padding-top:3mm;margin-bottom:0}
+    .line-row{display:flex;justify-content:space-between;align-items:flex-start;padding:1.8mm 0;font-size:10.5px}
+    .line-desc{flex:1;padding-right:10mm;line-height:1.55;color:#1a1a1a}
+    .line-art{color:#888;font-size:9.5px;font-weight:500;margin-right:4px}
+    .line-amt{white-space:nowrap;font-weight:500;text-align:right;min-width:72px}
+
+    /* ── TOTALS ── */
+    .totals-section{border-top:1.5px solid #1a1a1a;border-bottom:1.5px solid #1a1a1a;padding:2.5mm 0;margin-bottom:0}
+    .tot-row{display:flex;justify-content:space-between;padding:1px 0;font-size:10.5px}
+    .tot-row .tl{color:#555}
+    .tot-row .tv{text-align:right;min-width:80px;font-weight:500}
+    .tot-row .neg{color:#b00}
+    .tot-grand{font-weight:800;font-size:12px;margin-top:2mm}
+    .tot-grand .tl{color:#1a1a1a}
+    .tot-grand .tv{color:#00387C}
+
+    /* ── FOOTER ── */
+    .footer{margin-top:auto;padding-top:8mm}
+    .footer-grid{
+      display:grid;grid-template-columns:1fr 1fr 1fr;gap:0 10mm;
+      font-size:8.5px;color:#555;line-height:1.6;
+      padding-bottom:3.5mm;border-bottom:0.5px solid #bbb;
+    }
+    .footer-grid .ft{font-weight:700;color:#333;display:block;margin-bottom:1px}
+    .footer-addr{
+      text-align:center;font-size:8.5px;color:#888;padding-top:3mm;
+      letter-spacing:0.4px;
+    }
+
+    /* ── PRINT BUTTON ── */
+    .btn-print{
+      position:fixed;top:12px;right:12px;
+      background:#00387C;color:#fff;border:none;padding:8px 20px;
+      border-radius:6px;cursor:pointer;font-size:13px;font-weight:600;
+      box-shadow:0 2px 8px rgba(0,0,0,.25);z-index:100;
+    }
+
+    @media print{
+      body{background:#fff}
+      .btn-print{display:none}
+      .page{margin:0;padding:14mm 18mm 12mm;min-height:0;width:100%}
+      @page{size:A4;margin:0}
+    }
+  </style>
+</head>
+<body>
+
+<button class="btn-print" onclick="window.print()">Imprimir</button>
+
+<div class="page">
+
+  <!-- Logo -->
+  <div class="logo">
+    <div class="logo-name">ACR<span class="bar">|</span><span class="light">Estruch</span></div>
+    <div class="logo-sub">export &amp; consulting</div>
+  </div>
+
+  <!-- FACTURA -->
+  <div class="lbl-factura">FACTURA</div>
+
+  <!-- Client -->
+  <div class="client-block" id="client-block"></div>
+
+  <!-- Info grid -->
+  <div class="info-grid" id="info-grid"></div>
+
+  <!-- Núm. factura -->
+  <div class="fra-num-line">
+    <span class="lbl">Factura num.</span><span class="val" id="fra-num-val"></span>
+  </div>
+
+  <!-- Línies -->
+  <div class="lines-section" id="lines-section"></div>
+
+  <!-- Totals -->
+  <div class="totals-section" id="totals-section"></div>
+
+  <!-- Footer -->
+  <div class="footer">
+    <div class="footer-grid">
+      <div>
+        <span class="ft">Denominació fiscal</span>
+        Jaume Estruch i Sánchez<br>
+        NIF-VAT No. ES38549541-T
+        <br><br>
+        <span class="ft">Nom comercial</span>
+        ACR ESTRUCH export &amp; consulting
+      </div>
+      <div>
+        <span class="ft">Banco BBVA</span>
+        IBAN: ES3101820269060203603140<br>
+        SWIFT Code: BBVAESMMXXX
+      </div>
+      <div>
+        <span class="ft">Wise Bank</span>
+        19 W 24th Street, New York<br>
+        Holder: JAUME ESTRUCH SANCHEZ<br>
+        Account: 8310566838<br>
+        Wire transfer: 026073008<br>
+        SWIFT/BIC: CMFGUS33 &nbsp;·&nbsp; ABA: 026073150
+      </div>
+    </div>
+    <div class="footer-addr">
+      Muntaner, 440, 1-1B &nbsp;|&nbsp; 08006 Barcelona &nbsp;|&nbsp;
+      +34 609852478 &nbsp;|&nbsp; info@acrestruch.com &nbsp;|&nbsp; www.acrestruch.com
+    </div>
+  </div>
+
+</div><!-- /page -->
+
+<script>
+const SB_URL = 'https://ftuaeaghnnlusigqtoqv.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ0dWFlYWdobm5sdXNpZ3F0b3F2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAxNjI0MjIsImV4cCI6MjA5NTczODQyMn0.9n1gWnq_QfrLIWU7sIBReXgQAGA-NPFOpsdDp-jbDW8';
+
+const fd = d => d ? d.replace(/(\d{4})-(\d{2})-(\d{2})/, '$3.$2.$1') : '';
+const fN = (v,d=2) => (+v||0).toLocaleString('ca-ES',{minimumFractionDigits:d,maximumFractionDigits:d});
+const esc = s => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+async function sbGet(table, qs=''){
+  const r = await fetch(`${SB_URL}/rest/v1/${table}?${qs}`,{
+    headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Accept':'application/json'}
+  });
+  if(!r.ok) throw new Error(await r.text());
+  return r.json();
+}
+
+function infoRow(k, v, sub=false){
+  if(!v && !k) return '';
+  return `<div class="info-row"><span class="k">${esc(k)}</span><span class="v${sub?' sub':''}">${esc(v)}</span></div>`;
+}
+
+async function load(){
+  const params = new URLSearchParams(location.search);
+  const noFra = params.get('no');
+  if(!noFra){
+    document.getElementById('fra-num-val').textContent = '—';
+    return;
+  }
+
+  document.title = `Factura ${noFra}`;
+  document.getElementById('fra-num-val').textContent = noFra;
+
+  try{
+    const [fras, lines] = await Promise.all([
+      sbGet('factures', `no_factura=eq.${encodeURIComponent(noFra)}&limit=1`),
+      sbGet('factura_lines', `no_factura=eq.${encodeURIComponent(noFra)}&order=ordre`),
+    ]);
+
+    if(!fras.length){ document.getElementById('fra-num-val').textContent = `${noFra} — no trobada`; return; }
+    const inv = fras[0];
+
+    // Parallel: client + project
+    const fetches = [Promise.resolve(null), Promise.resolve(null)];
+    if(inv.id_client) fetches[0] = sbGet('clients',`codi=eq.${inv.id_client}&limit=1`).then(r=>r[0]||null);
+    if(inv.id_projecte) fetches[1] = sbGet('projectes',`IdPJ=eq.${encodeURIComponent(inv.id_projecte)}&select=IdPJ,Descripcio&limit=1`).then(r=>r[0]||null);
+    const [cli, prj] = await Promise.all(fetches);
+
+    // ── CLIENT ──
+    const cb = document.getElementById('client-block');
+    if(cli){
+      const adrlinia = [cli.adreca, [cli.cp, cli.ciutat].filter(Boolean).join(' ')].filter(Boolean);
+      cb.innerHTML =
+        `<div class="cli-code">${esc(cli.codi||'')}</div>
+         <div class="cli-name">${esc(cli.rao_social||'')}</div>
+         ${cli.nif_vat ? `<div class="cli-nif">${esc(cli.nif_vat)}</div>` : ''}
+         ${adrlinia.map(l=>`<div>${esc(l)}</div>`).join('')}
+         ${cli.pais ? `<div>${esc(cli.pais)}</div>` : ''}`;
+    }
+
+    // ── INFO GRID ──
+    const nrefVal = inv.n_ref || inv.id_projecte || '';
+    const prjDesc = prj ? prj.Descripcio : '';
+
+    const col1 = [
+      infoRow('Data factura', fd(inv.data_fra)),
+      infoRow('Data de venciment', fd(inv.data_venciment)),
+      infoRow('Forma de pagament', inv.forma_pag||''),
+      infoRow('Divisa', inv.divisa||'EUR'),
+    ].join('');
+
+    const col2 = [
+      infoRow('N/ref', nrefVal),
+      prjDesc ? infoRow('', prjDesc, true) : '',
+      infoRow('IdIN', inv.id_in||''),
+      infoRow('S/ref', inv.s_ref||''),
+    ].join('');
+
+    const col3 = [
+      infoRow('Banco', inv.banc||''),
+      infoRow('Banc Ag.', inv.banc_ag||''),
+      infoRow('IBAN/BIC', inv.iban_bic||''),
+      infoRow('Swift', inv.swift||''),
+    ].join('');
+
+    document.getElementById('info-grid').innerHTML =
+      `<div>${col1}</div><div>${col2}</div><div>${col3}</div>`;
+
+    // ── LINES ──
+    const linesHtml = lines.map(l=>{
+      const art = l.article ? `<span class="line-art">${esc(l.article)}</span>` : '';
+      return `<div class="line-row">
+        <div class="line-desc">${art}${esc(l.descripcio||'')}</div>
+        <div class="line-amt">${fN(l.import_linia)} EUR</div>
+      </div>`;
+    }).join('');
+    document.getElementById('lines-section').innerHTML = linesHtml;
+
+    // ── TOTALS ──
+    const ivaPct  = +(inv.tipus_iva??21);
+    const irpfPct = +(inv.tipus_irpf??0);
+    let totHtml = `<div class="tot-row"><span class="tl">Base Imposable</span><span class="tv">${fN(inv.base_imposable)} EUR</span></div>`;
+    if(ivaPct)  totHtml += `<div class="tot-row"><span class="tl">${fN(ivaPct,0)}% I.V.A.</span><span class="tv">${fN(inv.import_iva)} EUR</span></div>`;
+    if(irpfPct) totHtml += `<div class="tot-row"><span class="tl">${fN(irpfPct,0)}% I.R.P.F.</span><span class="tv neg">-${fN(Math.abs(inv.import_irpf))} EUR</span></div>`;
+    totHtml += `<div class="tot-row tot-grand"><span class="tl">Total Factura</span><span class="tv">${fN(inv.total_factura)} EUR</span></div>`;
+    document.getElementById('totals-section').innerHTML = totHtml;
+
+  }catch(e){
+    document.getElementById('fra-num-val').textContent += ' — Error: '+e.message;
+  }
+}
+
+load();
+</script>
+</body>
+</html>

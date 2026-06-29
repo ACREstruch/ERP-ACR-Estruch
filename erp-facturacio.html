@@ -841,6 +841,7 @@ input[type=number]{-moz-appearance:textfield}
   <div class="modal-ftr">
     <button class="btn btn-secondary" onclick="closeModal()">Cancel·lar</button>
     <button class="btn btn-secondary" id="btn-repeat" style="display:none;margin-right:auto" onclick="repeatInvoice()">🔁 Repetir factura</button>
+    <button class="btn btn-secondary" id="btn-print" style="display:none" onclick="window.open('erp-factura-print.html?no='+document.getElementById('m-no').value,'_blank')" title="Imprimir factura">🖨 Imprimir</button>
     <button class="btn btn-primary" id="btn-save" onclick="saveInvoice()">💾 Guardar</button>
   </div>
 
@@ -1186,6 +1187,7 @@ async function openModal(id){
   curId = id;
   showTab('tp-fra');
   document.getElementById('btn-repeat').style.display = id ? '' : 'none';
+  document.getElementById('btn-print').style.display  = id ? '' : 'none';
   if(id){
     const inv = allInvoices.find(i=>i.id===id);
     if(!inv) return;

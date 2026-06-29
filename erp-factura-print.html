@@ -6,7 +6,7 @@
   <title>Factura</title>
   <style>
     *{margin:0;padding:0;box-sizing:border-box}
-    body{font-family:'Segoe UI',Arial,sans-serif;font-size:11px;color:#1a1a1a;background:#ccc}
+    body{font-family:'Segoe UI',Arial,sans-serif;font-size:8pt;color:#1a1a1a;background:#ccc}
 
     /* ── A4 ── */
     .page{
@@ -23,52 +23,50 @@
     .lbl-factura{color:#00387C;font-weight:800;font-size:10px;letter-spacing:2px;margin-bottom:6mm}
 
     /* ── CLIENT ── */
-    .client-block{margin-bottom:7mm;line-height:1.65;font-size:10.5px}
-    .cli-code{color:#aaa;font-size:9.5px}
-    .cli-name{font-weight:700;font-size:12px}
+    .client-block{margin-bottom:7mm;line-height:1.65}
+    .cli-code{color:#aaa;font-size:7.5pt}
+    .cli-name{font-weight:700;font-size:10pt}
     .cli-nif{color:#666}
 
-    /* ── INFO GRID: 3 columnes, valors alineats amb taula ── */
-    .info-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:0 14mm;margin-bottom:7mm;font-size:10px}
-    .info-col{display:table;width:100%}
-    .info-row{display:table-row;line-height:1.7}
-    .info-row .k{display:table-cell;color:#888;white-space:nowrap;padding-right:5px}
-    .info-row .v{display:table-cell;font-weight:600;color:#1a1a1a}
-    .nref-desc{display:block;font-weight:400;color:#666;font-size:9.5px;padding-top:0}
+    /* ── INFO GRID: 3 columnes, CSS grid per alineació ── */
+    .info-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:0 14mm;margin-bottom:7mm}
+    .info-col{display:grid;grid-template-columns:auto 1fr;column-gap:6px;align-content:start}
+    .ik{color:#888;white-space:nowrap;line-height:1.8;align-self:start}
+    .iv{font-weight:600;color:#1a1a1a;line-height:1.8}
+    .nref-desc{display:block;font-weight:400;color:#555;font-size:7.5pt;line-height:1.5;margin-top:1px}
 
     /* ── FACTURA NUM ── */
-    .fra-num-line{margin-bottom:3mm;font-size:11px}
+    .fra-num-line{margin-bottom:3mm}
     .fra-num-line .lbl{color:#00387C;font-weight:700}
-    .fra-num-line .val{font-weight:800;font-size:13px;margin-left:6px}
+    .fra-num-line .val{font-weight:800;font-size:10pt;margin-left:6px}
 
     /* ── LINES + TOTALS ── */
-    .invoice-body{border-top:0.25pt solid #555;padding:3mm 0;margin-bottom:0;flex:1}
+    /* Única ratlla: la que separa el número de factura del cos */
+    .invoice-body{border-top:0.25pt solid #555;padding-top:3mm;flex:1}
 
     /* Lines */
-    .line-row{display:flex;justify-content:space-between;align-items:flex-start;padding:1.5mm 0;font-size:10.5px}
+    .line-row{display:flex;justify-content:space-between;align-items:flex-start;padding:1.2mm 0}
     .line-desc{flex:1;padding-right:10mm;line-height:1.5}
-    .line-art{color:#888;font-size:9.5px;margin-right:5px}
-    .line-amt{white-space:nowrap;font-weight:500;text-align:right;min-width:75px}
+    .line-art{color:#888;font-size:7.5pt;margin-right:5px}
+    .line-amt{white-space:nowrap;font-weight:400;text-align:right;min-width:75px}
 
-    /* Totals: dreta, separació respecte línies */
-    .totals-block{margin-top:5mm;margin-left:auto;width:55%;border-top:0.25pt solid #555;padding-top:3mm}
-    .tot-row{display:flex;justify-content:space-between;gap:10mm;padding:1px 0;font-size:10.5px}
+    /* Totals: bloc dret, sense ratlla */
+    .totals-block{margin-top:5mm;margin-left:auto;width:55%}
+    .tot-row{display:flex;justify-content:space-between;gap:10mm;padding:1px 0}
     .tot-row .tl{color:#555}
-    .tot-row .tv{text-align:right;min-width:70px;font-weight:500}
+    .tot-row .tv{text-align:right;min-width:70px}
     .tot-row .neg{color:#b00}
-    .tot-grand{font-weight:800;font-size:12px;margin-top:2mm}
-    .tot-grand .tl,.tot-grand .tv{color:#1a1a1a}
+    .tot-grand{font-weight:400;margin-top:2mm}
 
     /* ── FOOTER ── */
     .footer{margin-top:auto;padding-top:6mm}
     .footer-grid{
-      display:grid;grid-template-columns:1fr 1fr 1fr;gap:0 10mm;
-      font-size:8.5px;color:#555;line-height:1.65;
+      display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:0 8mm;
+      font-size:6.5pt;color:#555;line-height:1.7;
       padding-bottom:3mm;border-bottom:0.25pt solid #5B281A;
     }
-    .footer-grid .ft{font-weight:700;color:#222;display:block;margin-bottom:1px}
     .footer-addr{
-      text-align:center;font-size:10pt;color:#00387C;font-weight:300;
+      text-align:center;font-size:8pt;color:#00387C;font-weight:300;
       font-family:'Myriad Pro','Segoe UI Light',Arial,sans-serif;
       padding-top:2.5mm;letter-spacing:0.3px;
     }
@@ -116,25 +114,26 @@
   <div class="footer">
     <div class="footer-grid">
       <div>
-        <span class="ft" id="ft-denom">Denominació fiscal</span>
+        <span id="ft-denom">Denominació fiscal</span><br>
         Jaume Estruch i Sánchez<br>
-        NIF-VAT No. ES38549541-T
-        <br><br>
-        <span class="ft" id="ft-nomcom">Nom comercial</span>
-        ACR ESTRUCH export &amp; consulting
+        NIF-VAT No. ES38549541-T<br>
+        <span id="ft-nomcom">Nom comercial</span>: ACR ESTRUCH export &amp; consulting
       </div>
       <div>
-        <span class="ft">Banco BBVA</span>
+        Banco BBVA<br>
         IBAN: ES3101820269060203603140<br>
         SWIFT Code: BBVAESMMXXX
       </div>
       <div>
-        <span class="ft">Wise Bank</span>
+        Wise Bank<br>
         19 W 24th Street, New York<br>
         Holder: JAUME ESTRUCH SANCHEZ<br>
-        Account: 8310566838<br>
-        Wire transfer: 026073008<br>
-        SWIFT/BIC: CMFGUS33 &nbsp;·&nbsp; ABA: 026073150
+        Account no.: 8310566838
+      </div>
+      <div>
+        Wire transfer no.: 026073008<br>
+        Bank Code (SWIFT/BIC): CMFGUS33<br>
+        Routing no. (ACH or ABA): 026073150
       </div>
     </div>
     <div class="footer-addr">
@@ -199,9 +198,9 @@ async function sbGet(table, qs=''){
   return r.json();
 }
 
-function infoRow(k, v, sub=false){
-  if(!v) return '';
-  return `<div class="info-row"><span class="k">${esc(k)}</span><span class="v${sub?' sub':''}">${esc(v)}</span></div>`;
+function infoRow(k, v){
+  if(!v && v !== 0) return '';
+  return `<span class="ik">${esc(k)}</span><span class="iv">${esc(v)}</span>`;
 }
 
 async function load(){
@@ -267,11 +266,8 @@ async function load(){
     const prjDesc = prj ? prj.Descripcio : '';
     const idIN    = inv.id || '';
 
-    // N/ref: valor a la primera linia, descripció indentada a sota
-    const nrefHtml = `<div class="info-row">
-      <span class="k">${esc(t.nref)}</span>
-      <span class="v">${esc(nrefVal)}${prjDesc?`<span class="nref-desc">${esc(prjDesc)}</span>`:''}</span>
-    </div>`;
+    // N/ref: codi a la 1a línia, descripció indentada a sota (span.nref-desc = display:block)
+    const nrefHtml = `<span class="ik">${esc(t.nref)}</span><span class="iv">${esc(nrefVal)}${prjDesc?`<span class="nref-desc">${esc(prjDesc)}</span>`:''}</span>`;
 
     document.getElementById('info-grid').innerHTML = `
       <div class="info-col">

@@ -1186,8 +1186,8 @@ function editProtected(id){
 async function openModal(id){
   curId = id;
   showTab('tp-fra');
-  document.getElementById('btn-repeat').style.display = id ? '' : 'none';
-  document.getElementById('btn-print').style.display  = id ? '' : 'none';
+  const _br = document.getElementById('btn-repeat'); if(_br) _br.style.display = id ? '' : 'none';
+  const _bp = document.getElementById('btn-print');  if(_bp) _bp.style.display  = id ? '' : 'none';
   if(id){
     const inv = allInvoices.find(i=>i.id===id);
     if(!inv) return;

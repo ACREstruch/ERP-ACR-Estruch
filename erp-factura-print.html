@@ -57,6 +57,7 @@
     .tot-row .tl{color:#555}
     .tot-row .tv{text-align:right;min-width:70px}
     .tot-row .neg{color:#b00}
+    .neg{color:#b00}
     .tot-grand{font-weight:400;margin-top:2mm}
 
     /* ── CO TABLE: mateixa tipografia que SV, sense ratlles pròpies ── */
@@ -287,11 +288,29 @@ async function load(){
         ${infoRow(t.swift,  inv.swift||'')}
       </div>`;
 
+    // ── TOTALS (sempre calculats des de línies + %, mai des dels camps agregats de BD) ──
+    const ivaPct  = +(inv.tipus_iva  ?? 21);
+    const irpfPct = +(inv.tipus_irpf ?? 0);
+    const base    = lines.reduce((s,l)=>s+(+(l.import_linia)||0),0) || +(inv.base_imposable) || 0;
+    const ivaAmt  = base * ivaPct  / 100;
+    const irpfAmt = base * irpfPct / 100;
+    const total   = base + ivaAmt - irpfAmt;
+    const fullBreakdown = (lang === 'ca' || lang === 'es');
+
     // ── LINES ──
     if(tipusEfectiu){
-      // CO: taula amb capçaleres de columna
-      let h = `<table class="co-table">
-        <thead><tr>
+      // CO: totals dins el <tfoot> de la mateixa taula → alineació perfecta amb columna Import
+      let tfoot = '<tfoot>';
+      if(fullBreakdown){
+        tfoot += `<tr><td colspan="5" class="r" style="color:#555;padding-top:4mm">${t.base}</td><td class="r" style="padding-top:4mm">${fN(base)} EUR</td></tr>`;
+        if(ivaPct)  tfoot += `<tr><td colspan="5" class="r" style="color:#555">${fN(ivaPct,0)}% ${t.iva}</td><td class="r">${fN(ivaAmt)} EUR</td></tr>`;
+        if(irpfPct) tfoot += `<tr><td colspan="5" class="r neg">${fN(irpfPct,0)}% ${t.irpf}</td><td class="r neg">-${fN(Math.abs(irpfAmt))} EUR</td></tr>`;
+        tfoot += `<tr><td colspan="5" class="r" style="padding-top:2mm">${t.total}</td><td class="r" style="padding-top:2mm">${fN(total)} EUR</td></tr>`;
+      } else {
+        tfoot += `<tr><td colspan="5" class="r" style="padding-top:4mm">${t.total}</td><td class="r" style="padding-top:4mm">${fN(total)} EUR</td></tr>`;
+      }
+      tfoot += '</tfoot>';
+      let h = `<table class="co-table"><thead><tr>
           <th>${esc(t.art)}</th><th>${esc(t.desc)}</th>
           <th class="r">${esc(t.qty)}</th><th class="r">${esc(t.uprice)}</th>
           <th class="r">${esc(t.disc)}</th><th class="r">${esc(t.amt_col)}</th>
@@ -303,36 +322,25 @@ async function load(){
           <td class="r">${fN(l.descompte,0)}</td><td class="r">${fN(l.import_linia)} EUR</td>
         </tr>`;
       });
-      h += '</tbody></table>';
+      h += `</tbody>${tfoot}</table>`;
       document.getElementById('lines-section').innerHTML = h;
-      document.getElementById('totals-section').classList.add('co-totals');
+      document.getElementById('totals-section').style.display = 'none';
     } else {
-      // SV: format simple
+      // SV: format simple + bloc de totals independent
       document.getElementById('lines-section').innerHTML = lines.map(l=>`
         <div class="line-row">
           <div class="line-desc">${esc(l.descripcio||'')}</div>
           <div class="line-amt">${fN(l.import_linia)} EUR</div>
         </div>`).join('');
+      let html = '';
+      if(fullBreakdown){
+        html += `<div class="tot-row"><span class="tl">${t.base}</span><span class="tv">${fN(base)} EUR</span></div>`;
+        if(ivaPct)  html += `<div class="tot-row"><span class="tl">${fN(ivaPct,0)}% ${t.iva}</span><span class="tv">${fN(ivaAmt)} EUR</span></div>`;
+        if(irpfPct) html += `<div class="tot-row"><span class="tl">${fN(irpfPct,0)}% ${t.irpf}</span><span class="tv neg">-${fN(Math.abs(irpfAmt))} EUR</span></div>`;
+      }
+      html += `<div class="tot-row tot-grand"><span class="tl">${t.total}</span><span class="tv">${fN(total)} EUR</span></div>`;
+      document.getElementById('totals-section').innerHTML = html;
     }
-
-    // ── TOTALS ──
-    // Els camps agregats de factures (base_imposable/import_iva/import_irpf/total_factura)
-    // poden contenir dades incorrectes; sempre es calculen a partir de les línies + percentatges.
-    const ivaPct  = +(inv.tipus_iva  ?? 21);
-    const irpfPct = +(inv.tipus_irpf ?? 0);
-    const base    = lines.reduce((s,l)=>s+(+(l.import_linia)||0),0) || +(inv.base_imposable) || 0;
-    const ivaAmt  = base * ivaPct  / 100;
-    const irpfAmt = base * irpfPct / 100;
-    const total   = base + ivaAmt - irpfAmt;
-    const fullBreakdown = (lang === 'ca' || lang === 'es');
-    let html = '';
-    if(fullBreakdown){
-      html += `<div class="tot-row"><span class="tl">${t.base}</span><span class="tv">${fN(base)} EUR</span></div>`;
-      if(ivaPct)  html += `<div class="tot-row"><span class="tl">${fN(ivaPct,0)}% ${t.iva}</span><span class="tv">${fN(ivaAmt)} EUR</span></div>`;
-      if(irpfPct) html += `<div class="tot-row"><span class="tl">${fN(irpfPct,0)}% ${t.irpf}</span><span class="tv neg">-${fN(Math.abs(irpfAmt))} EUR</span></div>`;
-    }
-    html += `<div class="tot-row tot-grand"><span class="tl">${t.total}</span><span class="tv">${fN(total)} EUR</span></div>`;
-    document.getElementById('totals-section').innerHTML = html;
 
   }catch(e){
     console.error(e);

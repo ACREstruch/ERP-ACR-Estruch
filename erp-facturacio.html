@@ -1195,7 +1195,7 @@ async function openModal(id){
   showTab('tp-fra');
   const _br = document.getElementById('btn-repeat'); if(_br) _br.style.display = id ? '' : 'none';
   const _bp = document.getElementById('btn-print');  if(_bp) _bp.style.display  = id ? '' : 'none';
-  const _sl = document.getElementById('sel-lang');   if(_sl) _sl.style.display   = id ? '' : 'none';
+  const _sl = document.getElementById('sel-lang');   if(_sl) _sl.style.display   = id ? 'inline-block' : 'none';
   if(id){
     const inv = allInvoices.find(i=>i.id===id);
     if(!inv) return;

@@ -84,7 +84,9 @@
     @media print{
       body{background:#fff}
       .btn-print{display:none}
-      .page{margin:0;padding:14mm 18mm 12mm;width:100%;height:297mm;min-height:0}
+      .page{margin:0;padding:14mm 18mm 0;width:100%;height:auto;min-height:297mm}
+      .invoice-body{margin-bottom:40mm}
+      .footer{position:fixed;bottom:10mm;left:18mm;right:18mm;margin-top:0;padding-top:0}
       @page{size:A4;margin:0}
     }
   </style>

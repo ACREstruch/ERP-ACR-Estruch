@@ -841,7 +841,14 @@ input[type=number]{-moz-appearance:textfield}
   <div class="modal-ftr">
     <button class="btn btn-secondary" onclick="closeModal()">Cancel·lar</button>
     <button class="btn btn-secondary" id="btn-repeat" style="display:none;margin-right:auto" onclick="repeatInvoice()">🔁 Repetir factura</button>
-    <button class="btn btn-secondary" id="btn-print" style="display:none" onclick="window.open('erp-factura-print.html?no='+document.getElementById('m-no').value,'_blank')" title="Imprimir factura">🖨 Imprimir</button>
+    <select id="sel-lang" style="display:none;margin-right:4px;padding:4px 6px;border:1px solid #ccc;border-radius:4px;font-size:13px">
+      <option value="ca">CA</option>
+      <option value="es">ES</option>
+      <option value="en">EN</option>
+      <option value="fr">FR</option>
+      <option value="de">DE</option>
+    </select>
+    <button class="btn btn-secondary" id="btn-print" style="display:none" onclick="window.open('erp-factura-print.html?no='+document.getElementById('m-no').value+'&lang='+document.getElementById('sel-lang').value,'_blank')" title="Imprimir factura">🖨 Imprimir</button>
     <button class="btn btn-primary" id="btn-save" onclick="saveInvoice()">💾 Guardar</button>
   </div>
 
@@ -1188,6 +1195,7 @@ async function openModal(id){
   showTab('tp-fra');
   const _br = document.getElementById('btn-repeat'); if(_br) _br.style.display = id ? '' : 'none';
   const _bp = document.getElementById('btn-print');  if(_bp) _bp.style.display  = id ? '' : 'none';
+  const _sl = document.getElementById('sel-lang');   if(_sl) _sl.style.display   = id ? '' : 'none';
   if(id){
     const inv = allInvoices.find(i=>i.id===id);
     if(!inv) return;

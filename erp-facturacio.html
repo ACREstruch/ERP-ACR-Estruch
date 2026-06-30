@@ -1004,7 +1004,7 @@ async function loadInvoices(demo){
   if(demo){ allInvoices = demoInvoices(); }
   else {
     try{
-      allInvoices = await sbGet('factures','select=*,clients(rao_social,sinonim)&order=id_in.desc.nullslast,no_factura.desc');
+      allInvoices = await sbGet('factures','select=*,clients(rao_social,sinonim),factura_lines(import_linia)&order=id_in.desc.nullslast,no_factura.desc');
     }catch(e){
       console.error(e);
       toast('Error carregant factures: ' + e.message, 'err');
@@ -1052,12 +1052,25 @@ function badgeHtml(inv){
 // ════════════════════════════════════════════════
 // STATS
 // ════════════════════════════════════════════════
+function invBase(inv){
+  const ls = inv.factura_lines || [];
+  if(ls.length) return ls.reduce((s,l)=>s+(+(l.import_linia)||0),0);
+  return +(inv.base_imposable)||0;
+}
+function invTotal(inv){
+  const b = invBase(inv);
+  if(!b && !(inv.factura_lines||[]).length) return +(inv.total_factura)||0;
+  const iva  = b * (+(inv.tipus_iva ??21))/100;
+  const irpf = b * (+(inv.tipus_irpf??0 ))/100;
+  return b + iva - irpf;
+}
+
 function renderStats(){
   let n={COBRAT:0,PENDENT:0,PARCIAL:0,PROXIM:0,RECTIFICATIVA:0};
   let e={COBRAT:0,PENDENT:0,PARCIAL:0,PROXIM:0,RECTIFICATIVA:0};
   allInvoices.forEach(inv=>{
     const s = getEstat(inv);
-    if(n[s]!==undefined){ n[s]++; e[s]+=(inv.total_factura||0); }
+    if(n[s]!==undefined){ n[s]++; e[s]+=invTotal(inv); }
   });
   n.PENDENT += n.PARCIAL; e.PENDENT += e.PARCIAL;
   const f = v => v.toLocaleString('ca-ES',{minimumFractionDigits:2})+' €';
@@ -1111,7 +1124,7 @@ function renderTable(rows){
   years.forEach(yr => {
     const grpRows = groups[yr];
     const collapsed = collapsedYears.has(String(yr));
-    const totalGrp = grpRows.reduce((s,i) => s+(i.total_factura||0), 0);
+    const totalGrp = grpRows.reduce((s,i) => s+invTotal(i), 0);
     html += `<tr class="grp-hdr${collapsed?' collapsed':''}" data-yr-hdr="${yr}" onclick="toggleYear('${yr}')">
       <td colspan="11">
         <span class="grp-ico">▼</span>
@@ -1122,7 +1135,7 @@ function renderTable(rows){
     </tr>`;
     grpRows.forEach(inv => {
       const cob = (inv.import_cobrat||0);
-      const tot = (inv.total_factura||0);
+      const tot = invTotal(inv);
       const cli = inv.clients?.rao_social || '—';
       html += `<tr data-yr="${yr}" style="${collapsed?'display:none':''}" onclick="openModal(${inv.id})">
         <td style="color:var(--muted);font-size:11px">${inv.id_in||''}</td>
@@ -1131,7 +1144,7 @@ function renderTable(rows){
         <td>${fd(inv.data_venciment)}</td>
         <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${cli}">${cli}</td>
         <td style="color:var(--muted);font-size:11px">${inv.id_projecte||'—'}</td>
-        <td class="amt">${fe(inv.base_imposable)}</td>
+        <td class="amt">${fe(invBase(inv))}</td>
         <td class="amt" style="font-weight:700">${fe(tot)}</td>
         <td class="amt" style="color:${cob>=tot&&tot>0?'var(--green)':'var(--muted)'}">${fe(cob)}</td>
         <td>${badgeHtml(inv)}</td>

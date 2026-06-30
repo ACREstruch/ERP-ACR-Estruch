@@ -60,7 +60,7 @@
     .tot-grand{font-weight:400;margin-top:2mm}
 
     /* ── CO TABLE: mateixa tipografia que SV, sense ratlles pròpies ── */
-    .co-table{width:100%;border-collapse:collapse;font-family:'Segoe UI',Arial,sans-serif;font-size:8pt;color:#1a1a1a}
+    .co-table{width:100%;table-layout:fixed;border-collapse:collapse;font-family:'Segoe UI',Arial,sans-serif;font-size:8pt;color:#1a1a1a}
     .co-table th{font-weight:400;color:#888;padding:0 4px 2.5mm 0;text-align:left;font-size:8pt}
     .co-table td{padding:1.2mm 4px 1.2mm 0;vertical-align:top;line-height:1.5}
     .co-table .r{text-align:right}
@@ -316,14 +316,14 @@ async function load(){
     }
 
     // ── TOTALS ──
+    // Els camps agregats de factures (base_imposable/import_iva/import_irpf/total_factura)
+    // poden contenir dades incorrectes; sempre es calculen a partir de les línies + percentatges.
     const ivaPct  = +(inv.tipus_iva  ?? 21);
     const irpfPct = +(inv.tipus_irpf ?? 0);
-    // Base: calcula des de línies (fiable per CO i SV)
-    const baseCalc = lines.reduce((s,l)=>s+(+(l.import_linia)||0),0);
-    const base     = baseCalc || +(inv.base_imposable) || 0;
-    const ivaAmt   = ivaPct  ? (+(inv.import_iva)  || base*ivaPct/100)  : 0;
-    const irpfAmt  = irpfPct ? (+(inv.import_irpf) || base*irpfPct/100) : 0;
-    const total    = +(inv.total_factura) || (base + ivaAmt - irpfAmt);
+    const base    = lines.reduce((s,l)=>s+(+(l.import_linia)||0),0) || +(inv.base_imposable) || 0;
+    const ivaAmt  = base * ivaPct  / 100;
+    const irpfAmt = base * irpfPct / 100;
+    const total   = base + ivaAmt - irpfAmt;
     const fullBreakdown = (lang === 'ca' || lang === 'es');
     let html = '';
     if(fullBreakdown){

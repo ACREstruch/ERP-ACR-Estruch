@@ -64,7 +64,8 @@
     .co-table{width:100%;table-layout:fixed;border-collapse:collapse;font-family:'Segoe UI',Arial,sans-serif;font-size:8pt;color:#1a1a1a}
     .co-table th{font-weight:400;color:#888;padding:0 4px 2.5mm 0;text-align:left;font-size:8pt}
     .co-table td{padding:1.2mm 4px 1.2mm 0;vertical-align:top;line-height:1.5}
-    .co-table tfoot td{border-top:none;color:#555}
+    .co-table tfoot td{border-top:none;color:#555;padding-top:0}
+    .co-table tfoot td.neg{color:#b00}
     .co-table .r{text-align:right}
     .co-table th:nth-child(1),.co-table td:nth-child(1){width:12%}
     .co-table th:nth-child(2),.co-table td:nth-child(2){width:48%}
@@ -303,12 +304,12 @@ async function load(){
       // CO: totals dins el <tfoot> de la mateixa taula → alineació perfecta amb columna Import
       let tfoot = '<tfoot>';
       if(fullBreakdown){
-        tfoot += `<tr><td colspan="5" class="r" style="padding-top:1.5mm">${t.base}</td><td class="r" style="padding-top:1.5mm">${fN(base)} EUR</td></tr>`;
+        tfoot += `<tr><td colspan="5" class="r">${t.base}</td><td class="r">${fN(base)} EUR</td></tr>`;
         if(ivaPct)  tfoot += `<tr><td colspan="5" class="r">${fN(ivaPct,0)}% ${t.iva}</td><td class="r">${fN(ivaAmt)} EUR</td></tr>`;
         if(irpfPct) tfoot += `<tr><td colspan="5" class="r neg">${fN(irpfPct,0)}% ${t.irpf}</td><td class="r neg">-${fN(Math.abs(irpfAmt))} EUR</td></tr>`;
-        tfoot += `<tr><td colspan="5" class="r" style="padding-top:1mm">${t.total}</td><td class="r" style="padding-top:1mm">${fN(total)} EUR</td></tr>`;
+        tfoot += `<tr><td colspan="5" class="r">${t.total}</td><td class="r">${fN(total)} EUR</td></tr>`;
       } else {
-        tfoot += `<tr><td colspan="5" class="r" style="padding-top:1.5mm">${t.total}</td><td class="r" style="padding-top:1.5mm">${fN(total)} EUR</td></tr>`;
+        tfoot += `<tr><td colspan="5" class="r">${t.total}</td><td class="r">${fN(total)} EUR</td></tr>`;
       }
       tfoot += '</tfoot>';
       let h = `<table class="co-table"><thead><tr>

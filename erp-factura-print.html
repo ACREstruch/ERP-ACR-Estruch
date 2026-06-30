@@ -52,24 +52,24 @@
 
     /* Totals: bloc dret, sense ratlla */
     .totals-block{margin-top:5mm;margin-left:auto;width:35%}
+    .totals-block.co-totals{width:50%}
     .tot-row{display:flex;justify-content:space-between;gap:10mm;padding:1px 0}
     .tot-row .tl{color:#555}
     .tot-row .tv{text-align:right;min-width:70px}
     .tot-row .neg{color:#b00}
     .tot-grand{font-weight:400;margin-top:2mm}
 
-    /* ── CO TABLE ── */
-    .co-table{width:100%;border-collapse:collapse;font-size:8pt}
-    .co-table thead tr{border-bottom:0.25pt solid #aaa}
-    .co-table th{font-weight:400;color:#888;padding:2px 4px 4px;text-align:left}
-    .co-table td{padding:2px 4px;vertical-align:top}
+    /* ── CO TABLE: mateixa tipografia que SV, sense ratlles pròpies ── */
+    .co-table{width:100%;border-collapse:collapse;font-family:'Segoe UI',Arial,sans-serif;font-size:8pt;color:#1a1a1a}
+    .co-table th{font-weight:400;color:#888;padding:0 4px 2.5mm 0;text-align:left;font-size:8pt}
+    .co-table td{padding:1.2mm 4px 1.2mm 0;vertical-align:top;line-height:1.5}
     .co-table .r{text-align:right}
     .co-table th:nth-child(1),.co-table td:nth-child(1){width:12%}
-    .co-table th:nth-child(2),.co-table td:nth-child(2){width:30%}
-    .co-table th:nth-child(3),.co-table td:nth-child(3){width:13%}
-    .co-table th:nth-child(4),.co-table td:nth-child(4){width:13%}
-    .co-table th:nth-child(5),.co-table td:nth-child(5){width:10%}
-    .co-table th:nth-child(6),.co-table td:nth-child(6){width:22%}
+    .co-table th:nth-child(2),.co-table td:nth-child(2){width:38%}
+    .co-table th:nth-child(3),.co-table td:nth-child(3){width:10%}
+    .co-table th:nth-child(4),.co-table td:nth-child(4){width:12%}
+    .co-table th:nth-child(5),.co-table td:nth-child(5){width:8%}
+    .co-table th:nth-child(6),.co-table td:nth-child(6){width:20%}
 
     /* ── FOOTER ── */
     .footer{margin-top:auto;padding-top:6mm}
@@ -305,6 +305,7 @@ async function load(){
       });
       h += '</tbody></table>';
       document.getElementById('lines-section').innerHTML = h;
+      document.getElementById('totals-section').classList.add('co-totals');
     } else {
       // SV: format simple
       document.getElementById('lines-section').innerHTML = lines.map(l=>`
@@ -323,10 +324,13 @@ async function load(){
     const ivaAmt   = ivaPct  ? (+(inv.import_iva)  || base*ivaPct/100)  : 0;
     const irpfAmt  = irpfPct ? (+(inv.import_irpf) || base*irpfPct/100) : 0;
     const total    = +(inv.total_factura) || (base + ivaAmt - irpfAmt);
+    const fullBreakdown = (lang === 'ca' || lang === 'es');
     let html = '';
-    html += `<div class="tot-row"><span class="tl">${t.base}</span><span class="tv">${fN(base)} EUR</span></div>`;
-    if(ivaPct)  html += `<div class="tot-row"><span class="tl">${fN(ivaPct,0)}% ${t.iva}</span><span class="tv">${fN(ivaAmt)} EUR</span></div>`;
-    if(irpfPct) html += `<div class="tot-row"><span class="tl">${fN(irpfPct,0)}% ${t.irpf}</span><span class="tv neg">-${fN(Math.abs(irpfAmt))} EUR</span></div>`;
+    if(fullBreakdown){
+      html += `<div class="tot-row"><span class="tl">${t.base}</span><span class="tv">${fN(base)} EUR</span></div>`;
+      if(ivaPct)  html += `<div class="tot-row"><span class="tl">${fN(ivaPct,0)}% ${t.iva}</span><span class="tv">${fN(ivaAmt)} EUR</span></div>`;
+      if(irpfPct) html += `<div class="tot-row"><span class="tl">${fN(irpfPct,0)}% ${t.irpf}</span><span class="tv neg">-${fN(Math.abs(irpfAmt))} EUR</span></div>`;
+    }
     html += `<div class="tot-row tot-grand"><span class="tl">${t.total}</span><span class="tv">${fN(total)} EUR</span></div>`;
     document.getElementById('totals-section').innerHTML = html;
 

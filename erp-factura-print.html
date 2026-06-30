@@ -58,6 +58,19 @@
     .tot-row .neg{color:#b00}
     .tot-grand{font-weight:400;margin-top:2mm}
 
+    /* ── CO TABLE ── */
+    .co-table{width:100%;border-collapse:collapse;font-size:8pt}
+    .co-table thead tr{border-bottom:0.25pt solid #aaa}
+    .co-table th{font-weight:400;color:#888;padding:2px 4px 4px;text-align:left}
+    .co-table td{padding:2px 4px;vertical-align:top}
+    .co-table .r{text-align:right}
+    .co-table th:nth-child(1),.co-table td:nth-child(1){width:12%}
+    .co-table th:nth-child(2),.co-table td:nth-child(2){width:30%}
+    .co-table th:nth-child(3),.co-table td:nth-child(3){width:13%}
+    .co-table th:nth-child(4),.co-table td:nth-child(4){width:13%}
+    .co-table th:nth-child(5),.co-table td:nth-child(5){width:10%}
+    .co-table th:nth-child(6),.co-table td:nth-child(6){width:22%}
+
     /* ── FOOTER ── */
     .footer{margin-top:auto;padding-top:6mm}
     .footer-img{
@@ -137,6 +150,7 @@ const T = {
        idin:'IdIN', sref:'S/ref', banco:'Banco', bancag:'Banc Ag.',
        iban:'IBAN/BIC', swift:'Swift',
        fra_num:'Factura núm.', art:'Article', desc:'Descripció',
+       qty:'Quantitat', uprice:'Preu unit.', disc:'Desc.%', amt_col:'Import',
        base:'Base Imposable', iva:'I.V.A.', irpf:'I.R.P.F.', total:'Total Factura',
        denom:'Denominació fiscal', nomcom:'Nom comercial' },
   es:{ factura:'FACTURA', data_fra:'Fecha factura', data_venc:'Fecha vencimiento',
@@ -144,6 +158,7 @@ const T = {
        idin:'IdIN', sref:'S/ref', banco:'Banco', bancag:'Suc./Ag.',
        iban:'IBAN/BIC', swift:'Swift',
        fra_num:'Factura núm.', art:'Artículo', desc:'Descripción',
+       qty:'Cantidad', uprice:'Precio unit.', disc:'Dto.%', amt_col:'Importe',
        base:'Base Imponible', iva:'I.V.A.', irpf:'I.R.P.F.', total:'Total Factura',
        denom:'Denominación fiscal', nomcom:'Nombre comercial' },
   en:{ factura:'INVOICE', data_fra:'Invoice date', data_venc:'Due date',
@@ -151,6 +166,7 @@ const T = {
        idin:'IdIN', sref:'Your ref.', banco:'Bank', bancag:'Branch',
        iban:'IBAN/BIC', swift:'Swift',
        fra_num:'Invoice no.', art:'Item', desc:'Description',
+       qty:'Qty', uprice:'Unit price', disc:'Disc.%', amt_col:'Amount',
        base:'Subtotal', iva:'VAT', irpf:'Withholding tax', total:'Invoice Total',
        denom:'Legal entity', nomcom:'Trading name' },
   fr:{ factura:'FACTURE', data_fra:'Date facture', data_venc:"Date d'échéance",
@@ -158,6 +174,7 @@ const T = {
        idin:'IdIN', sref:'Votre réf.', banco:'Banque', bancag:'Agence',
        iban:'IBAN/BIC', swift:'Swift',
        fra_num:'Facture n°', art:'Article', desc:'Description',
+       qty:'Quantité', uprice:'Prix unit.', disc:'Rem.%', amt_col:'Montant',
        base:'Base imposable', iva:'T.V.A.', irpf:'Retenue à la source', total:'Total Facture',
        denom:'Dénomination fiscale', nomcom:'Nom commercial' },
   de:{ factura:'RECHNUNG', data_fra:'Rechnungsdatum', data_venc:'Fälligkeitsdatum',
@@ -165,6 +182,7 @@ const T = {
        idin:'IdIN', sref:'Ihre Ref.', banco:'Bank', bancag:'Filiale',
        iban:'IBAN/BIC', swift:'Swift',
        fra_num:'Rechnung Nr.', art:'Artikel', desc:'Beschreibung',
+       qty:'Menge', uprice:'Stückpreis', disc:'Rabatt%', amt_col:'Betrag',
        base:'Nettobetrag', iva:'MwSt.', irpf:'Quellensteuer', total:'Gesamtbetrag',
        denom:'Steuerliche Bezeichnung', nomcom:'Handelsname' },
 };
@@ -270,24 +288,46 @@ async function load(){
       </div>`;
 
     // ── LINES ──
-    document.getElementById('lines-section').innerHTML = lines.map(l=>{
-      const art = (tipusEfectiu && l.article)
-        ? `<span class="line-art">${esc(l.article)}</span>`
-        : '';
-      return `<div class="line-row">
-        <div class="line-desc">${art}${esc(l.descripcio||'')}</div>
-        <div class="line-amt">${fN(l.import_linia)} EUR</div>
-      </div>`;
-    }).join('');
+    if(tipusEfectiu){
+      // CO: taula amb capçaleres de columna
+      let h = `<table class="co-table">
+        <thead><tr>
+          <th>${esc(t.art)}</th><th>${esc(t.desc)}</th>
+          <th class="r">${esc(t.qty)}</th><th class="r">${esc(t.uprice)}</th>
+          <th class="r">${esc(t.disc)}</th><th class="r">${esc(t.amt_col)}</th>
+        </tr></thead><tbody>`;
+      lines.forEach(l=>{
+        h += `<tr>
+          <td>${esc(l.article||'')}</td><td>${esc(l.descripcio||'')}</td>
+          <td class="r">${fN(l.quantitat)}</td><td class="r">${fN(l.preu_unitari,4)}</td>
+          <td class="r">${fN(l.descompte,0)}</td><td class="r">${fN(l.import_linia)} EUR</td>
+        </tr>`;
+      });
+      h += '</tbody></table>';
+      document.getElementById('lines-section').innerHTML = h;
+    } else {
+      // SV: format simple
+      document.getElementById('lines-section').innerHTML = lines.map(l=>`
+        <div class="line-row">
+          <div class="line-desc">${esc(l.descripcio||'')}</div>
+          <div class="line-amt">${fN(l.import_linia)} EUR</div>
+        </div>`).join('');
+    }
 
     // ── TOTALS ──
     const ivaPct  = +(inv.tipus_iva  ?? 21);
     const irpfPct = +(inv.tipus_irpf ?? 0);
+    // Base: calcula des de línies (fiable per CO i SV)
+    const baseCalc = lines.reduce((s,l)=>s+(+(l.import_linia)||0),0);
+    const base     = baseCalc || +(inv.base_imposable) || 0;
+    const ivaAmt   = ivaPct  ? (+(inv.import_iva)  || base*ivaPct/100)  : 0;
+    const irpfAmt  = irpfPct ? (+(inv.import_irpf) || base*irpfPct/100) : 0;
+    const total    = +(inv.total_factura) || (base + ivaAmt - irpfAmt);
     let html = '';
-    html += `<div class="tot-row"><span class="tl">${t.base}</span><span class="tv">${fN(inv.base_imposable)} EUR</span></div>`;
-    if(ivaPct)  html += `<div class="tot-row"><span class="tl">${fN(ivaPct,0)}% ${t.iva}</span><span class="tv">${fN(inv.import_iva)} EUR</span></div>`;
-    if(irpfPct) html += `<div class="tot-row"><span class="tl">${fN(irpfPct,0)}% ${t.irpf}</span><span class="tv neg">-${fN(Math.abs(inv.import_irpf))} EUR</span></div>`;
-    html += `<div class="tot-row tot-grand"><span class="tl">${t.total}</span><span class="tv">${fN(inv.total_factura)} EUR</span></div>`;
+    html += `<div class="tot-row"><span class="tl">${t.base}</span><span class="tv">${fN(base)} EUR</span></div>`;
+    if(ivaPct)  html += `<div class="tot-row"><span class="tl">${fN(ivaPct,0)}% ${t.iva}</span><span class="tv">${fN(ivaAmt)} EUR</span></div>`;
+    if(irpfPct) html += `<div class="tot-row"><span class="tl">${fN(irpfPct,0)}% ${t.irpf}</span><span class="tv neg">-${fN(Math.abs(irpfAmt))} EUR</span></div>`;
+    html += `<div class="tot-row tot-grand"><span class="tl">${t.total}</span><span class="tv">${fN(total)} EUR</span></div>`;
     document.getElementById('totals-section').innerHTML = html;
 
   }catch(e){

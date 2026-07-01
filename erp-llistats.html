@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ERP ACR Estruch — Llistats</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --blue:#00387C;--blue-mid:#1a54a0;--blue-light:#e8f0fb;--blue-dim:#d0e0f5;
+  --green:#1a8c42;--green-bg:#d4edda;--green-txt:#155724;
+  --red:#c0392b;--red-bg:#f8d7da;--red-txt:#721c24;
+  --grey:#6c757d;--grey-bg:#e9ecef;--grey-txt:#495057;
+  --bg:#FAF8F6;--white:#fff;--border:#dee2e6;--border-light:#eaeef2;
+  --text:#212529;--muted:#6c757d;
+  --sidebar:220px;--topbar:58px;--r:6px;
+  --shadow:0 1px 4px rgba(0,0,0,.1),0 4px 12px rgba(0,0,0,.06);
+}
+body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;font-size:14px;background:var(--bg);color:var(--text);height:100vh;overflow:hidden}
+#app{display:flex;height:100vh}
+#sidebar{width:var(--sidebar);background:#fff;border-right:1px solid #EDE9E4;display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto}
+#logo-area{padding:14px 16px 12px;border-bottom:1px solid #EDE9E4;cursor:pointer}
+.logo-main{font-size:19px;font-weight:800;color:var(--blue);letter-spacing:-.4px;line-height:1.1}
+.logo-main .sep{color:#9ca3af;font-weight:300;margin:0 1px}
+.logo-sub{font-size:10.5px;color:#6b7280;margin-top:3px;letter-spacing:.3px;font-style:italic}
+#nav{padding:10px 0;flex:1}
+.nav-section{padding:10px 14px 3px;font-size:10px;color:#9ca3af;text-transform:uppercase;letter-spacing:1.2px;font-weight:600}
+.nav-item{display:flex;align-items:center;gap:9px;padding:9px 16px;color:#374151;cursor:pointer;border-left:3px solid transparent;transition:all .15s;font-size:13px;user-select:none}
+.nav-item:hover{background:#f3f4f6;color:#111827}
+.nav-item.active{background:#eff6ff;color:var(--blue);border-left-color:var(--blue);font-weight:600}
+.nav-item .ico{font-size:15px;width:19px;text-align:center;flex-shrink:0}
+.nav-sub{padding:6px 16px 6px 44px;color:#6b7280;cursor:pointer;font-size:12px;transition:all .15s;border-left:3px solid transparent;user-select:none}
+.nav-sub:hover{color:#374151;background:#f3f4f6}
+.nav-footer{padding:12px 14px;border-top:1px solid #EDE9E4;font-size:11px;color:#9ca3af}
+#main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+#topbar{height:var(--topbar);background:var(--white);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 22px;gap:12px;flex-shrink:0;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+#topbar h1{font-size:17px;font-weight:700;color:var(--blue);flex:1}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 15px;border-radius:var(--r);border:none;cursor:pointer;font-size:13px;font-weight:500;transition:all .15s;white-space:nowrap}
+.btn-sm{padding:5px 10px;font-size:12px}
+#content{flex:1;overflow:hidden;padding:18px 22px}
+
+/* ── Layout principal: igual que Tags ── */
+.ll-layout{display:grid;grid-template-columns:220px 1fr;gap:16px;height:calc(100vh - var(--topbar) - 36px)}
+
+/* ── Panel esquerre: grups ── */
+.ll-index{background:var(--white);border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden;display:flex;flex-direction:column}
+.ll-index-hdr{padding:14px 18px;border-bottom:1px solid var(--border);font-size:11px;font-weight:800;color:var(--blue);text-transform:uppercase;letter-spacing:.8px}
+.ll-grup-item{padding:13px 18px;cursor:pointer;border-left:3px solid transparent;transition:all .15s;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border-light)}
+.ll-grup-item:hover{background:var(--blue-light)}
+.ll-grup-item.active{background:#eff6ff;border-left-color:var(--blue);font-weight:700;color:var(--blue)}
+.ll-grup-item:last-child{border-bottom:none}
+.ll-grup-ico{font-size:18px}
+.ll-grup-info{flex:1}
+.ll-grup-nom{font-size:13px;font-weight:600}
+.ll-grup-desc{font-size:11px;color:var(--muted);margin-top:2px}
+
+/* ── Panel dret: blocs ── */
+.ll-content{background:var(--white);border-radius:var(--r);box-shadow:var(--shadow);display:flex;flex-direction:column;overflow:hidden}
+.ll-content-hdr{padding:13px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;flex-shrink:0}
+.ll-content-hdr h2{font-size:15px;font-weight:700;color:var(--blue);flex:1}
+.ll-blocs{flex:1;overflow-y:auto;padding:18px 20px;display:flex;flex-wrap:wrap;gap:20px;align-content:flex-start}
+
+/* ── Cada bloc (targeta) ── */
+.ll-bloc{min-width:180px;flex:0 0 auto}
+.ll-bloc-hdr{font-size:10px;font-weight:800;color:var(--blue);letter-spacing:1px;text-transform:uppercase;padding-bottom:6px;border-bottom:1.5px solid var(--blue);margin-bottom:6px}
+.ll-bloc ul{list-style:none;display:flex;flex-direction:column;gap:1px}
+.ll-bloc ul li a{display:block;font-size:12.5px;color:var(--text);text-decoration:none;padding:2px 0;line-height:1.55;cursor:pointer;transition:color .12s}
+.ll-bloc ul li a:hover{color:var(--blue);text-decoration:underline}
+.ll-bloc ul li a.c-blue{color:var(--blue)}
+.ll-bloc ul li a.c-red{color:var(--red)}
+.ll-bloc ul li a.c-green{color:var(--green)}
+
+/* ── Subbloc (secció dins un bloc) ── */
+.ll-subbloc-hdr{font-size:10px;font-weight:700;color:var(--grey);letter-spacing:.6px;text-transform:uppercase;margin-top:10px;margin-bottom:4px;padding-top:8px;border-top:1px solid var(--border-light)}
+
+/* Toast */
+#toast{position:fixed;bottom:22px;right:22px;z-index:999;display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.toast{padding:11px 18px;border-radius:var(--r);font-size:13px;font-weight:600;color:#fff;box-shadow:0 4px 16px rgba(0,0,0,.25);animation:tin .3s ease}
+.toast.ok{background:var(--green)}.toast.err{background:var(--red)}.toast.inf{background:var(--blue)}
+@keyframes tin{from{transform:translateX(110%);opacity:0}to{transform:translateX(0);opacity:1}}
+::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:rgba(0,0,0,.2);border-radius:3px}
+</style>
+</head>
+<body>
+<div id="app">
+
+<nav id="sidebar">
+  <div id="logo-area" onclick="location.href='index.html'">
+    <div class="logo-main">ACR<span class="sep">·</span>ERP</div>
+    <div class="logo-sub">ACR Estruch ERP v1.0</div>
+  </div>
+  <div id="nav">
+    <div class="nav-item" onclick="location.href='index.html'"><span class="ico">🏠</span> Dashboard</div>
+    <div class="nav-section">Mòduls</div>
+    <div class="nav-item" onclick="location.href='index.html'"><span class="ico">🧾</span> Facturació</div>
+    <div class="nav-sub" onclick="location.href='erp-facturacio.html'">Factures emeses</div>
+    <div class="nav-sub" onclick="location.href='erp-factures-rebudes.html'">Factures rebudes</div>
+    <div class="nav-item" onclick="location.href='erp-clients.html'"><span class="ico">👥</span> Clients</div>
+    <div class="nav-item" onclick="location.href='erp-proveidors.html'"><span class="ico">🏭</span> Proveïdors</div>
+    <div class="nav-item" onclick="location.href='erp-entitats.html'"><span class="ico">🏢</span> Entitats</div>
+    <div class="nav-item" onclick="location.href='erp-projectes.html'"><span class="ico">📋</span> Projectes</div>
+    <div class="nav-section" style="margin-top:10px">Comptabilitat</div>
+    <div class="nav-item" onclick="location.href='erp-major.html'"><span class="ico">📒</span> Major</div>
+    <div class="nav-item" onclick="location.href='erp-assentaments.html'"><span class="ico">✏️</span> Assentaments</div>
+    <div class="nav-item" onclick="location.href='erp-pla-comptes.html'"><span class="ico">🗂️</span> Pla de comptes</div>
+    <div class="nav-section" style="margin-top:10px">Altres</div>
+    <div class="nav-item" onclick="location.href='erp-despeses.html'"><span class="ico">✈️</span> Despeses</div>
+    <div class="nav-item" onclick="location.href='erp-reports.html'"><span class="ico">📊</span> Reports</div>
+    <div class="nav-item" onclick="location.href='erp-tags.html'"><span class="ico">🏷️</span> Tags</div>
+    <div class="nav-item active" onclick="location.href='erp-llistats.html'"><span class="ico">📑</span> Llistats</div>
+  </div>
+  <div class="nav-footer">ACR Estruch ERP v1.0</div>
+</nav>
+
+<main id="main">
+  <header id="topbar">
+    <h1 id="topbar-title">Llistats</h1>
+    <button class="btn btn-sm" style="background:#f8d7da;color:#721c24;border:1px solid #f5c6cb" onclick="doLogout()">⏻ Sortir</button>
+  </header>
+  <div id="content">
+    <div class="ll-layout">
+
+      <!-- ── GRUPS (esquerra) ── -->
+      <div class="ll-index">
+        <div class="ll-index-hdr">Tipus de llistat</div>
+        <div class="ll-grup-item active" onclick="selectGrup('ad',this)" id="grup-ad">
+          <span class="ll-grup-ico">🗂️</span>
+          <div class="ll-grup-info">
+            <div class="ll-grup-nom">Administració</div>
+            <div class="ll-grup-desc">Facturació · Projectes · Despeses</div>
+          </div>
+        </div>
+        <div class="ll-grup-item" onclick="selectGrup('com',this)" id="grup-com">
+          <span class="ll-grup-ico">💼</span>
+          <div class="ll-grup-info">
+            <div class="ll-grup-nom">Comercial</div>
+            <div class="ll-grup-desc">Clients · Contactes · PJ · Reports</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── BLOCS (dreta) ── -->
+      <div class="ll-content">
+        <div class="ll-content-hdr">
+          <h2 id="content-title">Llistats d'Administració</h2>
+        </div>
+        <div class="ll-blocs" id="ll-blocs"></div>
+      </div>
+
+    </div>
+  </div>
+</main>
+</div>
+<div id="toast"></div>
+
+<script>
+// ── DADES ──────────────────────────────────────────────────────────────────
+const GRUPS = {
+  ad: {
+    nom: "Llistats d'Administració",
+    blocs: [
+      {
+        nom: 'Facturació',
+        items: [
+          { nom: 'Imprimir Factura' },
+          { nom: 'Imprimir Factura ProForma' },
+          { nom: 'Imprimir Factura Rectificativa', cls: 'c-blue' },
+          { nom: 'Pendent Facturar' },
+          { nom: 'Pendent Cobrament' },
+          { nom: 'Pendent cobrament 1 client' },
+          { nom: 'Rebut' },
+          { nom: 'Dades Client Form Facturació', cls: 'c-blue' },
+          { nom: 'Outstanding Pend' },
+          { nom: 'Outstanding Client' },
+          { nom: 'Outstanding Delegat' },
+        ]
+      },
+      {
+        nom: 'Facturació — Llistats',
+        items: [
+          { nom: 'Factures Llistat_contab' },
+          { nom: 'Factures Llistat TOT mes_contab' },
+          { nom: 'Factures Llistat_PJ' },
+          { nom: 'Factures Llistat TOT mes_PJ' },
+          { nom: 'Factures ProForma Llistat', cls: 'c-blue' },
+          { nom: 'Factures 1 Client' },
+          { nom: 'Factures TOT per clients' },
+          { nom: 'Factures per 1 Projecte', cls: 'c-blue' },
+          { nom: 'Factures per Projecte' },
+          { nom: 'Factures per mProjecte (master)' },
+          { nom: 'Explotació real' },
+          { nom: 'Explotació real entre dates' },
+        ]
+      },
+      {
+        nom: 'Projectes',
+        items: [
+          { nom: 'PJ Pendent Liquidar DG/CB/EN' },
+          { nom: 'PJ Liquidats DG' },
+          { nom: 'PJ Pendent Liquidar DG' },
+          { nom: 'PJ Pendent Liquidar DG tots' },
+          { nom: 'PJ Liquidats EN' },
+          { nom: 'PJ Pendent Liquidar EN' },
+          { nom: 'PJ Pendent Liquidar EN tots' },
+          { nom: 'PJ Liquidats CB' },
+          { nom: 'PJ Pendent Liquidar CB' },
+          { nom: 'PJ Pendent Liquidar CB tots' },
+        ]
+      },
+      {
+        nom: 'Despeses',
+        items: [
+          { nom: 'Despeses Viatge' },
+          { nom: 'Despeses Tickets', cls: 'c-red' },
+        ]
+      },
+      {
+        nom: 'Proveïdors',
+        items: [
+          { nom: 'Llistat factures Rebudes', cls: 'c-red' },
+          { nom: 'Llistat factures Rebudes TOT mes', cls: 'c-red' },
+          { nom: 'Factures Rebudes pendents pagament' },
+          { nom: 'Factures 1 Proveïdor' },
+          { nom: 'Balanç 1 Proveïdor' },
+        ]
+      },
+      {
+        nom: 'Complements',
+        items: [
+          { nom: 'Llistat Divises' },
+        ]
+      },
+    ]
+  },
+  com: {
+    nom: 'Llistats Comercials',
+    blocs: [
+      {
+        nom: 'Clients',
+        items: [
+          { nom: 'Fitxa Client' },
+          { nom: 'Ord. per Codi' },
+          { nom: 'Ord. per Nom' },
+          { nom: 'Ord. per Província (tots)', cls: 'c-blue' },
+          { nom: 'Clients 1 Província', cls: 'c-blue' },
+          { nom: 'Clients 1 Zona', cls: 'c-blue' },
+          { nom: 'Clients 1 Representant', cls: 'c-blue' },
+        ],
+        subblocs: [
+          {
+            nom: 'Representades',
+            items: [
+              { nom: 'Representades Actives' },
+              { nom: 'Representades Històric', cls: 'c-red' },
+            ]
+          },
+          {
+            nom: 'Proveïdors',
+            items: [
+              { nom: 'Fitxa Proveïdor', cls: 'c-red' },
+              { nom: 'Ordenats per Nom' },
+              { nom: 'Ordenats per Codi' },
+            ]
+          }
+        ]
+      },
+      {
+        nom: 'Contactes',
+        items: [
+          { nom: 'Fitxa Contacte', cls: 'c-red' },
+          { nom: 'Relació Contactes', cls: 'c-red' },
+          { nom: 'Contactes 1 Representant' },
+          { nom: 'Contactes per Representant', cls: 'c-red' },
+          { nom: 'Contactes 1 Zona' },
+          { nom: 'Contactes 1 País' },
+          { nom: 'Contactes per Zona i País (tots)', cls: 'c-red' },
+        ]
+      },
+      {
+        nom: 'Col·laboradors',
+        items: [
+          { nom: 'Fitxa Delegat', cls: 'c-blue' },
+          { nom: 'Ord. per Codi', cls: 'c-blue' },
+          { nom: 'Clients per Delegat' },
+          { nom: 'Fitxa Col·laborador' },
+          { nom: 'Col·laboradors_Serveis' },
+          { nom: 'Clients per col·laborador' },
+        ]
+      },
+      {
+        nom: 'Projectes',
+        items: [
+          { nom: 'PJ Imprimir folder' },
+          { nom: 'PJ Fitxa+Ppost' },
+          { nom: 'PJ Previsions (Budget)', cls: 'c-red' },
+          { nom: 'PJ Pendents' },
+          { nom: 'PJ Pendents_MEDICAL' },
+          { nom: 'PJ Històric.Tots' },
+          { nom: 'PJ Responsable' },
+          { nom: 'PJ Delegat' },
+          { nom: 'PJ Entitats Pend' },
+          { nom: 'PJ Entitats Hist' },
+          { nom: 'PJ Client' },
+          { nom: 'PJ Estat 1', cls: 'c-red' },
+        ]
+      },
+      {
+        nom: 'Projectes — Més',
+        items: [
+          { nom: 'PJ Representades' },
+          { nom: 'PJ Provinents' },
+          { nom: 'PJ Carpeta' },
+          { nom: 'PJ Carpeta Pend xlsx', cls: 'c-green' },
+          { nom: 'PJ País' },
+          { nom: 'PJ Calendari', cls: 'c-red' },
+        ]
+      },
+      {
+        nom: 'F.Up i Reports',
+        items: [
+          { nom: 'PJ Seguiment' },
+          { nom: 'PJ Master Cod' },
+          { nom: 'PJ Delegat 1' },
+          { nom: 'PJ Representades' },
+          { nom: 'PJ Provinents' },
+          { nom: 'PJ Carpeta' },
+          { nom: 'PJ ToDo' },
+          { nom: 'PJ ToDo Delegats' },
+          { nom: 'Report Visita Client' },
+          { nom: 'Report Ref Viatge (resum)' },
+        ]
+      },
+      {
+        nom: 'Complements',
+        items: [
+          { nom: 'Paisos' },
+          { nom: 'PaisosExpZone' },
+          { nom: 'Sectors' },
+        ]
+      },
+    ]
+  }
+};
+
+// ── RENDER ─────────────────────────────────────────────────────────────────
+let grupActiu = 'ad';
+
+function renderBlocs(grupId) {
+  const g = GRUPS[grupId];
+  document.getElementById('content-title').textContent = g.nom;
+  const container = document.getElementById('ll-blocs');
+  container.innerHTML = g.blocs.map(bloc => {
+    let itemsHtml = bloc.items.map(it =>
+      `<li><a href="${it.url||'#'}" class="${it.cls||''}">${it.nom}</a></li>`
+    ).join('');
+    let subblocsHtml = '';
+    if (bloc.subblocs) {
+      subblocsHtml = bloc.subblocs.map(sb =>
+        `<li class="ll-subbloc-hdr">${sb.nom}</li>` +
+        sb.items.map(it =>
+          `<li><a href="${it.url||'#'}" class="${it.cls||''}">${it.nom}</a></li>`
+        ).join('')
+      ).join('');
+    }
+    return `<div class="ll-bloc">
+      <div class="ll-bloc-hdr">${bloc.nom}</div>
+      <ul>${itemsHtml}${subblocsHtml}</ul>
+    </div>`;
+  }).join('');
+}
+
+function selectGrup(id, el) {
+  grupActiu = id;
+  document.querySelectorAll('.ll-grup-item').forEach(e => e.classList.remove('active'));
+  el.classList.add('active');
+  renderBlocs(id);
+}
+
+// ── AUTH ───────────────────────────────────────────────────────────────────
+const SB_URL = 'https://ftuaeaghnnlusigqtoqv.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ0dWFlYWdobm5sdXNpZ3F0b3F2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAxNjI0MjIsImV4cCI6MjA5NTczODQyMn0.9n1gWnq_QfrLIWU7sIBReXgQAGA-NPFOpsdDp-jbDW8';
+
+function doLogout(){
+  localStorage.removeItem('sb_token');
+  location.href = 'login.html';
+}
+
+function toast(msg, type='inf'){
+  const d = document.createElement('div');
+  d.className = `toast ${type}`;
+  d.textContent = msg;
+  document.getElementById('toast').appendChild(d);
+  setTimeout(()=>d.remove(), 3000);
+}
+
+// ── INIT ───────────────────────────────────────────────────────────────────
+renderBlocs('ad');
+</script>
+</body>
+</html>

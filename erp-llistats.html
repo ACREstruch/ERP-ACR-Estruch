@@ -76,6 +76,17 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;font-size:14px;ba
 /* ── Subbloc (secció dins un bloc) ── */
 .ll-subbloc-hdr{font-size:10px;font-weight:700;color:var(--grey);letter-spacing:.6px;text-transform:uppercase;margin-top:10px;margin-bottom:4px;padding-top:8px;border-top:1px solid var(--border-light)}
 
+/* ── Modal ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;display:flex;align-items:center;justify-content:center}
+.modal-box{background:#fff;border-radius:10px;box-shadow:0 8px 36px rgba(0,0,0,.22);padding:28px 28px 22px;width:380px;max-width:95vw}
+.modal-title{font-size:15px;font-weight:700;color:var(--blue);margin-bottom:18px;display:flex;align-items:center;gap:8px}
+.modal-field{margin-bottom:14px}
+.modal-field label{display:block;font-size:11.5px;color:var(--muted);margin-bottom:5px;font-weight:600;text-transform:uppercase;letter-spacing:.4px}
+.modal-field input,.modal-field select{width:100%;padding:8px 10px;border:1.5px solid var(--border);border-radius:var(--r);font-size:13px;font-family:inherit;box-sizing:border-box;color:var(--text)}
+.modal-field input:focus,.modal-field select:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(0,56,124,.09)}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:20px;padding-top:16px;border-top:1px solid var(--border-light)}
+.modal-hint{font-size:11px;color:var(--muted);margin-top:4px}
+
 /* Toast */
 #toast{position:fixed;bottom:22px;right:22px;z-index:999;display:flex;flex-direction:column;gap:8px;pointer-events:none}
 .toast{padding:11px 18px;border-radius:var(--r);font-size:13px;font-weight:600;color:#fff;box-shadow:0 4px 16px rgba(0,0,0,.25);animation:tin .3s ease}
@@ -154,6 +165,36 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;font-size:14px;ba
   </div>
 </main>
 </div>
+<!-- ── MODAL: Imprimir Factura ── -->
+<div id="modal-imprimir" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeModal()">
+  <div class="modal-box">
+    <div class="modal-title">🖨️ Imprimir Factura</div>
+
+    <div class="modal-field">
+      <label>Número de factura</label>
+      <input id="inp-no-fra" type="text" list="dl-factures" placeholder="Ex: 25001" autocomplete="off" onkeydown="if(event.key==='Enter')obriPrevisualitzacio()">
+      <datalist id="dl-factures"></datalist>
+      <div class="modal-hint" id="modal-fra-hint"></div>
+    </div>
+
+    <div class="modal-field">
+      <label>Idioma</label>
+      <select id="sel-lang-fra">
+        <option value="ca">Català (CA)</option>
+        <option value="es">Castellà (ES)</option>
+        <option value="en">Anglès (EN)</option>
+        <option value="fr">Francès (FR)</option>
+        <option value="de">Alemany (DE)</option>
+      </select>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn btn-sm" style="background:#f1f3f5;color:var(--text)" onclick="closeModal()">Cancel·lar</button>
+      <button class="btn btn-sm" onclick="obriPrevisualitzacio()">Obrir previsualització →</button>
+    </div>
+  </div>
+</div>
+
 <div id="toast"></div>
 
 <script>
@@ -165,7 +206,7 @@ const GRUPS = {
       {
         nom: 'Facturació',
         items: [
-          { nom: 'Imprimir Factura' },
+          { nom: 'Imprimir Factura', action: 'openImprimirFactura' },
           { nom: 'Imprimir Factura ProForma' },
           { nom: 'Imprimir Factura Rectificativa', cls: 'c-blue' },
           { nom: 'Pendent Facturar' },
@@ -348,21 +389,24 @@ const GRUPS = {
 // ── RENDER ─────────────────────────────────────────────────────────────────
 let grupActiu = 'ad';
 
+function itemHtml(it) {
+  if (it.action) {
+    return `<li><a href="javascript:void(0)" onclick="${it.action}()" class="${it.cls||''}">${it.nom}</a></li>`;
+  }
+  return `<li><a href="${it.url||'#'}" class="${it.cls||''}">${it.nom}</a></li>`;
+}
+
 function renderBlocs(grupId) {
   const g = GRUPS[grupId];
   document.getElementById('content-title').textContent = g.nom;
   const container = document.getElementById('ll-blocs');
   container.innerHTML = g.blocs.map(bloc => {
-    let itemsHtml = bloc.items.map(it =>
-      `<li><a href="${it.url||'#'}" class="${it.cls||''}">${it.nom}</a></li>`
-    ).join('');
+    let itemsHtml = bloc.items.map(it => itemHtml(it)).join('');
     let subblocsHtml = '';
     if (bloc.subblocs) {
       subblocsHtml = bloc.subblocs.map(sb =>
         `<li class="ll-subbloc-hdr">${sb.nom}</li>` +
-        sb.items.map(it =>
-          `<li><a href="${it.url||'#'}" class="${it.cls||''}">${it.nom}</a></li>`
-        ).join('')
+        sb.items.map(it => itemHtml(it)).join('')
       ).join('');
     }
     return `<div class="ll-bloc">
@@ -394,6 +438,57 @@ function toast(msg, type='inf'){
   d.textContent = msg;
   document.getElementById('toast').appendChild(d);
   setTimeout(()=>d.remove(), 3000);
+}
+
+// ── SUPABASE HELPER ────────────────────────────────────────────────────────
+async function sbGet(table, qs='') {
+  const tok = localStorage.getItem('sb_token');
+  const r = await fetch(`${SB_URL}/rest/v1/${table}?${qs}`, {
+    headers: { apikey: SB_KEY, Authorization: `Bearer ${tok||SB_KEY}`, Accept: 'application/json' }
+  });
+  if (!r.ok) throw new Error(await r.text());
+  return r.json();
+}
+
+// ── MODAL: IMPRIMIR FACTURA ────────────────────────────────────────────────
+let facturesCache = null;
+
+async function openImprimirFactura() {
+  document.getElementById('modal-imprimir').style.display = 'flex';
+  const inp = document.getElementById('inp-no-fra');
+  inp.value = '';
+  document.getElementById('modal-fra-hint').textContent = '';
+  inp.focus();
+  if (!facturesCache) {
+    document.getElementById('modal-fra-hint').textContent = 'Carregant factures…';
+    try {
+      const res = await sbGet('factures', 'select=no_factura,clients(rao_social)&order=no_factura.desc&limit=1000');
+      facturesCache = res;
+      const dl = document.getElementById('dl-factures');
+      dl.innerHTML = res.map(f => {
+        const client = f.clients?.rao_social ? ` — ${f.clients.rao_social}` : '';
+        return `<option value="${f.no_factura}">${f.no_factura}${client}</option>`;
+      }).join('');
+      document.getElementById('modal-fra-hint').textContent = `${res.length} factures disponibles`;
+    } catch(e) {
+      document.getElementById('modal-fra-hint').textContent = '';
+      toast('Error carregant factures: ' + e.message, 'err');
+    }
+  } else {
+    document.getElementById('modal-fra-hint').textContent = `${facturesCache.length} factures disponibles`;
+  }
+}
+
+function closeModal() {
+  document.getElementById('modal-imprimir').style.display = 'none';
+}
+
+function obriPrevisualitzacio() {
+  const no = document.getElementById('inp-no-fra').value.trim();
+  const lang = document.getElementById('sel-lang-fra').value;
+  if (!no) { toast('Indica el número de factura', 'err'); return; }
+  closeModal();
+  window.open(`erp-factura-print.html?no=${encodeURIComponent(no)}&lang=${encodeURIComponent(lang)}`, '_blank');
 }
 
 // ── INIT ───────────────────────────────────────────────────────────────────

@@ -9,7 +9,9 @@
 .ctrl{background:#1d2535;color:#fff;padding:9px 18px;display:flex;align-items:center;gap:12px;font-family:'Segoe UI',Arial,sans-serif;font-size:12.5px;flex-wrap:wrap}
 .ctrl-title{font-weight:700;color:#7eb3ff;font-size:13.5px}
 .ctrl label{color:#9aaccc}
-.ctrl select{padding:4px 8px;border-radius:5px;border:1px solid #3a4a6a;background:#2a3550;color:#fff;font-size:12.5px;cursor:pointer}
+.ctrl select,.ctrl input[type=date]{padding:4px 8px;border-radius:5px;border:1px solid #3a4a6a;background:#2a3550;color:#fff;font-size:12.5px;cursor:pointer}
+.ctrl input[type=date]{cursor:text;min-width:120px}
+.ctrl input[type=date]::-webkit-calendar-picker-indicator{filter:invert(1);opacity:.6}
 .ctrl button{padding:6px 14px;border-radius:5px;border:none;cursor:pointer;font-size:12.5px;font-family:inherit}
 .btn-print{background:#0d6efd;color:#fff;font-weight:600}
 .btn-print:hover{background:#0b5ed7}
@@ -66,8 +68,11 @@ body{margin:0;padding:0;font-family:'Segoe UI',Arial,sans-serif;background:#e9ec
 <div class="ctrl">
   <span class="ctrl-title">📋 Llistat Factures</span>
   <span class="ctrl-status" id="ctrl-mode-label"></span>
-  <label>Any:</label>
-  <select id="ctrl-year" onchange="loadData()"></select>
+  <label>De:</label>
+  <input type="date" id="ctrl-from">
+  <label>Fins:</label>
+  <input type="date" id="ctrl-to">
+  <button class="btn-print" style="background:#28a745" onclick="loadData()">Aplicar</button>
   <button class="btn-print" onclick="window.print()">🖨️ Imprimir</button>
   <button class="btn-close" onclick="window.close()">✕ Tancar</button>
   <span class="ctrl-status" id="ctrl-status"></span>
@@ -119,17 +124,15 @@ const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJ
 const urlParams = new URLSearchParams(location.search);
 const mode = urlParams.get('mode') || 'simple'; // 'simple' | 'monthly'
 
-// ── Init year selector ─────────────────────────────────────────────────────
-const yearSel = document.getElementById('ctrl-year');
+// ── Init date range (default: 1 Jan current year → today) ─────────────────
 const curYear = new Date().getFullYear();
-for (let y = curYear; y >= curYear - 6; y--) {
-  const o = document.createElement('option');
-  o.value = y; o.textContent = y;
-  if (y === curYear) o.selected = true;
-  yearSel.appendChild(o);
-}
-// Override with URL param if present
-if (urlParams.get('year')) yearSel.value = urlParams.get('year');
+const fromInp = document.getElementById('ctrl-from');
+const toInp   = document.getElementById('ctrl-to');
+
+const defaultFrom = urlParams.get('from') || `${curYear}-01-01`;
+const defaultTo   = urlParams.get('to')   || new Date().toISOString().slice(0,10);
+fromInp.value = defaultFrom;
+toInp.value   = defaultTo;
 
 // ── Mode label & title ─────────────────────────────────────────────────────
 const isMonthly = (mode === 'monthly');
@@ -175,9 +178,9 @@ function invCalc(inv) {
 
 // ── Main render ────────────────────────────────────────────────────────────
 async function loadData() {
-  const year = +yearSel.value;
-  const from = `${year}-01-01`;
-  const to   = `${year + 1}-01-01`;
+  const from = fromInp.value;
+  const to   = toInp.value;
+  if (!from || !to) { alert('Indica les dues dates'); return; }
   const tbody = document.getElementById('fra-tbody');
   const tfoot = document.getElementById('fra-tfoot');
 
@@ -188,7 +191,7 @@ async function loadData() {
   try {
     const rows = await sbGet('factures',
       `select=*,clients(rao_social,codi),factura_lines(import_linia)` +
-      `&data_fra=gte.${from}&data_fra=lt.${to}&order=no_factura.asc`
+      `&data_fra=gte.${from}&data_fra=lte.${to}&order=no_factura.asc`
     );
 
     renderTable(rows);

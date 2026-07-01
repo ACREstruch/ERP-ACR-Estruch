@@ -35,8 +35,7 @@ body{margin:0;padding:0;font-family:'Segoe UI',Arial,sans-serif;background:#e9ec
 
 /* ── TABLE ── */
 .fra-table{width:100%;border-collapse:collapse;font-size:9pt;font-family:'Segoe UI',Arial,sans-serif;table-layout:fixed}
-.fra-table thead tr{background:#e8ecf2}
-.fra-table th{font-weight:600;color:#333;border:none;padding:1.2mm 3px 1.4mm;text-align:left;font-size:9pt;white-space:nowrap}
+.fra-table th{font-weight:600;color:#333;border:none;border-bottom:.8px solid #888;padding:1.2mm 3px 1.4mm;text-align:left;font-size:9pt;white-space:nowrap}
 .fra-table th.r,.fra-table td.r{text-align:right}
 .fra-table td{padding:.4mm 3px;vertical-align:top;border:none;line-height:1.35;font-size:9pt}
 
@@ -51,9 +50,10 @@ body{margin:0;padding:0;font-family:'Segoe UI',Arial,sans-serif;background:#e9ec
 .fra-table th:nth-child(8),.fra-table td:nth-child(8){width:9%}
 .fra-table th:nth-child(9),.fra-table td:nth-child(9){width:8%}
 
-/* Monthly subtotal row — Segoe UI Black, sense fons */
-.fra-table tr.subtotal td{background:none;font-weight:900;border:none;color:#1a1a1a;padding-top:.8mm;padding-bottom:.8mm;font-size:9pt}
-.fra-table tr.subtotal td.lbl{font-style:italic;font-weight:900}
+/* Monthly subtotal row — igual que el total general */
+.fra-table tr.subtotal td{background:none;font-weight:700;border:none;color:#1a1a1a;padding-top:.8mm;padding-bottom:.8mm;font-size:9pt}
+/* Label 'No.factures: X' — informatiu, petit i gris */
+.fra-table tr.subtotal td.lbl{font-size:7pt;color:#aaa;font-weight:400;font-style:normal}
 
 /* Espai entre subtotal i primer registre del mes següent */
 .fra-table tr.grp-first td{padding-top:3.5mm}
@@ -62,7 +62,7 @@ body{margin:0;padding:0;font-family:'Segoe UI',Arial,sans-serif;background:#e9ec
 .fra-table tfoot td{font-weight:700;border-top:.8px solid #888;padding-top:1.8mm;color:#1a1a1a;font-size:9pt}
 
 /* ── FOOTER ── */
-.doc-footer{text-align:center;font-size:7.5pt;color:#888;margin-top:7mm;border-top:.7px solid #ddd;padding-top:2.5mm}
+.doc-footer{text-align:center;font-size:7.5pt;color:#888;margin-top:7mm;padding-top:2.5mm}
 .page-info{font-size:6.5pt;color:#aaa;text-align:left;margin-top:2mm}
 </style>
 </head>

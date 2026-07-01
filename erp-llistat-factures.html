@@ -37,7 +37,7 @@ body{margin:0;padding:0;font-family:'Segoe UI',Arial,sans-serif;background:#e9ec
 .fra-table{width:100%;border-collapse:collapse;font-size:9pt;font-family:'Segoe UI',Arial,sans-serif;table-layout:fixed}
 .fra-table th{font-weight:600;color:#333;border:none;border-bottom:.8px solid #888;padding:1.2mm 3px 1.4mm;text-align:left;font-size:9pt;white-space:nowrap}
 .fra-table th.r,.fra-table td.r{text-align:right}
-.fra-table td{padding:.4mm 3px;vertical-align:top;border:none;line-height:1.35;font-size:9pt}
+.fra-table td{padding:.15mm 3px;vertical-align:top;border:none;line-height:1.25;font-size:9pt}
 
 /* Column widths */
 .fra-table th:nth-child(1),.fra-table td:nth-child(1){width:9%}
@@ -61,9 +61,15 @@ body{margin:0;padding:0;font-family:'Segoe UI',Arial,sans-serif;background:#e9ec
 /* Una sola ratlla fina just abans dels totals */
 .fra-table tfoot td{font-weight:700;border-top:.8px solid #888;padding-top:1.8mm;color:#1a1a1a;font-size:9pt}
 
-/* ── FOOTER ── */
-.doc-footer{text-align:center;font-size:7.5pt;color:#888;margin-top:7mm;padding-top:2.5mm}
-.page-info{font-size:6.5pt;color:#aaa;text-align:left;margin-top:2mm}
+/* ── FOOTER (fixat al peu de pàgina) ── */
+.doc-footer{position:fixed;bottom:10mm;left:14mm;right:14mm;display:flex;align-items:baseline;justify-content:space-between;font-size:7pt;color:#aaa;font-family:'Segoe UI',Arial,sans-serif}
+.doc-footer-addr{text-align:center;flex:1}
+.doc-footer-info{white-space:nowrap;font-size:6.5pt}
+/* Screen: empeny el footer al fons dins .page */
+@media screen{
+  .doc-footer{position:static;margin-top:auto;padding-top:8mm;display:flex}
+  .page{display:flex;flex-direction:column}
+}
 </style>
 </head>
 <body>
@@ -113,11 +119,11 @@ body{margin:0;padding:0;font-family:'Segoe UI',Arial,sans-serif;background:#e9ec
     <tfoot id="fra-tfoot"></tfoot>
   </table>
 
-  <!-- Footer -->
+  <!-- Footer fixat al peu -->
   <div class="doc-footer">
-    Muntaner, 440, 1-1B &nbsp;|&nbsp; 08006 Barcelona &nbsp;|&nbsp; +34 609852478 &nbsp;|&nbsp; info@acrestruch.com &nbsp;|&nbsp; www.acrestruch.com
+    <div class="doc-footer-info" id="page-info"></div>
+    <div class="doc-footer-addr">Muntaner, 440, 1-1B &nbsp;|&nbsp; 08006 Barcelona &nbsp;|&nbsp; +34 609852478 &nbsp;|&nbsp; info@acrestruch.com &nbsp;|&nbsp; www.acrestruch.com</div>
   </div>
-  <div class="page-info" id="page-info"></div>
 
 </div>
 

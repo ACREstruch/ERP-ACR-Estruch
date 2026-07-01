@@ -222,8 +222,8 @@ const GRUPS = {
       {
         nom: 'Facturació — Llistats',
         items: [
-          { nom: 'Factures Llistat_contab' },
-          { nom: 'Factures Llistat TOT mes_contab' },
+          { nom: 'Factures Llistat_contab',        url: 'erp-llistat-factures.html?mode=simple',  target:'_blank' },
+          { nom: 'Factures Llistat TOT mes_contab', url: 'erp-llistat-factures.html?mode=monthly', target:'_blank' },
           { nom: 'Factures Llistat_PJ' },
           { nom: 'Factures Llistat TOT mes_PJ' },
           { nom: 'Factures ProForma Llistat', cls: 'c-blue' },
@@ -393,7 +393,8 @@ function itemHtml(it) {
   if (it.action) {
     return `<li><a href="javascript:void(0)" onclick="${it.action}()" class="${it.cls||''}">${it.nom}</a></li>`;
   }
-  return `<li><a href="${it.url||'#'}" class="${it.cls||''}">${it.nom}</a></li>`;
+  const target = it.target ? ` target="${it.target}"` : '';
+  return `<li><a href="${it.url||'#'}"${target} class="${it.cls||''}">${it.nom}</a></li>`;
 }
 
 function renderBlocs(grupId) {

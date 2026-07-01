@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Llistat Factures — ACR Estruch</title>
+<style>
+/* ── CONTROL BAR (screen only) ── */
+.ctrl{background:#1d2535;color:#fff;padding:9px 18px;display:flex;align-items:center;gap:12px;font-family:'Segoe UI',Arial,sans-serif;font-size:12.5px;flex-wrap:wrap}
+.ctrl-title{font-weight:700;color:#7eb3ff;font-size:13.5px}
+.ctrl label{color:#9aaccc}
+.ctrl select{padding:4px 8px;border-radius:5px;border:1px solid #3a4a6a;background:#2a3550;color:#fff;font-size:12.5px;cursor:pointer}
+.ctrl button{padding:6px 14px;border-radius:5px;border:none;cursor:pointer;font-size:12.5px;font-family:inherit}
+.btn-print{background:#0d6efd;color:#fff;font-weight:600}
+.btn-print:hover{background:#0b5ed7}
+.btn-close{background:#3a4060;color:#ccc}
+.btn-close:hover{background:#4a5070;color:#fff}
+.ctrl-status{color:#6a8aaa;font-size:11.5px;margin-left:4px}
+@media print{.ctrl{display:none}}
+
+/* ── PRINT PAGE ── */
+@page{size:A4;margin:14mm 14mm 18mm 14mm}
+body{margin:0;padding:0;font-family:'Segoe UI',Arial,sans-serif;background:#e9ecef;color:#1a1a1a}
+.page{background:#fff;max-width:182mm;margin:14px auto;padding:14mm 14mm 16mm;box-sizing:border-box;min-height:269mm;box-shadow:0 2px 12px rgba(0,0,0,.15)}
+@media print{body{background:#fff}.page{margin:0;padding:0;max-width:none;min-height:0;box-shadow:none}}
+
+/* ── LOGO ── */
+.logo-area{text-align:center;margin-bottom:8mm}
+.logo-area img{height:50px;display:block;margin:0 auto}
+
+/* ── TITLE ── */
+.doc-title{font-size:10pt;font-weight:700;color:#1a3a6b;text-decoration:underline;margin-bottom:5mm;display:block;letter-spacing:.2px}
+
+/* ── TABLE ── */
+.fra-table{width:100%;border-collapse:collapse;font-size:8.5pt;table-layout:fixed}
+.fra-table th{font-weight:600;color:#444;border-bottom:1.2px solid #999;padding:1.5mm 3px 2mm;text-align:left;font-size:8pt;white-space:nowrap}
+.fra-table th.r,.fra-table td.r{text-align:right}
+.fra-table td{padding:.9mm 3px;vertical-align:top;border-bottom:.5px solid #e8e8e8;line-height:1.45}
+
+/* Column widths */
+.fra-table th:nth-child(1),.fra-table td:nth-child(1){width:9%}   /* IdClient */
+.fra-table th:nth-child(2),.fra-table td:nth-child(2){width:24%}  /* Client */
+.fra-table th:nth-child(3),.fra-table td:nth-child(3){width:8%}   /* NoFactura */
+.fra-table th:nth-child(4),.fra-table td:nth-child(4){width:8%}   /* DataFact */
+.fra-table th:nth-child(5),.fra-table td:nth-child(5){width:10%}  /* PJ */
+.fra-table th:nth-child(6),.fra-table td:nth-child(6){width:14%}  /* Base Imp */
+.fra-table th:nth-child(7),.fra-table td:nth-child(7){width:10%}  /* IVA */
+.fra-table th:nth-child(8),.fra-table td:nth-child(8){width:9%}   /* IRPF */
+.fra-table th:nth-child(9),.fra-table td:nth-child(9){width:8%}   /* Import */
+
+/* Monthly subtotal row */
+.fra-table tr.subtotal td{background:#f2f4f7;font-weight:700;border-top:1px solid #bbb;border-bottom:1.5px solid #bbb;color:#222;padding-top:1.5mm;padding-bottom:1.5mm}
+.fra-table tr.subtotal td.lbl{font-style:italic;font-weight:400;color:#555;font-size:8pt}
+
+/* Grand total */
+.fra-table tfoot td{font-weight:700;border-top:1.5px solid #555;padding-top:2mm;color:#1a1a1a}
+
+/* ── FOOTER ── */
+.doc-footer{text-align:center;font-size:7.5pt;color:#888;margin-top:7mm;border-top:.7px solid #ddd;padding-top:2.5mm}
+.page-info{font-size:6.5pt;color:#aaa;text-align:left;margin-top:2mm}
+</style>
+</head>
+<body>
+
+<!-- Control bar (screen only, not printed) -->
+<div class="ctrl">
+  <span class="ctrl-title">📋 Llistat Factures</span>
+  <span class="ctrl-status" id="ctrl-mode-label"></span>
+  <label>Any:</label>
+  <select id="ctrl-year" onchange="loadData()"></select>
+  <button class="btn-print" onclick="window.print()">🖨️ Imprimir</button>
+  <button class="btn-close" onclick="window.close()">✕ Tancar</button>
+  <span class="ctrl-status" id="ctrl-status"></span>
+</div>
+
+<div class="page">
+
+  <!-- Logo -->
+  <div class="logo-area">
+    <img src="logo.png" alt="ACR Estruch">
+  </div>
+
+  <!-- Title -->
+  <span class="doc-title" id="doc-title">LLISTAT FACTURES</span>
+
+  <!-- Table -->
+  <table class="fra-table">
+    <thead>
+      <tr>
+        <th>IdClient</th>
+        <th>Client</th>
+        <th>NoFactura</th>
+        <th>DataFact</th>
+        <th>PJ</th>
+        <th class="r">Base Imp</th>
+        <th class="r">IVA</th>
+        <th class="r">IRPF</th>
+        <th class="r">Import</th>
+      </tr>
+    </thead>
+    <tbody id="fra-tbody">
+      <tr><td colspan="9" style="padding:6mm;color:#888;text-align:center">Carregant…</td></tr>
+    </tbody>
+    <tfoot id="fra-tfoot"></tfoot>
+  </table>
+
+  <!-- Footer -->
+  <div class="doc-footer">
+    Muntaner, 440, 1-1B &nbsp;|&nbsp; 08006 Barcelona &nbsp;|&nbsp; +34 609852478 &nbsp;|&nbsp; info@acrestruch.com &nbsp;|&nbsp; www.acrestruch.com
+  </div>
+  <div class="page-info" id="page-info"></div>
+
+</div>
+
+<script>
+const SB_URL = 'https://ftuaeaghnnlusigqtoqv.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ0dWFlYWdobm5sdXNpZ3F0b3F2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAxNjI0MjIsImV4cCI6MjA5NTczODQyMn0.9n1gWnq_QfrLIWU7sIBReXgQAGA-NPFOpsdDp-jbDW8';
+
+const urlParams = new URLSearchParams(location.search);
+const mode = urlParams.get('mode') || 'simple'; // 'simple' | 'monthly'
+
+// ── Init year selector ─────────────────────────────────────────────────────
+const yearSel = document.getElementById('ctrl-year');
+const curYear = new Date().getFullYear();
+for (let y = curYear; y >= curYear - 6; y--) {
+  const o = document.createElement('option');
+  o.value = y; o.textContent = y;
+  if (y === curYear) o.selected = true;
+  yearSel.appendChild(o);
+}
+// Override with URL param if present
+if (urlParams.get('year')) yearSel.value = urlParams.get('year');
+
+// ── Mode label & title ─────────────────────────────────────────────────────
+const isMonthly = (mode === 'monthly');
+document.getElementById('ctrl-mode-label').textContent = isMonthly ? 'Totals mensuals' : 'Llistat';
+document.getElementById('doc-title').textContent = isMonthly
+  ? 'LLISTAT FACTURES EMESES. TOTALS MENSUALS'
+  : 'LLISTAT FACTURES';
+
+// ── Helpers ────────────────────────────────────────────────────────────────
+async function sbGet(table, qs='') {
+  const tok = localStorage.getItem('sb_token');
+  const r = await fetch(`${SB_URL}/rest/v1/${table}?${qs}`, {
+    headers: { apikey: SB_KEY, Authorization: `Bearer ${tok||SB_KEY}`, Accept: 'application/json' }
+  });
+  if (!r.ok) throw new Error(await r.text());
+  return r.json();
+}
+
+function fN(n, dec=2) {
+  if (n == null || n === '') return '';
+  return Number(n).toLocaleString('ca-ES', { minimumFractionDigits: dec, maximumFractionDigits: dec });
+}
+
+function fDate(s) {
+  if (!s) return '';
+  const [y, m, d] = s.split('T')[0].split('-');
+  return `${d}/${m}/${String(y).slice(2)}`;
+}
+
+function invBase(inv) {
+  const ls = inv.factura_lines || [];
+  if (ls.length) return ls.reduce((s, l) => s + (+(l.import_linia) || 0), 0);
+  return +(inv.base_imposable) || 0;
+}
+
+function invCalc(inv) {
+  const base  = invBase(inv);
+  const iva   = base * (+(inv.tipus_iva  ?? 21)) / 100;
+  const irpf  = base * (+(inv.tipus_irpf ??  0)) / 100;
+  const total = base + iva - irpf;
+  return { base, iva, irpf, total };
+}
+
+// ── Main render ────────────────────────────────────────────────────────────
+async function loadData() {
+  const year = +yearSel.value;
+  const from = `${year}-01-01`;
+  const to   = `${year + 1}-01-01`;
+  const tbody = document.getElementById('fra-tbody');
+  const tfoot = document.getElementById('fra-tfoot');
+
+  tbody.innerHTML = '<tr><td colspan="9" style="padding:6mm;color:#888;text-align:center">Carregant…</td></tr>';
+  tfoot.innerHTML = '';
+  document.getElementById('ctrl-status').textContent = '';
+
+  try {
+    const rows = await sbGet('factures',
+      `select=*,clients(rao_social,codi),factura_lines(import_linia)` +
+      `&data_fra=gte.${from}&data_fra=lt.${to}&order=no_factura.asc`
+    );
+
+    renderTable(rows);
+    document.getElementById('ctrl-status').textContent = `${rows.length} factures carregades`;
+    document.getElementById('page-info').textContent =
+      `${new Date().toLocaleDateString('ca-ES')} - 1 / 1 - qa_IN_list`;
+
+  } catch(e) {
+    tbody.innerHTML = `<tr><td colspan="9" style="color:#c00;padding:6mm">Error: ${e.message}</td></tr>`;
+    document.getElementById('ctrl-status').textContent = 'Error de càrrega';
+  }
+}
+
+function rowHtml(inv) {
+  const { base, iva, irpf, total } = invCalc(inv);
+  const pj     = inv.n_ref || inv.id_projecte || '';
+  const codi   = inv.clients?.codi || inv.id_client || '';
+  const client = inv.clients?.rao_social || '';
+  return `<tr>
+    <td>${codi}</td>
+    <td>${client}</td>
+    <td>${inv.no_factura || ''}</td>
+    <td>${fDate(inv.data_fra)}</td>
+    <td>${pj}</td>
+    <td class="r">${fN(base)}</td>
+    <td class="r">${fN(iva)}</td>
+    <td class="r">${irpf ? '-' + fN(irpf) : fN(0)}</td>
+    <td class="r">${fN(total)}</td>
+  </tr>`;
+}
+
+function subtotalHtml(n, base, iva, irpf, total) {
+  return `<tr class="subtotal">
+    <td class="lbl" colspan="5">No.factures: ${n}</td>
+    <td class="r">${fN(base)}</td>
+    <td class="r">${fN(iva)}</td>
+    <td class="r">${irpf ? '-' + fN(irpf) : fN(0)}</td>
+    <td class="r">${fN(total)}</td>
+  </tr>`;
+}
+
+function renderTable(rows) {
+  const tbody = document.getElementById('fra-tbody');
+  const tfoot = document.getElementById('fra-tfoot');
+  let html = '';
+  let totBase = 0, totIva = 0, totIrpf = 0, totTotal = 0;
+
+  if (isMonthly) {
+    // Group by YYYY-MM
+    const byMonth = {};
+    rows.forEach(inv => {
+      const m = (inv.data_fra || '').slice(0, 7);
+      if (!byMonth[m]) byMonth[m] = [];
+      byMonth[m].push(inv);
+    });
+
+    Object.keys(byMonth).sort().forEach(m => {
+      const group = byMonth[m];
+      let mBase = 0, mIva = 0, mIrpf = 0, mTotal = 0;
+
+      group.forEach(inv => {
+        const c = invCalc(inv);
+        html += rowHtml(inv);
+        mBase += c.base; mIva += c.iva; mIrpf += c.irpf; mTotal += c.total;
+      });
+
+      html += subtotalHtml(group.length, mBase, mIva, mIrpf, mTotal);
+      totBase += mBase; totIva += mIva; totIrpf += mIrpf; totTotal += mTotal;
+    });
+
+  } else {
+    rows.forEach(inv => {
+      const c = invCalc(inv);
+      html += rowHtml(inv);
+      totBase += c.base; totIva += c.iva; totIrpf += c.irpf; totTotal += c.total;
+    });
+  }
+
+  tbody.innerHTML = html;
+  tfoot.innerHTML = `<tr>
+    <td colspan="4" style="font-style:italic">Total facturas: ${rows.length}</td>
+    <td></td>
+    <td class="r">${fN(totBase)}</td>
+    <td class="r">${fN(totIva)}</td>
+    <td class="r">${totIrpf ? '-' + fN(totIrpf) : fN(0)}</td>
+    <td class="r">${fN(totTotal)}</td>
+  </tr>`;
+}
+
+// ── Start ──────────────────────────────────────────────────────────────────
+loadData();
+</script>
+</body>
+</html>

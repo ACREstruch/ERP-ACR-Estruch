@@ -39,16 +39,23 @@ body{margin:0;padding:0;font-family:'Segoe UI',Arial,sans-serif;background:#e9ec
 .fra-table th.r,.fra-table td.r{text-align:right}
 .fra-table td{padding:.15mm 3px;vertical-align:top;border:none;line-height:1.25;font-size:9pt}
 
-/* Column widths */
-.fra-table th:nth-child(1),.fra-table td:nth-child(1){width:9%}
-.fra-table th:nth-child(2),.fra-table td:nth-child(2){width:24%;text-transform:uppercase}
+/* Column widths (10 cols: +Estat al final) */
+.fra-table th:nth-child(1),.fra-table td:nth-child(1){width:8%}
+.fra-table th:nth-child(2),.fra-table td:nth-child(2){width:22%;text-transform:uppercase}
 .fra-table th:nth-child(3),.fra-table td:nth-child(3){width:8%}
 .fra-table th:nth-child(4),.fra-table td:nth-child(4){width:8%}
 .fra-table th:nth-child(5),.fra-table td:nth-child(5){width:10%}
-.fra-table th:nth-child(6),.fra-table td:nth-child(6){width:14%}
-.fra-table th:nth-child(7),.fra-table td:nth-child(7){width:10%}
-.fra-table th:nth-child(8),.fra-table td:nth-child(8){width:9%}
-.fra-table th:nth-child(9),.fra-table td:nth-child(9){width:8%}
+.fra-table th:nth-child(6),.fra-table td:nth-child(6){width:13%}
+.fra-table th:nth-child(7),.fra-table td:nth-child(7){width:9%}
+.fra-table th:nth-child(8),.fra-table td:nth-child(8){width:8%}
+.fra-table th:nth-child(9),.fra-table td:nth-child(9){width:9%}
+.fra-table th:nth-child(10),.fra-table td:nth-child(10){width:5%;text-align:center}
+
+/* Estat icon */
+.estat-ico{display:inline-flex;align-items:center;justify-content:center;width:11px;height:11px;border-radius:50%;font-size:7.5px;font-weight:900;line-height:1;color:#fff;vertical-align:middle}
+.estat-ico.cobrat{background:#28a745}
+.estat-ico.pendent{background:#dc3545}
+.estat-ico.parcial{background:#fd7e14}
 
 /* Monthly subtotal row — igual que el total general */
 .fra-table tr.subtotal td{background:none;font-weight:700;border:none;color:#1a1a1a;padding-top:.8mm;padding-bottom:.8mm;font-size:9pt}
@@ -111,10 +118,11 @@ body{margin:0;padding:0;font-family:'Segoe UI',Arial,sans-serif;background:#e9ec
         <th class="r">IVA</th>
         <th class="r">IRPF</th>
         <th class="r">Import</th>
+        <th></th>
       </tr>
     </thead>
     <tbody id="fra-tbody">
-      <tr><td colspan="9" style="padding:6mm;color:#888;text-align:center">Carregant…</td></tr>
+      <tr><td colspan="10" style="padding:6mm;color:#888;text-align:center">Carregant…</td></tr>
     </tbody>
     <tfoot id="fra-tfoot"></tfoot>
   </table>
@@ -210,9 +218,15 @@ async function loadData() {
       `${new Date().toLocaleDateString('ca-ES')} - 1 / 1 - qa_IN_list`;
 
   } catch(e) {
-    tbody.innerHTML = `<tr><td colspan="9" style="color:#c00;padding:6mm">Error: ${e.message}</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="10" style="color:#c00;padding:6mm">Error: ${e.message}</td></tr>`;
     document.getElementById('ctrl-status').textContent = 'Error de càrrega';
   }
+}
+
+function estatIco(estat) {
+  if (estat === 'COBRAT')  return '<span class="estat-ico cobrat">✓</span>';
+  if (estat === 'PARCIAL') return '<span class="estat-ico parcial">~</span>';
+  return '<span class="estat-ico pendent">✗</span>';
 }
 
 function rowHtml(inv, extraClass='') {
@@ -231,6 +245,7 @@ function rowHtml(inv, extraClass='') {
     <td class="r">${fN(iva)}</td>
     <td class="r">${irpf ? '-' + fN(irpf) : fN(0)}</td>
     <td class="r">${fN(total)}</td>
+    <td>${estatIco(inv.estat)}</td>
   </tr>`;
 }
 
@@ -241,6 +256,7 @@ function subtotalHtml(n, base, iva, irpf, total) {
     <td class="r">${fN(iva)}</td>
     <td class="r">${irpf ? '-' + fN(irpf) : fN(0)}</td>
     <td class="r">${fN(total)}</td>
+    <td></td>
   </tr>`;
 }
 
@@ -293,6 +309,7 @@ function renderTable(rows) {
     <td class="r">${fN(totIva)}</td>
     <td class="r">${totIrpf ? '-' + fN(totIrpf) : fN(0)}</td>
     <td class="r">${fN(totTotal)}</td>
+    <td></td>
   </tr>`;
 }
 

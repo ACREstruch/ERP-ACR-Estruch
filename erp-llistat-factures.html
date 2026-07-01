@@ -27,35 +27,39 @@ body{margin:0;padding:0;font-family:'Segoe UI',Arial,sans-serif;background:#e9ec
 @media print{body{background:#fff}.page{margin:0;padding:0;max-width:none;min-height:0;box-shadow:none}}
 
 /* ── LOGO ── */
-.logo-area{text-align:center;margin-bottom:8mm}
-.logo-area img{height:50px;display:block;margin:0 auto}
+.logo-area{text-align:center;margin-bottom:7mm}
+.logo-area img{height:30px;display:block;margin:0 auto}
 
 /* ── TITLE ── */
-.doc-title{font-size:10pt;font-weight:700;color:#1a3a6b;text-decoration:underline;margin-bottom:5mm;display:block;letter-spacing:.2px}
+.doc-title{font-size:9pt;font-weight:700;color:#1a3a6b;text-decoration:underline;margin-bottom:4mm;display:block;letter-spacing:.2px}
 
 /* ── TABLE ── */
-.fra-table{width:100%;border-collapse:collapse;font-size:8.5pt;table-layout:fixed}
-.fra-table th{font-weight:600;color:#444;border-bottom:1.2px solid #999;padding:1.5mm 3px 2mm;text-align:left;font-size:8pt;white-space:nowrap}
+.fra-table{width:100%;border-collapse:collapse;font-size:9pt;font-family:'Segoe UI',Arial,sans-serif;table-layout:fixed}
+.fra-table thead tr{background:#e8ecf2}
+.fra-table th{font-weight:600;color:#333;border:none;padding:1.2mm 3px 1.4mm;text-align:left;font-size:9pt;white-space:nowrap}
 .fra-table th.r,.fra-table td.r{text-align:right}
-.fra-table td{padding:.9mm 3px;vertical-align:top;border-bottom:.5px solid #e8e8e8;line-height:1.45}
+.fra-table td{padding:.4mm 3px;vertical-align:top;border:none;line-height:1.35;font-size:9pt}
 
 /* Column widths */
-.fra-table th:nth-child(1),.fra-table td:nth-child(1){width:9%}   /* IdClient */
-.fra-table th:nth-child(2),.fra-table td:nth-child(2){width:24%}  /* Client */
-.fra-table th:nth-child(3),.fra-table td:nth-child(3){width:8%}   /* NoFactura */
-.fra-table th:nth-child(4),.fra-table td:nth-child(4){width:8%}   /* DataFact */
-.fra-table th:nth-child(5),.fra-table td:nth-child(5){width:10%}  /* PJ */
-.fra-table th:nth-child(6),.fra-table td:nth-child(6){width:14%}  /* Base Imp */
-.fra-table th:nth-child(7),.fra-table td:nth-child(7){width:10%}  /* IVA */
-.fra-table th:nth-child(8),.fra-table td:nth-child(8){width:9%}   /* IRPF */
-.fra-table th:nth-child(9),.fra-table td:nth-child(9){width:8%}   /* Import */
+.fra-table th:nth-child(1),.fra-table td:nth-child(1){width:9%}
+.fra-table th:nth-child(2),.fra-table td:nth-child(2){width:24%}
+.fra-table th:nth-child(3),.fra-table td:nth-child(3){width:8%}
+.fra-table th:nth-child(4),.fra-table td:nth-child(4){width:8%}
+.fra-table th:nth-child(5),.fra-table td:nth-child(5){width:10%}
+.fra-table th:nth-child(6),.fra-table td:nth-child(6){width:14%}
+.fra-table th:nth-child(7),.fra-table td:nth-child(7){width:10%}
+.fra-table th:nth-child(8),.fra-table td:nth-child(8){width:9%}
+.fra-table th:nth-child(9),.fra-table td:nth-child(9){width:8%}
 
-/* Monthly subtotal row */
-.fra-table tr.subtotal td{background:#f2f4f7;font-weight:700;border-top:1px solid #bbb;border-bottom:1.5px solid #bbb;color:#222;padding-top:1.5mm;padding-bottom:1.5mm}
-.fra-table tr.subtotal td.lbl{font-style:italic;font-weight:400;color:#555;font-size:8pt}
+/* Monthly subtotal row — Segoe UI Black, sense fons */
+.fra-table tr.subtotal td{background:none;font-weight:900;border:none;color:#1a1a1a;padding-top:.8mm;padding-bottom:.8mm;font-size:9pt}
+.fra-table tr.subtotal td.lbl{font-style:italic;font-weight:900}
 
-/* Grand total */
-.fra-table tfoot td{font-weight:700;border-top:1.5px solid #555;padding-top:2mm;color:#1a1a1a}
+/* Espai entre subtotal i primer registre del mes següent */
+.fra-table tr.grp-first td{padding-top:3.5mm}
+
+/* Una sola ratlla fina just abans dels totals */
+.fra-table tfoot td{font-weight:700;border-top:.8px solid #888;padding-top:1.8mm;color:#1a1a1a;font-size:9pt}
 
 /* ── FOOTER ── */
 .doc-footer{text-align:center;font-size:7.5pt;color:#888;margin-top:7mm;border-top:.7px solid #ddd;padding-top:2.5mm}
@@ -205,12 +209,13 @@ async function loadData() {
   }
 }
 
-function rowHtml(inv) {
+function rowHtml(inv, extraClass='') {
   const { base, iva, irpf, total } = invCalc(inv);
   const pj     = inv.n_ref || inv.id_projecte || '';
   const codi   = inv.clients?.codi || inv.id_client || '';
   const client = inv.clients?.rao_social || '';
-  return `<tr>
+  const cls    = extraClass ? ` class="${extraClass}"` : '';
+  return `<tr${cls}>
     <td>${codi}</td>
     <td>${client}</td>
     <td>${inv.no_factura || ''}</td>
@@ -248,18 +253,22 @@ function renderTable(rows) {
       byMonth[m].push(inv);
     });
 
+    let isFirstGroup = true;
     Object.keys(byMonth).sort().forEach(m => {
       const group = byMonth[m];
       let mBase = 0, mIva = 0, mIrpf = 0, mTotal = 0;
 
-      group.forEach(inv => {
+      group.forEach((inv, i) => {
         const c = invCalc(inv);
-        html += rowHtml(inv);
+        // espai de separació al primer del grup (menys al primer grup de tot)
+        const cls = (i === 0 && !isFirstGroup) ? 'grp-first' : '';
+        html += rowHtml(inv, cls);
         mBase += c.base; mIva += c.iva; mIrpf += c.irpf; mTotal += c.total;
       });
 
       html += subtotalHtml(group.length, mBase, mIva, mIrpf, mTotal);
       totBase += mBase; totIva += mIva; totIrpf += mIrpf; totTotal += mTotal;
+      isFirstGroup = false;
     });
 
   } else {

@@ -346,8 +346,8 @@ input[type=number]{-moz-appearance:textfield}
           <label>CNCE (classificació fiscal)</label>
           <select id="m-cnce">
             <option value="">— No definit —</option>
-            <option value="CN">CN — Nacional</option>
-            <option value="CE">CE — Comunitari (UE)</option>
+            <option value="PN">PN — Nacional</option>
+            <option value="PE">PE — Estranger</option>
             <option value="EX">EX — Extracomunitari</option>
           </select>
         </div>
@@ -405,8 +405,8 @@ async function sbDel(t,id){const r=await fetch(`${SB_URL}/rest/v1/${t}?id=eq.${i
 
 let allProv=[], curId=null, collapsedGroups=new Set();
 
-const CNCE_ORDER = ['CN','CE','EX',''];
-const CNCE_LABEL = {CN:'Nacional (CN)', CE:'Comunitari UE (CE)', EX:'Extracomunitari (EX)', '':'Sense classificació'};
+const CNCE_ORDER = ['PN','PE','EX',''];
+const CNCE_LABEL = {PN:'Nacional (PN)', PE:'Estranger (PE)', EX:'Extracomunitari (EX)', '':'Sense classificació'};
 
 function toggleGroup(g){
   if(collapsedGroups.has(g)) collapsedGroups.delete(g);

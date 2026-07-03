@@ -418,7 +418,7 @@ async function loadCatTags(){
 
 async function loadProveidors(){
   try{
-    allProv=await sbGet('proveidors','select=*&order=rao_social');
+    allProv=await sbGet('proveidors','select=*&order=codi');
     const pendFras=await sbGet('factures_rebudes','select=codi_prov&estat=in.(PENDENT,PARCIALMENT,VENCUDA,PROXIM)&total_factura=gt.0');
     const provAmbPendent=new Set(pendFras.map(f=>f.codi_prov)).size;
     renderStats(provAmbPendent); renderTable(allProv); populatePaisFilter();

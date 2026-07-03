@@ -99,6 +99,12 @@ input[type=number]{-moz-appearance:textfield}
 /* sticky header */
 .tbl-wrap{overflow-x:auto;overflow-y:auto;max-height:calc(100vh - 280px)}
 .main-tbl thead th{position:sticky;top:0;z-index:3;background:#f0f4f8;box-shadow:0 2px 0 var(--border)}
+/* grups cnce */
+.grp-hdr{background:transparent!important;cursor:pointer;user-select:none;border-bottom:1px solid var(--border-light)}
+.grp-hdr td{color:var(--blue)!important;font-weight:400!important;font-size:12px!important;padding:5px 14px!important;letter-spacing:.3px}
+.grp-hdr:hover td{background:var(--blue-light)!important}
+.grp-hdr .grp-ico{display:inline-block;width:14px;transition:transform .2s}
+.grp-hdr.collapsed .grp-ico{transform:rotate(-90deg)}
 </style>
 </head>
 <body>
@@ -397,7 +403,20 @@ async function sbPost(t,d){const r=await fetch(`${SB_URL}/rest/v1/${t}`,{method:
 async function sbPatch(t,id,d){const r=await fetch(`${SB_URL}/rest/v1/${t}?id=eq.${id}`,{method:'PATCH',headers:getHDR(),body:JSON.stringify(d)});if(!r.ok)throw new Error(await r.text());return r.json()}
 async function sbDel(t,id){const r=await fetch(`${SB_URL}/rest/v1/${t}?id=eq.${id}`,{method:'DELETE', headers:getHDR()});if(!r.ok)throw new Error(await r.text())}
 
-let allProv=[], curId=null;
+let allProv=[], curId=null, collapsedGroups=new Set();
+
+const CNCE_ORDER = ['CN','CE','EX',''];
+const CNCE_LABEL = {CN:'Nacional (CN)', CE:'Comunitari UE (CE)', EX:'Extracomunitari (EX)', '':'Sense classificació'};
+
+function toggleGroup(g){
+  if(collapsedGroups.has(g)) collapsedGroups.delete(g);
+  else collapsedGroups.add(g);
+  document.querySelectorAll(`[data-grp='${CSS.escape(g)}']`).forEach(tr=>{
+    tr.style.display=collapsedGroups.has(g)?'none':'';
+  });
+  const hdr=document.querySelector(`[data-grp-hdr='${CSS.escape(g)}']`);
+  if(hdr) hdr.classList.toggle('collapsed',collapsedGroups.has(g));
+}
 
 async function init(){
   if(!requireAuth()) return;
@@ -450,27 +469,47 @@ function renderTable(rows){
   document.getElementById('f-count').textContent=rows.length+' proveïdors';
   const tbody=document.getElementById('tbl-body');
   if(!rows.length){
-    tbody.innerHTML=`<tr><td colspan="11"><div class="empty"><div class="eico">🏭</div><p>Cap proveïdor trobat.</p><button class="btn btn-primary" onclick="openModal(null)">+ Nou proveïdor</button></div></td></tr>`;
+    tbody.innerHTML=`<tr><td colspan="13"><div class="empty"><div class="eico">🏭</div><p>Cap proveïdor trobat.</p><button class="btn btn-primary" onclick="openModal(null)">+ Nou proveïdor</button></div></td></tr>`;
     return;
   }
-  tbody.innerHTML=rows.map(p=>`<tr onclick="openModal(${p.id})">
-    <td><span class="tag">${p.codi||'—'}</span></td>
-    <td><span class="prov-nom">${p.rao_social}</span></td>
-    <td style="color:var(--muted)">${p.sinonim||'—'}</td>
-    <td style="font-size:12px;color:var(--muted)">${p.categoria||'—'}</td>
-    <td style="font-size:12px">${p.nif_vat||'—'}</td>
-    <td>${p.pais||'—'}</td>
-    <td style="font-size:12px">${[p.tel,p.email].filter(Boolean).join(' · ')||'—'}</td>
-    <td style="text-align:right">${p.tipus_iva??21}%</td>
-    <td style="text-align:right">${p.tipus_irpf??0}%</td>
-    <td>${p.cnce||'—'}</td>
-    <td>${p.divisa||'EUR'}</td>
-    <td>${p.forma_pag||'—'}</td>
-    <td onclick="event.stopPropagation()" style="white-space:nowrap">
-      <button class="btn btn-secondary btn-xs" onclick="openModal(${p.id})">✏️</button>
-      <button class="btn btn-xs btn-danger" style="margin-left:4px" onclick="confirmDel(${p.id})" title="Eliminar">✕</button>
-    </td>
-  </tr>`).join('');
+  // Agrupar per cnce
+  const groups={};
+  rows.forEach(p=>{ const k=p.cnce||''; if(!groups[k]) groups[k]=[]; groups[k].push(p); });
+
+  let html='';
+  CNCE_ORDER.forEach(k=>{
+    if(!groups[k]||!groups[k].length) return;
+    const grp=groups[k];
+    const collapsed=collapsedGroups.has(k);
+    html+=`<tr class="grp-hdr${collapsed?' collapsed':''}" data-grp-hdr="${k}" onclick="toggleGroup('${k}')">
+      <td colspan="13">
+        <span class="grp-ico">▼</span>
+        &nbsp;<strong>${CNCE_LABEL[k]}</strong>
+        &nbsp;— ${grp.length} proveïdor${grp.length!==1?'s':''}
+      </td>
+    </tr>`;
+    grp.forEach(p=>{
+      html+=`<tr data-grp="${k}" style="${collapsed?'display:none':''}" onclick="openModal(${p.id})">
+        <td><span class="tag">${p.codi||'—'}</span></td>
+        <td><span class="prov-nom">${p.rao_social}</span></td>
+        <td style="color:var(--muted)">${p.sinonim||'—'}</td>
+        <td style="font-size:12px;color:var(--muted)">${p.categoria||'—'}</td>
+        <td style="font-size:12px">${p.nif_vat||'—'}</td>
+        <td>${p.pais||'—'}</td>
+        <td style="font-size:12px">${[p.tel,p.email].filter(Boolean).join(' · ')||'—'}</td>
+        <td style="text-align:right">${p.tipus_iva??21}%</td>
+        <td style="text-align:right">${p.tipus_irpf??0}%</td>
+        <td>${p.cnce||'—'}</td>
+        <td>${p.divisa||'EUR'}</td>
+        <td>${p.forma_pag||'—'}</td>
+        <td onclick="event.stopPropagation()" style="white-space:nowrap">
+          <button class="btn btn-secondary btn-xs" onclick="openModal(${p.id})">✏️</button>
+          <button class="btn btn-xs btn-danger" style="margin-left:4px" onclick="confirmDel(${p.id})" title="Eliminar">✕</button>
+        </td>
+      </tr>`;
+    });
+  });
+  tbody.innerHTML=html;
 }
 
 function applyFilters(){

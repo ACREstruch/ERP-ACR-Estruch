@@ -514,7 +514,7 @@ async function runLlistat(){
   const el = document.getElementById('rpt-llistat');
   el.innerHTML='<div class="rpt-loading">⏳ Carregant...</div>';
   try{
-    let qs = 'select=*,clients(codi,rao_social)&order=id_in.desc.nullslast';
+    let qs = 'select=*,clients(codi,rao_social)&order=no_factura.desc,data_fra.desc';
     const de = document.getElementById('ll-de').value;
     const fins = document.getElementById('ll-fins').value;
     if(de) qs += `&data_fra=gte.${de}`;
@@ -565,7 +565,7 @@ async function runMes(){
   const any = document.getElementById('mes-any').value;
   try{
     const rows = await sbGet('factures',
-      `select=*,clients(codi,rao_social)&data_fra=gte.${any}-01-01&data_fra=lte.${any}-12-31&order=id_in.asc.nullslast`);
+      `select=*,clients(codi,rao_social)&data_fra=gte.${any}-01-01&data_fra=lte.${any}-12-31&order=no_factura.asc,data_fra.asc`);
     if(!rows.length){ el.innerHTML='<div class="rpt-empty"><div class="eico">📭</div><p>Sense resultats</p></div>'; return; }
     // Agrupar per mes
     const grups = {};
@@ -625,7 +625,7 @@ async function runClients(){
   const el = document.getElementById('rpt-clients');
   el.innerHTML='<div class="rpt-loading">⏳ Carregant...</div>';
   try{
-    let qs = 'select=*,clients(codi,rao_social)&order=id_in.desc.nullslast';
+    let qs = 'select=*,clients(codi,rao_social)&order=no_factura.desc,data_fra.desc';
     const de = document.getElementById('cli-de').value;
     const fins = document.getElementById('cli-fins').value;
     if(de) qs += `&data_fra=gte.${de}`;
@@ -688,7 +688,7 @@ async function run1Client(){
   if(!cliId){ el.innerHTML='<div class="rpt-empty"><div class="eico">🔍</div><p>Selecciona un client</p></div>'; return; }
   el.innerHTML='<div class="rpt-loading">⏳ Carregant...</div>';
   try{
-    let qs = `select=*,clients(codi,rao_social,nif_vat)&id_client=eq.${cliId}&order=data_fra.asc`;
+    let qs = `select=*,clients(codi,rao_social,nif_vat)&id_client=eq.${cliId}&order=data_fra.asc,no_factura.asc`;
     const de = document.getElementById('c1-de').value;
     const fins = document.getElementById('c1-fins').value;
     if(de) qs += `&data_fra=gte.${de}`;
@@ -749,7 +749,7 @@ async function runPendent(){
   el.innerHTML='<div class="rpt-loading">⏳ Carregant...</div>';
   try{
     const rows = await sbGet('factures',
-      `select=*,clients(codi,rao_social)&estat=neq.COBRAT&estat=neq.ANULADA&estat=neq.RECTIFICATIVA&order=data_venciment.asc`);
+      `select=*,clients(codi,rao_social)&estat=neq.COBRAT&estat=neq.ANULADA&estat=neq.RECTIFICATIVA&order=no_factura.asc,data_fra.asc`);
     if(!rows.length){ el.innerHTML='<div class="rpt-empty"><div class="eico">✅</div><p>Tot cobrat!</p></div>'; return; }
     // Agrupar per client
     const grups={};
@@ -810,7 +810,7 @@ async function runPend1Cli(){
   el.innerHTML='<div class="rpt-loading">⏳ Carregant...</div>';
   try{
     const rows = await sbGet('factures',
-      `select=*,clients(codi,rao_social)&id_client=eq.${cliId}&estat=neq.COBRAT&estat=neq.ANULADA&order=data_venciment.asc`);
+      `select=*,clients(codi,rao_social)&id_client=eq.${cliId}&estat=neq.COBRAT&estat=neq.ANULADA&order=data_fra.asc,no_factura.asc`);
     if(!rows.length){ el.innerHTML='<div class="rpt-empty"><div class="eico">✅</div><p>Cap pendent per aquest client</p></div>'; return; }
     let totImp=0,totCob=0,totSaldo=0;
     const cli=rows[0].clients||{};

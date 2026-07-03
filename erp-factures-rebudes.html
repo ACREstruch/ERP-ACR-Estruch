@@ -544,7 +544,7 @@ function onProvChange(){
 
 async function loadFactures(){
   try{
-    allFra = await sbGet('factures_rebudes','select=*,proveidors(rao_social,sinonim)&order=data_fra.desc,no_seriefra.desc');
+    allFra = await sbGet('factures_rebudes','select=*,proveidors!factures_rebudes_codi_prov_fkey(rao_social,sinonim)&order=data_fra.desc,no_seriefra.desc');
     renderStats(); renderTable(allFra);
   }catch(e){ toast('Error: '+e.message,'err'); allFra=[]; renderTable([]); }
 }

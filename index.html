@@ -291,7 +291,7 @@ async function init(){
   try{
     const [fra,reb,cli,prov,pj,ass,pla]=await Promise.all([
       sbGet('factures','select=no_factura,data_venciment,estat,total_factura,import_cobrat,clients(rao_social)&order=data_venciment'),
-      sbGet('factures_rebudes','select=no_factura,data_termini,estat,total_factura,import_pagat,proveidors(nom)&order=data_termini'),
+      sbGet('factures_rebudes','select=no_seriefra,data_termini1,estat,total_factura,import_pagat,proveidors!factures_rebudes_codi_prov_fkey(rao_social)&order=data_termini1'),
       sbGet('clients','select=id',),
       sbGet('proveidors','select=id'),
       sbGet('projectes','select="IdPJ",estat,import'),
@@ -382,13 +382,13 @@ async function init(){
     } else {
       elReb.innerHTML=rebProp.map(f=>{
         const pendent=(f.total_factura||0)-(f.import_pagat||0);
-        const venc=f.data_termini&&new Date(f.data_termini+'T00:00:00')<today;
+        const venc=f.data_termini1&&new Date(f.data_termini1+'T00:00:00')<today;
         const dot=venc?'dot-r':'dot-y';
         return `<div class="alert-item" onclick="location.href='erp-factures-rebudes.html'">
           <div class="alert-dot ${dot}"></div>
           <div class="alert-main">
-            <div class="alert-nom">${f.proveidors?.nom||'—'} — ${f.no_factura}</div>
-            <div class="alert-sub">${venc?'Vençuda':'Termini'} · ${fd(f.data_termini)}</div>
+            <div class="alert-nom">${f.proveidors?.rao_social||'—'} — ${f.no_seriefra}</div>
+            <div class="alert-sub">${venc?'Vençuda':'Termini'} · ${fd(f.data_termini1)}</div>
           </div>
           <div class="alert-amt" style="color:${venc?'var(--red)':'var(--amber)'}">${fe(pendent)} €</div>
         </div>`;

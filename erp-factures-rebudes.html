@@ -243,13 +243,12 @@ input[type=number]{-moz-appearance:textfield}
         <table class="main-tbl">
           <thead>
             <tr>
-              <th>IdINSP</th>
               <th>Nº Fra. interna</th>
               <th>Nº Fra. proveïdor</th>
               <th>Data Fra.</th>
               <th>Termini</th>
               <th>Proveïdor</th>
-              <th>Concepte</th>
+              <th>Notes</th>
               <th class="amt">Base imp.</th>
               <th class="amt">Total</th>
               <th class="amt">Pagat</th>
@@ -258,7 +257,7 @@ input[type=number]{-moz-appearance:textfield}
             </tr>
           </thead>
           <tbody id="tbl-body">
-            <tr><td colspan="12"><div class="empty"><div class="eico">🔄</div><p>Carregant...</p></div></td></tr>
+            <tr><td colspan="11"><div class="empty"><div class="eico">🔄</div><p>Carregant...</p></div></td></tr>
           </tbody>
         </table>
       </div>
@@ -520,12 +519,12 @@ async function init(){
 
 async function loadProveidors(){
   try{
-    allProv = await sbGet('proveidors','select=id,nom,sinonim,tipus_iva,tipus_irpf,cnce&order=nom');
+    allProv = await sbGet('proveidors','select=id,codi,rao_social,sinonim,tipus_iva,tipus_irpf,cnce&order=rao_social');
     const sel = document.getElementById('m-prov');
     sel.innerHTML = '<option value="">— Selecciona proveïdor —</option>';
     allProv.forEach(p=>{
       const o=document.createElement('option');
-      o.value=p.id; o.textContent=p.nom+(p.sinonim?` (${p.sinonim})`:'');
+      o.value=p.codi; o.textContent=p.rao_social+(p.sinonim?` (${p.sinonim})`:'');
       o.dataset.iva  = p.tipus_iva ?? 21;
       o.dataset.irpf = p.tipus_irpf ?? 0;
       o.dataset.cnce = p.cnce || '';
@@ -545,7 +544,7 @@ function onProvChange(){
 
 async function loadFactures(){
   try{
-    allFra = await sbGet('factures_rebudes','select=*,proveidors(nom,sinonim)&order=id_insp.desc.nullslast,data_fra.desc');
+    allFra = await sbGet('factures_rebudes','select=*,proveidors(rao_social,sinonim)&order=data_fra.desc,no_seriefra.desc');
     renderStats(); renderTable(allFra);
   }catch(e){ toast('Error: '+e.message,'err'); allFra=[]; renderTable([]); }
 }
@@ -570,8 +569,8 @@ function toggleYear(year){
 function getEstat(fr){
   if(fr.estat==='PAGAT') return 'PAGAT';
   const today=new Date(); today.setHours(0,0,0,0);
-  if(!fr.data_termini) return 'PENDENT';
-  const t=new Date(fr.data_termini+'T00:00:00');
+  if(!fr.data_termini1) return 'PENDENT';
+  const t=new Date(fr.data_termini1+'T00:00:00');
   if(t<today) return 'VENCUDA';
   if((t-today)/864e5<=7) return 'PROXIM';
   if(fr.import_pagat>0) return 'PARCIALMENT';
@@ -615,7 +614,7 @@ function renderTable(rows){
   document.getElementById('f-count').textContent=rows.length+' factures';
   const tbody=document.getElementById('tbl-body');
   if(!rows.length){
-    tbody.innerHTML=`<tr><td colspan="12"><div class="empty"><div class="eico">📥</div><p>Cap factura rebuda.</p><button class="btn btn-primary" onclick="openModal(null)">+ Nova factura rebuda</button></div></td></tr>`;
+    tbody.innerHTML=`<tr><td colspan="11"><div class="empty"><div class="eico">📥</div><p>Cap factura rebuda.</p><button class="btn btn-primary" onclick="openModal(null)">+ Nova factura rebuda</button></div></td></tr>`;
     return;
   }
   const fd=d=>d?new Date(d+'T00:00:00').toLocaleDateString('ca-ES',{day:'2-digit',month:'2-digit',year:'numeric'}):'—';
@@ -654,16 +653,15 @@ function renderTable(rows){
       </td>
     </tr>`;
     grpRows.forEach(fr=>{
-      const pnom=fr.proveidors?.nom||'—';
+      const pnom=fr.proveidors?.rao_social||'—';
       const pagat=fr.import_pagat||0; const tot=fr.total_factura||0;
       html+=`<tr data-yr="${yr}" style="${collapsed?'display:none':''}" onclick="openModal(${fr.id})">
-        <td style="color:var(--muted);font-size:11px">${fr.id_insp||'—'}</td>
-        <td><span class="no-fra">${fr.no_factura}</span></td>
+        <td><span class="no-fra">${fr.no_seriefra}</span></td>
         <td style="color:var(--muted);font-size:11px">${fr.no_fra_prov||'—'}</td>
         <td>${fd(fr.data_fra)}</td>
-        <td>${fd(fr.data_termini)}</td>
+        <td>${fd(fr.data_termini1)}</td>
         <td style="font-weight:600">${pnom}</td>
-        <td style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted);font-size:11px" title="${fr.concepte||''}">${fr.concepte||'—'}</td>
+        <td style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted);font-size:11px" title="${fr.notes||''}">${fr.notes||'—'}</td>
         <td class="amt">${fe(fr.base_imposable)}</td>
         <td class="amt" style="font-weight:700">${fe(tot)}</td>
         <td class="amt" style="color:${pagat>=tot&&tot>0?'var(--green)':'var(--muted)'}">${fe(pagat)}</td>
@@ -688,8 +686,8 @@ function applyFilters(){
   const de=document.getElementById('f-de').value;
   const fins=document.getElementById('f-fins').value;
   const res=allFra.filter(fr=>{
-    const pnom=fr.proveidors?.nom||'';
-    const mc=!cerca||fr.no_factura.toLowerCase().includes(cerca)||(fr.no_fra_prov||'').toLowerCase().includes(cerca)||pnom.toLowerCase().includes(cerca)||(fr.concepte||'').toLowerCase().includes(cerca);
+    const pnom=fr.proveidors?.rao_social||'';
+    const mc=!cerca||String(fr.no_seriefra||'').toLowerCase().includes(cerca)||(fr.no_fra_prov||'').toLowerCase().includes(cerca)||pnom.toLowerCase().includes(cerca)||(fr.notes||'').toLowerCase().includes(cerca);
     const me=!est||getEstat(fr)===est||fr.estat===est;
     const md=!de||(fr.data_fra>=de);
     const mf=!fins||(fr.data_fra<=fins);
@@ -705,13 +703,10 @@ function clearFilters(){
 
 // ── MODAL ──
 function nextNoIntern(){
-  const yy=String(new Date().getFullYear()).slice(-2);
-  const seqs=allFra
-    .map(f=>String(f.no_factura||''))
-    .filter(n=>/^\d{5}$/.test(n)&&n.startsWith(yy))
-    .map(n=>parseInt(n.slice(2),10));
-  const maxSeq=seqs.length?Math.max(...seqs):0;
-  return yy+String(maxSeq+1).padStart(3,'0');
+  const yy=parseInt(String(new Date().getFullYear()).slice(-2));
+  const prefix=yy*1000;
+  const seqs=allFra.map(f=>f.no_seriefra||0).filter(n=>n>=prefix&&n<prefix+1000);
+  return seqs.length?Math.max(...seqs)+1:prefix+1;
 }
 
 async function openModal(id){
@@ -721,7 +716,7 @@ async function openModal(id){
   if(id){
     const fr=allFra.find(x=>x.id===id);
     if(!fr) return;
-    document.getElementById('m-title').textContent='Fra. '+fr.no_factura;
+    document.getElementById('m-title').textContent='Fra. '+fr.no_seriefra;
     fillForm(fr);
     await loadPagaments(id);
   } else {
@@ -735,10 +730,10 @@ function closeModal(){ document.getElementById('overlay').classList.remove('open
 
 function fillForm(fr){
   const s=(id,v)=>{const el=document.getElementById(id);if(el)el.value=(v??'')};
-  s('m-no',fr.no_factura); s('m-no-prov',fr.no_fra_prov); s('m-estat',fr.estat);
-  s('m-prov',fr.id_prov); s('m-data',fr.data_fra); s('m-termini',fr.data_termini);
-  s('m-concepte',fr.concepte); s('m-bi',fr.base_imposable??0); s('m-iva',fr.tipus_iva??21);
-  s('m-div',fr.divisa||'EUR'); s('m-tc',fr.tc_divisa??1);
+  s('m-no',fr.no_seriefra); s('m-no-prov',fr.no_fra_prov); s('m-estat',fr.estat);
+  s('m-prov',fr.codi_prov); s('m-data',fr.data_fra); s('m-termini',fr.data_termini1);
+  s('m-concepte',fr.notes); s('m-bi',fr.base_imposable??0); s('m-iva',fr.tipus_iva??21);
+  s('m-div',fr.divisa_fra||'EUR'); s('m-tc',fr.divisa_canvi??1);
   s('m-cte-prov',fr.compte_prov||'400'); s('m-cte-desp',fr.compte_despeses||'600');
   s('m-cte-iva',fr.compte_iva_sup||'472'); document.getElementById('m-assentat').checked=!!fr.assentat;
   s('m-notes',fr.notes);
@@ -968,26 +963,25 @@ async function saveFactura(){
   const pagat=curPagaments.reduce((s,p)=>s+(p.import||0),0);
   const idProv=document.getElementById('m-prov').value;
   const data={
-    no_factura:noFra,
+    no_seriefra:parseInt(noFra)||null,
     no_fra_prov:document.getElementById('m-no-prov').value||null,
-    id_prov:idProv?parseInt(idProv):null,
+    codi_prov:idProv||null,
     data_fra:dataFra,
-    data_termini:document.getElementById('m-termini').value||null,
+    data_termini1:document.getElementById('m-termini').value||null,
     forma_pag:document.getElementById('m-fpag')?.value||'Transferència',
-    divisa:document.getElementById('m-div').value,
-    tc_divisa:parseFloat(document.getElementById('m-tc').value)||1,
+    divisa_fra:document.getElementById('m-div').value,
+    divisa_canvi:parseFloat(document.getElementById('m-tc').value)||1,
     base_imposable:curBi,
     tipus_iva:ivaPc,
     import_iva:iva,
     total_factura:tot,
     estat:document.getElementById('m-estat').value,
     import_pagat:pagat,
-    concepte:document.getElementById('m-concepte').value||null,
+    notes:document.getElementById('m-concepte').value||null,
     compte_prov:document.getElementById('m-cte-prov').value,
     compte_despeses:document.getElementById('m-cte-desp').value,
     compte_iva_sup:document.getElementById('m-cte-iva').value,
     assentat:document.getElementById('m-assentat').checked,
-    notes:document.getElementById('m-notes').value||null,
     updated_at:new Date().toISOString(),
   };
   const btn=document.getElementById('btn-save');
@@ -1015,7 +1009,7 @@ async function confirmDel(id){
   const pin=prompt('🔒 PIN per eliminar:');if(pin!==PIN){toast('PIN incorrecte','err');return;}
   const fr=allFra.find(x=>x.id===id);
   if(!fr) return;
-  if(!confirm(`Eliminar la factura ${fr.no_factura}?`)) return;
+  if(!confirm(`Eliminar la factura ${fr.no_seriefra}?`)) return;
   try{ await sbDel('factures_rebudes',id); toast('Eliminada','ok'); await loadFactures(); }
   catch(e){ toast('Error: '+e.message,'err'); }
 }

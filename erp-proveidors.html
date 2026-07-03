@@ -418,9 +418,9 @@ async function loadCatTags(){
 
 async function loadProveidors(){
   try{
-    allProv=await sbGet('proveidors','select=*&order=nom');
-    const pendFras=await sbGet('factures_rebudes','select=id_prov&estat=in.(PENDENT,PARCIALMENT,VENCUDA,PROXIM)&total_factura=gt.0');
-    const provAmbPendent=new Set(pendFras.map(f=>f.id_prov)).size;
+    allProv=await sbGet('proveidors','select=*&order=rao_social');
+    const pendFras=await sbGet('factures_rebudes','select=codi_prov&estat=in.(PENDENT,PARCIALMENT,VENCUDA,PROXIM)&total_factura=gt.0');
+    const provAmbPendent=new Set(pendFras.map(f=>f.codi_prov)).size;
     renderStats(provAmbPendent); renderTable(allProv); populatePaisFilter();
   }catch(e){ toast('Error: '+e.message,'err'); allProv=[]; renderTable([]); }
 }
@@ -455,7 +455,7 @@ function renderTable(rows){
   }
   tbody.innerHTML=rows.map(p=>`<tr onclick="openModal(${p.id})">
     <td><span class="tag">${p.codi||'—'}</span></td>
-    <td><span class="prov-nom">${p.nom}</span></td>
+    <td><span class="prov-nom">${p.rao_social}</span></td>
     <td style="color:var(--muted)">${p.sinonim||'—'}</td>
     <td style="font-size:12px;color:var(--muted)">${p.categoria||'—'}</td>
     <td style="font-size:12px">${p.nif_vat||'—'}</td>
@@ -477,7 +477,7 @@ function applyFilters(){
   const cerca=document.getElementById('f-cerca').value.toLowerCase().trim();
   const pais=document.getElementById('f-pais').value;
   const res=allProv.filter(p=>{
-    const mc=!cerca||(p.nom||'').toLowerCase().includes(cerca)||(p.sinonim||'').toLowerCase().includes(cerca)||(p.nif_vat||'').toLowerCase().includes(cerca)||(p.codi||'').toLowerCase().includes(cerca);
+    const mc=!cerca||(p.rao_social||'').toLowerCase().includes(cerca)||(p.sinonim||'').toLowerCase().includes(cerca)||(p.nif_vat||'').toLowerCase().includes(cerca)||(p.codi||'').toLowerCase().includes(cerca);
     const mp=!pais||p.pais===pais;
     return mc&&mp;
   });
@@ -490,7 +490,7 @@ function openModal(id){
   if(id){
     const p=allProv.find(x=>x.id===id);
     if(!p) return;
-    document.getElementById('m-title').textContent=p.nom;
+    document.getElementById('m-title').textContent=p.rao_social;
     fillForm(p);
   } else {
     document.getElementById('m-title').textContent='Nou proveïdor';
@@ -502,7 +502,7 @@ function closeModal(){ document.getElementById('overlay').classList.remove('open
 
 function fillForm(p){
   const s=(id,v)=>{const el=document.getElementById(id);if(el)el.value=(v??'')};
-  s('m-nom',p.nom); s('m-sin',p.sinonim); s('m-codi',p.codi); s('m-nif',p.nif_vat);
+  s('m-nom',p.rao_social); s('m-sin',p.sinonim); s('m-codi',p.codi); s('m-nif',p.nif_vat);
   s('m-adr',p.adreca); s('m-cp',p.cp); s('m-ciu',p.ciutat); s('m-pais',p.pais);
   s('m-tel',p.tel); s('m-email',p.email); s('m-web',p.web);
   s('m-cnt-nom',p.cont_nom); s('m-cnt-cog',p.cont_cognom);
@@ -534,7 +534,7 @@ async function saveProv(){
   const nom=document.getElementById('m-nom').value.trim();
   if(!nom){ toast('El nom és obligatori','err'); return; }
   const data={
-    nom, sinonim:document.getElementById('m-sin').value||null,
+    rao_social:nom, sinonim:document.getElementById('m-sin').value||null,
     codi:document.getElementById('m-codi').value||null,
     nif_vat:document.getElementById('m-nif').value||null,
     adreca:document.getElementById('m-adr').value||null,
@@ -571,7 +571,7 @@ async function saveProv(){
 async function confirmDel(id){
   const pin=prompt('🔒 PIN per eliminar:');if(pin!==PIN){toast('PIN incorrecte','err');return;}
   const p=allProv.find(x=>x.id===id);
-  if(!p||!confirm(`Eliminar "${p.nom}"?`)) return;
+  if(!p||!confirm(`Eliminar "${p.rao_social}"?`)) return;
   try{ await sbDel('proveidors',id); toast('Eliminat','ok'); await loadProveidors(); }
   catch(e){ toast('Error: '+e.message,'err'); }
 }
@@ -590,7 +590,13 @@ async function loadProvFactures(){
   }
   el.innerHTML='<div style="text-align:center;padding:30px;color:var(--muted)">Carregant...</div>';
   try{
-    const fras = await sbGet('factures_rebudes',`select=no_factura,data_fra,data_pag,n_ref,id_projecte,total_factura,import_pagat,estat&id_prov=eq.${curId}&order=no_factura.desc`);
+    const prov = allProv.find(x=>x.id===curId);
+    const codi = prov?.codi;
+    if(!codi){
+      el.innerHTML='<p style="padding:20px;color:var(--muted)">El proveïdor no té codi assignat.</p>';
+      return;
+    }
+    const fras = await sbGet('factures_rebudes',`select=no_seriefra,no_fra_prov,data_fra,id_pj,total_factura,import_pagat,estat,notes&codi_prov=eq.${codi}&order=no_seriefra.desc`);
     if(!fras.length){
       el.innerHTML='<p style="padding:20px;color:var(--muted)">Cap factura rebuda d\'aquest proveïdor.</p>';
       return;
@@ -612,20 +618,19 @@ async function loadProvFactures(){
       </div>
       <div class="tbl-wrap" style="max-height:300px">
       <table class="main-tbl"><thead><tr>
-        <th>Nº Factura</th><th>Data Fra.</th><th>IdPJ</th><th style="text-align:right">Total</th>
-        <th style="text-align:right">Pagat</th><th style="text-align:right">Pendent</th><th>Data Pag.</th><th>Estat</th>
+        <th>Nº Sèrie</th><th>Nº Fra. prov.</th><th>Data Fra.</th><th>IdPJ</th>
+        <th style="text-align:right">Total</th><th style="text-align:right">Pagat</th><th style="text-align:right">Pendent</th><th>Estat</th>
       </tr></thead><tbody>
       ${fras.map(f=>{
         const pend=f.estat==='PAGAT'?0:Math.max(0,(f.total_factura||0)-(f.import_pagat||0));
-        const idpj = f.n_ref || f.id_projecte || '—';
         return `<tr>
-          <td><strong>${f.no_factura||'—'}</strong></td>
+          <td><strong>${f.no_seriefra||'—'}</strong></td>
+          <td style="color:var(--muted);font-size:12px">${f.no_fra_prov||'—'}</td>
           <td>${fd(f.data_fra)}</td>
-          <td style="color:var(--muted)">${idpj}</td>
+          <td style="color:var(--muted);font-size:12px">${f.id_pj||'—'}</td>
           <td style="text-align:right">${fe(f.total_factura)}</td>
           <td style="text-align:right;color:var(--green)">${fe(f.import_pagat)}</td>
           <td style="text-align:right;color:var(--red-txt)">${fe(pend)}</td>
-          <td style="font-size:12px">${fd(f.data_pag||f.data_fra)}</td>
           <td>${badge(f.estat)}</td>
         </tr>`;
       }).join('')}

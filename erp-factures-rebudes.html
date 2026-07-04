@@ -346,6 +346,10 @@ input[type=number]{-moz-appearance:textfield}
           <label>Exchange rate</label>
           <input type="number" id="m-tc" step="0.00001" value="1">
         </div>
+        <div class="fg">
+          <label>% IRPF</label>
+          <input type="number" id="m-irpf" step="0.1" value="0" min="0" max="100" onchange="recalc()">
+        </div>
       </div>
 
       <div class="totals-box">
@@ -357,6 +361,11 @@ input[type=number]{-moz-appearance:textfield}
           <span class="tl">IVA suportat</span>
           <input class="pct-inp" type="number" id="t-iva-pct" value="21" min="0" max="100" step="0.1" onchange="syncIva()"> %
           <span class="tv" id="t-iva">0,00 EUR</span>
+        </div>
+        <div class="tot-row">
+          <span class="tl">IRPF retingut</span>
+          <input class="pct-inp" type="number" id="t-irpf-pct" value="0" min="0" max="100" step="0.1" onchange="syncIrpf()"> %
+          <span class="tv" id="t-irpf" style="color:var(--red)">0,00 EUR</span>
         </div>
         <div class="tot-row tot-total">
           <span class="tl">Total Factura</span>
@@ -431,6 +440,10 @@ input[type=number]{-moz-appearance:textfield}
         <div class="fg">
           <label>IVA suportat (472)</label>
           <input type="text" id="m-cte-iva" value="472">
+        </div>
+        <div class="fg">
+          <label>IRPF retingut (473)</label>
+          <input type="text" id="m-cte-irpf" value="473">
         </div>
         <div class="fg" style="grid-column:1/-1">
           <label>Marcatge comptable</label>
@@ -734,8 +747,10 @@ function fillForm(fr){
   s('m-prov',fr.codi_prov); s('m-data',fr.data_fra); s('m-termini',fr.data_termini1);
   s('m-concepte',fr.notes); s('m-bi',fr.base_imposable??0); s('m-iva',fr.tipus_iva??21);
   s('m-div',fr.divisa_fra||'EUR'); s('m-tc',fr.divisa_canvi??1);
+  s('m-irpf',fr.tipus_irpf??0);
   s('m-cte-prov',fr.compte_prov||'400'); s('m-cte-desp',fr.compte_despeses||'600');
-  s('m-cte-iva',fr.compte_iva_sup||'472'); document.getElementById('m-assentat').checked=!!fr.assentat;
+  s('m-cte-iva',fr.compte_iva_sup||'472'); s('m-cte-irpf',fr.compte_irpf||'473');
+  document.getElementById('m-assentat').checked=!!fr.assentat;
   s('m-notes',fr.notes);
   curBi=fr.base_imposable||0;
   updateBadge(); recalc();
@@ -754,9 +769,11 @@ function resetForm(){
   document.getElementById('m-iva').value=21;
   document.getElementById('m-div').value='EUR';
   document.getElementById('m-tc').value=1;
+  document.getElementById('m-irpf').value=0;
   document.getElementById('m-cte-prov').value='400';
   document.getElementById('m-cte-desp').value='600';
   document.getElementById('m-cte-iva').value='472';
+  document.getElementById('m-cte-irpf').value='473';
   document.getElementById('m-assentat').checked=false;
   document.getElementById('m-notes').value='';
   curBi=0; updateBadge(); recalc(); renderPagaments();
@@ -772,18 +789,26 @@ function updateBadge(){
 function recalc(){
   curBi=parseFloat(document.getElementById('m-bi').value)||0;
   const ivaPc=parseFloat(document.getElementById('m-iva').value)||0;
+  const irpfPc=parseFloat(document.getElementById('m-irpf').value)||0;
   document.getElementById('t-iva-pct').value=ivaPc;
+  document.getElementById('t-irpf-pct').value=irpfPc;
   const iva=Math.round(curBi*ivaPc/100*100)/100;
-  const tot=Math.round((curBi+iva)*100)/100;
+  const irpf=Math.round(curBi*irpfPc/100*100)/100;
+  const tot=Math.round((curBi+iva-irpf)*100)/100;
   const fe=n=>n.toLocaleString('ca-ES',{minimumFractionDigits:2,maximumFractionDigits:2})+' EUR';
   document.getElementById('t-bi').textContent=fe(curBi);
   document.getElementById('t-iva').textContent=fe(iva);
+  document.getElementById('t-irpf').textContent=fe(irpf);
   document.getElementById('t-tot').textContent=fe(tot);
   updateAssentament();
   updatePagResum();
 }
 function syncIva(){
   document.getElementById('m-iva').value=document.getElementById('t-iva-pct').value;
+  recalc();
+}
+function syncIrpf(){
+  document.getElementById('m-irpf').value=document.getElementById('t-irpf-pct').value;
   recalc();
 }
 
@@ -817,7 +842,8 @@ function renderPagaments(){
 
 function updatePagResum(){
   const ivaPc=parseFloat(document.getElementById('m-iva').value)||0;
-  const tot=Math.round((curBi+curBi*ivaPc/100)*100)/100;
+  const irpfPc=parseFloat(document.getElementById('m-irpf').value)||0;
+  const tot=Math.round((curBi+curBi*ivaPc/100-curBi*irpfPc/100)*100)/100;
   const pagat=curPagaments.reduce((s,p)=>s+(p.import||0),0);
   const pendent=tot-pagat;
   const fe=n=>n.toLocaleString('ca-ES',{minimumFractionDigits:2,maximumFractionDigits:2})+' €';
@@ -891,17 +917,21 @@ async function delPagament(i){
 function updateAssentament(){
   const bi=curBi;
   const ivaPc=parseFloat(document.getElementById('m-iva').value)||0;
+  const irpfPc=parseFloat(document.getElementById('m-irpf').value)||0;
   const iva=Math.round(bi*ivaPc/100*100)/100;
-  const tot=Math.round((bi+iva)*100)/100;
+  const irpf=Math.round(bi*irpfPc/100*100)/100;
+  const tot=Math.round((bi+iva-irpf)*100)/100;
   const noFra=document.getElementById('m-no').value||'Fra.';
   const cProv=document.getElementById('m-cte-prov')?.value||'400';
   const cDesp=document.getElementById('m-cte-desp')?.value||'600';
   const cIva=document.getElementById('m-cte-iva')?.value||'472';
+  const cIrpf=document.getElementById('m-cte-irpf')?.value||'473';
   const fe=n=>n.toLocaleString('ca-ES',{minimumFractionDigits:2,maximumFractionDigits:2});
   const rows=[
-    {c:cDesp,desc:`Despeses — ${noFra}`,dr:bi,hr:0},
-    {c:cIva, desc:`IVA suportat ${ivaPc}%`,dr:iva,hr:0},
-    {c:cProv,desc:`Proveïdor — ${noFra}`,dr:0,hr:tot},
+    {c:cDesp, desc:`Despeses — ${noFra}`,       dr:bi,   hr:0},
+    {c:cIva,  desc:`IVA suportat ${ivaPc}%`,     dr:iva,  hr:0},
+    ...(irpf>0?[{c:cIrpf,desc:`IRPF retingut ${irpfPc}%`,dr:0,hr:irpf}]:[]),
+    {c:cProv, desc:`Proveïdor — ${noFra}`,       dr:0,    hr:tot},
   ];
   const body=document.getElementById('ass-body');
   if(body) body.innerHTML=rows.map(r=>`<tr>
@@ -938,16 +968,20 @@ function repeatFactura(){
     prov:     g('m-prov'),      concepte: g('m-concepte'),
     bi:       g('m-bi'),        iva:      g('m-iva'),
     div:      g('m-div'),       tc:       g('m-tc'),
+    irpf:     g('m-irpf'),
     cte_prov: g('m-cte-prov'),  cte_desp: g('m-cte-desp'),
-    cte_iva:  g('m-cte-iva'),   notes:    g('m-notes'),
+    cte_iva:  g('m-cte-iva'),   cte_irpf: g('m-cte-irpf'),
+    notes:    g('m-notes'),
   };
   openModal(null);
   const s = (id,v) => { const el=document.getElementById(id); if(el) el.value=(v??''); };
   s('m-prov',     snap.prov);     s('m-concepte', snap.concepte);
   s('m-bi',       snap.bi);       s('m-iva',       snap.iva);
   s('m-div',      snap.div);      s('m-tc',         snap.tc);
+  s('m-irpf',     snap.irpf);
   s('m-cte-prov', snap.cte_prov); s('m-cte-desp',  snap.cte_desp);
-  s('m-cte-iva',  snap.cte_iva);  s('m-notes',      snap.notes);
+  s('m-cte-iva',  snap.cte_iva);  s('m-cte-irpf',  snap.cte_irpf);
+  s('m-notes',    snap.notes);
   curBi = parseFloat(snap.bi)||0;
   recalc(); updateAssentament();
 }
@@ -978,11 +1012,13 @@ async function saveFactura(){
     estat:document.getElementById('m-estat').value,
     import_pagat:pagat,
     notes:document.getElementById('m-concepte').value||null,
+    tipus_irpf:parseFloat(document.getElementById('m-irpf').value)||0,
+    import_irpf:Math.round(curBi*(parseFloat(document.getElementById('m-irpf').value)||0)/100*100)/100,
     compte_prov:document.getElementById('m-cte-prov').value,
     compte_despeses:document.getElementById('m-cte-desp').value,
     compte_iva_sup:document.getElementById('m-cte-iva').value,
+    compte_irpf:document.getElementById('m-cte-irpf').value,
     assentat:document.getElementById('m-assentat').checked,
-    updated_at:new Date().toISOString(),
   };
   const btn=document.getElementById('btn-save');
   btn.disabled=true; btn.innerHTML='<span class="spin"></span> Guardant...';

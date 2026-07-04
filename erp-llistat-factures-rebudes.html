@@ -173,7 +173,7 @@ function rowHtml(fr, extraClass='') {
   const nom  = prov.rao_social || fr.codi_prov || '';
   const cls  = extraClass ? ` class="${extraClass}"` : '';
 
-  const canvi = fr.tipus_canvi && fr.tipus_canvi !== 1 ? fN(fr.tipus_canvi, 5) : '';
+  const canvi = fr.divisa_canvi && fr.divisa_canvi !== 1 ? fN(fr.divisa_canvi, 5) : '';
   const tri   = fr.data_fra ? trimestre(fr.data_fra.slice(0,7)) : '';
   const compt = fr.assentat
     ? '<span class="compt-si">✔</span>'
@@ -223,7 +223,7 @@ async function loadData() {
 
   try {
     const rows = await sbGet('factures_rebudes',
-      `select=codi_prov,no_fra_prov,no_seriefra,data_fra,base_imposable,import_iva,import_irpf,estat,divisa_fra,tipus_canvi,assentat,proveidors!factures_rebudes_codi_prov_fkey(rao_social)` +
+      `select=codi_prov,no_fra_prov,no_seriefra,data_fra,base_imposable,import_iva,import_irpf,estat,divisa_fra,divisa_canvi,assentat,proveidors!factures_rebudes_codi_prov_fkey(rao_social)` +
       `&data_fra=gte.${from}&data_fra=lte.${to}&order=data_fra.asc,no_seriefra.asc`
     );
 

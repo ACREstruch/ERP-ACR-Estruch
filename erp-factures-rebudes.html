@@ -534,15 +534,16 @@ async function init(){
 
 async function loadProveidors(){
   try{
-    allProv = await sbGet('proveidors','select=id,codi,rao_social,sinonim,tipus_iva,tipus_irpf,cnce&order=rao_social');
+    allProv = await sbGet('proveidors','select=id,codi,rao_social,sinonim,tipus_iva,tipus_irpf,cnce,divisa&order=rao_social');
     const sel = document.getElementById('m-prov');
     sel.innerHTML = '<option value="">— Selecciona proveïdor —</option>';
     allProv.forEach(p=>{
       const o=document.createElement('option');
       o.value=p.codi; o.textContent=p.rao_social+(p.sinonim?` (${p.sinonim})`:'');
-      o.dataset.iva  = p.tipus_iva ?? 21;
-      o.dataset.irpf = p.tipus_irpf ?? 0;
-      o.dataset.cnce = p.cnce || '';
+      o.dataset.iva   = p.tipus_iva ?? 21;
+      o.dataset.irpf  = p.tipus_irpf ?? 0;
+      o.dataset.cnce  = p.cnce || '';
+      o.dataset.divisa= p.divisa || 'EUR';
       sel.appendChild(o);
     });
   }catch(e){console.error(e)}
@@ -555,6 +556,7 @@ function onProvChange(){
   const noTax = cnce === 'CE' || cnce === 'EX';
   document.getElementById('m-iva').value  = noTax ? 0 : (opt.dataset.iva  ?? 21);
   document.getElementById('m-irpf').value = noTax ? 0 : (opt.dataset.irpf ?? 0);
+  document.getElementById('m-div').value  = opt.dataset.divisa || 'EUR';
   recalc();
 }
 

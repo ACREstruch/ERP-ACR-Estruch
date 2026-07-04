@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Llistat Factures Rebudes — ACR Estruch</title>
+<style>
+.ctrl{background:#1d2535;color:#fff;padding:9px 18px;display:flex;align-items:center;gap:12px;font-family:'Segoe UI',Arial,sans-serif;font-size:12.5px;flex-wrap:wrap}
+.ctrl-title{font-weight:700;color:#7eb3ff;font-size:13.5px}
+.ctrl label{color:#9aaccc}
+.ctrl select,.ctrl input[type=date]{padding:4px 8px;border-radius:5px;border:1px solid #3a4a6a;background:#2a3550;color:#fff;font-size:12.5px;cursor:pointer}
+.ctrl input[type=date]{cursor:text;min-width:120px}
+.ctrl input[type=date]::-webkit-calendar-picker-indicator{filter:invert(1);opacity:.6}
+.ctrl button{padding:6px 14px;border-radius:5px;border:none;cursor:pointer;font-size:12.5px;font-family:inherit}
+.btn-go{background:#28a745;color:#fff;font-weight:600}.btn-go:hover{background:#218838}
+.btn-print{background:#0d6efd;color:#fff;font-weight:600}.btn-print:hover{background:#0b5ed7}
+.btn-close{background:#3a4060;color:#ccc}.btn-close:hover{background:#4a5070;color:#fff}
+.ctrl-status{color:#6a8aaa;font-size:11.5px;margin-left:4px}
+@media print{.ctrl{display:none}}
+
+@page{size:A4 landscape;margin:10mm 12mm 14mm 12mm}
+body{margin:0;padding:0;font-family:'Segoe UI',Arial,sans-serif;background:#e9ecef;color:#1a1a1a}
+.page{background:#fff;max-width:275mm;margin:14px auto;padding:10mm 12mm 12mm;box-sizing:border-box;min-height:182mm;box-shadow:0 2px 12px rgba(0,0,0,.15)}
+@media print{body{background:#fff}.page{margin:0;padding:8mm 10mm;max-width:none;min-height:0;box-shadow:none}}
+
+.logo-area{text-align:center;margin-bottom:5mm}
+.logo-area img{height:26px;display:block;margin:0 auto}
+
+.doc-title{font-size:9pt;font-weight:700;color:#1a3a6b;text-decoration:underline;margin-bottom:4mm;display:block;letter-spacing:.2px}
+
+.fra-table{width:100%;border-collapse:collapse;font-size:6.8pt;font-family:'Segoe UI',Arial,sans-serif;color:#595959;table-layout:fixed}
+.fra-table th{font-weight:700;color:#595959;border:none;border-bottom:.8px solid #888;padding:1.2mm 2px 1.4mm;text-align:left;font-size:6.8pt;white-space:nowrap}
+.fra-table th.r,.fra-table td.r{text-align:right}
+.fra-table th.c,.fra-table td.c{text-align:center}
+.fra-table td{padding:.1mm 2px;vertical-align:top;border:none;line-height:1.25;font-size:6.8pt;color:#595959;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* Col widths (total ~100%) */
+/* 1:IdProv 2:Nom 3:NIF 4:FraNo 5:Data 6:PJ 7:Serie 8:BaseImp 9:IVA 10:IRPF 11:Import 12:Div 13:Canvi 14:DataC 15:Tri 16:Compt */
+.fra-table th:nth-child(1), .fra-table td:nth-child(1){width:4.5%}
+.fra-table th:nth-child(2), .fra-table td:nth-child(2){width:14%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-transform:uppercase}
+.fra-table th:nth-child(3), .fra-table td:nth-child(3){width:7%}
+.fra-table th:nth-child(4), .fra-table td:nth-child(4){width:9%}
+.fra-table th:nth-child(5), .fra-table td:nth-child(5){width:5.5%}
+.fra-table th:nth-child(6), .fra-table td:nth-child(6){width:5.5%}
+.fra-table th:nth-child(7), .fra-table td:nth-child(7){width:6%}
+.fra-table th:nth-child(8), .fra-table td:nth-child(8){width:9%;text-align:right}
+.fra-table th:nth-child(9), .fra-table td:nth-child(9){width:7%;text-align:right}
+.fra-table th:nth-child(10),.fra-table td:nth-child(10){width:7%;text-align:right}
+.fra-table th:nth-child(11),.fra-table td:nth-child(11){width:9%;text-align:right}
+.fra-table th:nth-child(12),.fra-table td:nth-child(12){width:3.5%;text-align:center}
+.fra-table th:nth-child(13),.fra-table td:nth-child(13){width:6%;text-align:right}
+.fra-table th:nth-child(14),.fra-table td:nth-child(14){width:5.5%;text-align:center}
+.fra-table th:nth-child(15),.fra-table td:nth-child(15){width:3%;text-align:center}
+.fra-table th:nth-child(16),.fra-table td:nth-child(16){width:3%;text-align:center}
+
+.fra-table tr.subtotal td{font-weight:700;border:none;color:#595959;padding-top:.6mm;padding-bottom:.6mm;font-size:6.8pt;white-space:nowrap}
+.fra-table tr.subtotal td.lbl{font-size:6.5pt;color:#999;font-weight:400}
+.fra-table tr.grp-first td{padding-top:3mm}
+.fra-table tfoot tr:first-child td{border-top:.8px solid #888;padding-top:1.5mm;font-weight:700;color:#1a1a1a}
+.fra-table tfoot td{font-size:6.8pt;font-weight:700;color:#1a1a1a;white-space:nowrap;padding:.2mm 2px}
+
+.compt-si{color:#28a745;font-size:8pt;line-height:1}
+.compt-no{color:#ccc;font-size:8pt;line-height:1}
+
+.doc-footer{display:flex;align-items:baseline;justify-content:space-between;font-size:6.5pt;color:#aaa;font-family:'Segoe UI',Arial,sans-serif;padding-top:6mm;margin-top:auto}
+.doc-footer-addr{text-align:center;flex:1}
+.doc-footer-info{white-space:nowrap}
+@media print{.doc-footer{position:fixed;bottom:8mm;left:12mm;right:12mm}}
+@media screen{.page{display:flex;flex-direction:column}}
+</style>
+</head>
+<body>
+
+<div class="ctrl">
+  <span class="ctrl-title">📋 Llistat Factures Rebudes — Totals mensuals</span>
+  <label>De:</label>
+  <input type="date" id="ctrl-from">
+  <label>Fins:</label>
+  <input type="date" id="ctrl-to">
+  <button class="btn-go" onclick="loadData()">Aplicar</button>
+  <button class="btn-print" onclick="window.print()">🖨️ Imprimir</button>
+  <button class="btn-close" onclick="window.close()">✕ Tancar</button>
+  <span class="ctrl-status" id="ctrl-status"></span>
+</div>
+
+<div class="page">
+  <div class="logo-area">
+    <img src="logo.png" alt="ACR Estruch">
+  </div>
+  <span class="doc-title" id="doc-title">FACTURES REBUDES. TOTALS MENSUALS</span>
+
+  <table class="fra-table">
+    <thead>
+      <tr>
+        <th>IdProv</th>
+        <th>Nom Proveïdor</th>
+        <th>NIF</th>
+        <th>Factura No</th>
+        <th>DataFact</th>
+        <th>PJ</th>
+        <th>Serie</th>
+        <th class="r">Base Imp</th>
+        <th class="r">IVA</th>
+        <th class="r">IRPF</th>
+        <th class="r">Import</th>
+        <th class="c">Div</th>
+        <th class="r">Canvi</th>
+        <th class="c">DataC</th>
+        <th class="c">Tri</th>
+        <th class="c">Compt</th>
+      </tr>
+    </thead>
+    <tbody id="fra-tbody">
+      <tr><td colspan="16" style="padding:6mm;color:#888;text-align:center">Carregant…</td></tr>
+    </tbody>
+    <tfoot id="fra-tfoot"></tfoot>
+  </table>
+
+  <div class="doc-footer">
+    <div class="doc-footer-info" id="page-info"></div>
+    <div class="doc-footer-addr">Muntaner, 440, 1-1B &nbsp;|&nbsp; 08006 Barcelona &nbsp;|&nbsp; +34 609852478 &nbsp;|&nbsp; info@acrestruch.com &nbsp;|&nbsp; www.acrestruch.com</div>
+  </div>
+</div>
+
+<script>
+const SB_URL = 'https://ftuaeaghnnlusigqtoqv.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ0dWFlYWdobm5sdXNpZ3F0b3F2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAxNjI0MjIsImV4cCI6MjA5NTczODQyMn0.9n1gWnq_QfrLIWU7sIBReXgQAGA-NPFOpsdDp-jbDW8';
+
+const curYear = new Date().getFullYear();
+const fromInp = document.getElementById('ctrl-from');
+const toInp   = document.getElementById('ctrl-to');
+const urlParams = new URLSearchParams(location.search);
+fromInp.value = urlParams.get('from') || `${curYear}-01-01`;
+toInp.value   = urlParams.get('to')   || new Date().toISOString().slice(0,10);
+
+async function sbGet(table, qs='') {
+  const tok = localStorage.getItem('sb_token');
+  const r = await fetch(`${SB_URL}/rest/v1/${table}?${qs}`, {
+    headers: { apikey: SB_KEY, Authorization: `Bearer ${tok||SB_KEY}`, Accept: 'application/json',
+               'Range-Unit':'items', 'Range':'0-9999' }
+  });
+  if (!r.ok) throw new Error(await r.text());
+  return r.json();
+}
+
+function fN(n, dec=2) {
+  if (n == null || n === '') return '';
+  return Number(n).toLocaleString('ca-ES', { minimumFractionDigits: dec, maximumFractionDigits: dec });
+}
+
+function fDate(s) {
+  if (!s) return '';
+  const [y, m, d] = s.split('T')[0].split('-');
+  return `${d}/${m}/${String(y).slice(2)}`;
+}
+
+function trimestre(isoMonth) {
+  const mo = parseInt(isoMonth.split('-')[1], 10);
+  return Math.ceil(mo / 3) + 'T';
+}
+
+const MONTHS_CA = ['Gener','Febrer','Març','Abril','Maig','Juny','Juliol','Agost','Setembre','Octubre','Novembre','Desembre'];
+
+function rowHtml(fr, extraClass='') {
+  const base  = +(fr.base_imposable) || 0;
+  const iva   = +(fr.import_iva)     || 0;
+  // IRPF: Access stores negative; new invoices positive. Normalize to negative for display (like Access).
+  const irpfRaw = +(fr.import_irpf) || 0;
+  const irpf = irpfRaw > 0 ? -irpfRaw : irpfRaw;  // always ≤ 0
+  const total = Math.round((base + iva + irpf) * 100) / 100;
+
+  const prov = fr.proveidors || {};
+  const nif  = prov.nif || '';
+  const nom  = prov.rao_social || fr.codi_prov || '';
+  const cls  = extraClass ? ` class="${extraClass}"` : '';
+
+  const canvi = fr.tipus_canvi && fr.tipus_canvi !== 1 ? fN(fr.tipus_canvi, 5) : '';
+  const tri   = fr.data_fra ? trimestre(fr.data_fra.slice(0,7)) : '';
+  const compt = fr.assentat
+    ? '<span class="compt-si">✔</span>'
+    : '<span class="compt-no">□</span>';
+
+  return `<tr${cls}>
+    <td>${fr.codi_prov || ''}</td>
+    <td title="${nom}">${nom}</td>
+    <td>${nif}</td>
+    <td>${fr.no_fra_prov || ''}</td>
+    <td>${fDate(fr.data_fra)}</td>
+    <td>${fr.pressupost_id || ''}</td>
+    <td>${fr.no_seriefra || ''}</td>
+    <td class="r">${fN(base)}</td>
+    <td class="r">${fN(iva)}</td>
+    <td class="r">${irpf ? fN(irpf) : ''}</td>
+    <td class="r">${fN(total)}</td>
+    <td class="c">${fr.divisa_fra && fr.divisa_fra !== 'EUR' ? fr.divisa_fra : ''}</td>
+    <td class="r">${canvi}</td>
+    <td class="c">${fr.data_canvi ? fDate(fr.data_canvi) : ''}</td>
+    <td class="c">${tri}</td>
+    <td class="c">${compt}</td>
+  </tr>`;
+}
+
+function subtotalHtml(label, n, base, iva, irpf, total) {
+  return `<tr class="subtotal">
+    <td class="lbl" colspan="7">No.factures: ${n} &nbsp; ${label}</td>
+    <td class="r">${fN(base)}</td>
+    <td class="r">${fN(iva)}</td>
+    <td class="r">${irpf ? fN(irpf) : ''}</td>
+    <td class="r">${fN(total)}</td>
+    <td colspan="5"></td>
+  </tr>`;
+}
+
+async function loadData() {
+  const from = fromInp.value;
+  const to   = toInp.value;
+  if (!from || !to) { alert('Indica les dues dates'); return; }
+
+  const tbody = document.getElementById('fra-tbody');
+  const tfoot = document.getElementById('fra-tfoot');
+  tbody.innerHTML = '<tr><td colspan="16" style="padding:6mm;color:#888;text-align:center">Carregant…</td></tr>';
+  tfoot.innerHTML = '';
+  document.getElementById('ctrl-status').textContent = '';
+
+  try {
+    const rows = await sbGet('factures_rebudes',
+      `select=codi_prov,no_fra_prov,no_seriefra,data_fra,data_canvi,base_imposable,import_iva,import_irpf,estat,divisa_fra,tipus_canvi,assentat,pressupost_id,proveidors!factures_rebudes_codi_prov_fkey(rao_social,nif)` +
+      `&data_fra=gte.${from}&data_fra=lte.${to}&order=data_fra.asc,no_seriefra.asc`
+    );
+
+    const byMonth = {};
+    rows.forEach(fr => {
+      const m = (fr.data_fra || '????-??').slice(0, 7);
+      if (!byMonth[m]) byMonth[m] = [];
+      byMonth[m].push(fr);
+    });
+
+    let html = '';
+    let totBase = 0, totIva = 0, totIrpf = 0, totTotal = 0;
+    let isFirst = true;
+
+    Object.keys(byMonth).sort().forEach(m => {
+      const group = byMonth[m];
+      let mBase = 0, mIva = 0, mIrpf = 0, mTotal = 0;
+
+      group.forEach((fr, i) => {
+        const base  = +(fr.base_imposable) || 0;
+        const iva   = +(fr.import_iva)     || 0;
+        const irpfRaw = +(fr.import_irpf) || 0;
+        const irpf = irpfRaw > 0 ? -irpfRaw : irpfRaw;
+        const total = Math.round((base + iva + irpf) * 100) / 100;
+        const cls = (i === 0 && !isFirst) ? 'grp-first' : '';
+        html += rowHtml(fr, cls);
+        mBase += base; mIva += iva; mIrpf += irpf; mTotal += total;
+      });
+
+      const [y, mo] = m.split('-');
+      const label = `${MONTHS_CA[+mo-1]} ${y}`;
+      html += subtotalHtml(label, group.length,
+        Math.round(mBase*100)/100, Math.round(mIva*100)/100,
+        Math.round(mIrpf*100)/100, Math.round(mTotal*100)/100);
+      totBase += mBase; totIva += mIva; totIrpf += mIrpf; totTotal += mTotal;
+      isFirst = false;
+    });
+
+    tbody.innerHTML = html || '<tr><td colspan="16" style="padding:4mm;color:#888;text-align:center">Cap factura en aquest període</td></tr>';
+
+    tfoot.innerHTML = `<tr>
+      <td colspan="7" style="font-style:italic">Total factures: ${rows.length}</td>
+      <td class="r">${fN(Math.round(totBase*100)/100)}</td>
+      <td class="r">${fN(Math.round(totIva*100)/100)}</td>
+      <td class="r">${totIrpf ? fN(Math.round(totIrpf*100)/100) : ''}</td>
+      <td class="r">${fN(Math.round(totTotal*100)/100)}</td>
+      <td colspan="5"></td>
+    </tr>`;
+
+    document.getElementById('ctrl-status').textContent = `${rows.length} factures`;
+    document.getElementById('page-info').textContent = new Date().toLocaleDateString('ca-ES');
+    document.getElementById('doc-title').textContent =
+      `FACTURES REBUDES. TOTALS MENSUALS — ${fDate(from)} / ${fDate(to)}`;
+
+  } catch(e) {
+    tbody.innerHTML = `<tr><td colspan="16" style="color:#c00;padding:6mm">Error: ${e.message}</td></tr>`;
+    document.getElementById('ctrl-status').textContent = 'Error de càrrega';
+  }
+}
+
+loadData();
+</script>
+</body>
+</html>

@@ -671,7 +671,8 @@ function renderTable(rows){
     grpRows.forEach(fr=>{
       const pnom=fr.proveidors?.rao_social||'—';
       const pagat=fr.import_pagat||0;
-      const tot=Math.round(((fr.base_imposable||0)+(fr.import_iva||0)-(fr.import_irpf||0))*100)/100;
+      const irpfAbs=Math.abs(fr.import_irpf||0);
+      const tot=Math.round(((fr.base_imposable||0)+(fr.import_iva||0)-irpfAbs)*100)/100;
       html+=`<tr data-yr="${yr}" style="${collapsed?'display:none':''}" onclick="openModal(${fr.id})">
         <td><span class="no-fra">${fr.no_seriefra}</span></td>
         <td style="color:var(--muted);font-size:11px">${fr.no_fra_prov||'—'}</td>
@@ -681,7 +682,7 @@ function renderTable(rows){
         <td style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted);font-size:11px" title="${fr.notes||''}">${fr.notes||'—'}</td>
         <td class="amt">${fe(fr.base_imposable)}</td>
         <td class="amt" style="color:var(--muted)">${fr.import_iva?fe(fr.import_iva):'—'}</td>
-        <td class="amt" style="white-space:nowrap;color:${fr.import_irpf?'var(--red)':'var(--muted)'}">${fr.import_irpf?'−'+fe(fr.import_irpf):'—'}</td>
+        <td class="amt" style="white-space:nowrap;color:${irpfAbs?'var(--red)':'var(--muted)'}">${irpfAbs?'−'+fe(irpfAbs):'—'}</td>
         <td class="amt" style="font-weight:700">${fe(tot)}</td>
         <td class="amt" style="color:${pagat>=tot&&tot>0?'var(--green)':'var(--muted)'}">${fe(pagat)}</td>
         <td>${badgeHtml(fr)}</td>

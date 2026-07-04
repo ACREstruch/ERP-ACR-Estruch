@@ -231,7 +231,7 @@ async function loadData() {
   try {
     const rows = await sbGet('factures_rebudes',
       `select=codi_prov,no_fra_prov,no_seriefra,data_fra,base_imposable,import_iva,import_irpf,estat,divisa_fra,divisa_canvi,divisa_canvi_data,id_pj,comptabilitzat,proveidors!factures_rebudes_codi_prov_fkey(rao_social)` +
-      `&data_fra=gte.${from}&data_fra=lte.${to}&order=data_fra.asc,no_seriefra.asc`
+      `&data_fra=gte.${from}&data_fra=lte.${to}&order=no_seriefra.asc`
     );
 
     const byMonth = {};

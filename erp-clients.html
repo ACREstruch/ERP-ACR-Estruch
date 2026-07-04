@@ -461,8 +461,8 @@ async function sbDel(t,id){const r=await fetch(`${SB_URL}/rest/v1/${t}?id=eq.${i
 let allClients = [];
 let curId = null;
 let collapsedGroups = new Set(), vistaAgrupada = true;
-const CNCE_ORDER = ['PN','PE','EX',''];
-const CNCE_LABEL = {PN:'Nacional (PN)', PE:'Estranger (PE)', EX:'Extracomunitari (EX)', '':'Sense classificació'};
+const CNCE_ORDER = ['CN','CE','EX',''];
+const CNCE_LABEL = {CN:'Nacional (CN)', CE:'Estranger (CE)', EX:'Extracomunitari (EX)', '':'Sense classificació'};
 
 function toggleVista(){
   vistaAgrupada=!vistaAgrupada;

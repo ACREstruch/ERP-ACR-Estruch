@@ -669,7 +669,8 @@ function renderTable(rows){
     </tr>`;
     grpRows.forEach(fr=>{
       const pnom=fr.proveidors?.rao_social||'—';
-      const pagat=fr.import_pagat||0; const tot=fr.total_factura||0;
+      const pagat=fr.import_pagat||0;
+      const tot=Math.round(((fr.base_imposable||0)+(fr.import_iva||0)-(fr.import_irpf||0))*100)/100;
       html+=`<tr data-yr="${yr}" style="${collapsed?'display:none':''}" onclick="openModal(${fr.id})">
         <td><span class="no-fra">${fr.no_seriefra}</span></td>
         <td style="color:var(--muted);font-size:11px">${fr.no_fra_prov||'—'}</td>

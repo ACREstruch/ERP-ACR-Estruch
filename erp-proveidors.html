@@ -183,7 +183,7 @@ input[type=number]{-moz-appearance:textfield}
         </select>
         <button class="btn btn-secondary btn-sm" onclick="clearFilters()">✕ Netejar</button>
         <span id="f-count" style="margin-left:auto;font-size:12px;color:var(--muted)"></span>
-        <button class="btn btn-secondary btn-sm" id="btn-vista" onclick="toggleVista()" title="Canviar vista">☰ Agrupat</button>
+        <button class="btn btn-secondary btn-sm" id="btn-vista" onclick="toggleVista()" title="Canviar vista">☰ Pla</button>
       </div>
     </div>
 
@@ -404,7 +404,7 @@ async function sbPost(t,d){const r=await fetch(`${SB_URL}/rest/v1/${t}`,{method:
 async function sbPatch(t,id,d){const r=await fetch(`${SB_URL}/rest/v1/${t}?id=eq.${id}`,{method:'PATCH',headers:getHDR(),body:JSON.stringify(d)});if(!r.ok)throw new Error(await r.text());return r.json()}
 async function sbDel(t,id){const r=await fetch(`${SB_URL}/rest/v1/${t}?id=eq.${id}`,{method:'DELETE', headers:getHDR()});if(!r.ok)throw new Error(await r.text())}
 
-let allProv=[], curId=null, collapsedGroups=new Set(), vistaAgrupada=true;
+let allProv=[], curId=null, collapsedGroups=new Set(), vistaAgrupada=false;
 
 const CNCE_ORDER = ['PN','PE','EX',''];
 const CNCE_LABEL = {PN:'Nacional (PN)', PE:'Estranger (PE)', EX:'Extracomunitari (EX)', '':'Sense classificació'};

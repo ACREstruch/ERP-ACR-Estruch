@@ -503,7 +503,7 @@ function renderTable(rows){
     return;
   }
   if(!vistaAgrupada){
-    tbody.innerHTML=[...rows].sort((a,b)=>(a.codi||'').localeCompare(b.codi||'')).map(rowHtml).join('');
+    tbody.innerHTML=[...rows].sort((a,b)=>(a.codi||'').localeCompare(b.codi||'')).map(p=>rowHtml(p)).join('');
     return;
   }
   // Vista agrupada per cnce

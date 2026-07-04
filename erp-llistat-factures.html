@@ -209,7 +209,7 @@ async function loadData() {
   try {
     const rows = await sbGet('factures',
       `select=*,clients(rao_social,codi),factura_lines(import_linia)` +
-      `&data_fra=gte.${from}&data_fra=lte.${to}&order=no_factura.asc`
+      `&data_fra=gte.${from}&data_fra=lte.${to}&order=no_factura.asc,data_fra.asc`
     );
 
     renderTable(rows);

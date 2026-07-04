@@ -78,6 +78,11 @@ table.main-tbl{width:100%;border-collapse:collapse;font-size:13px}
 .main-tbl tbody tr:hover td{background:var(--blue-light);cursor:pointer}
 .main-tbl tbody tr:last-child td{border-bottom:none}
 .client-nom{font-weight:700;color:var(--blue)}
+.grp-hdr{background:transparent!important;cursor:pointer;user-select:none;border-bottom:1px solid var(--border-light)}
+.grp-hdr td{color:var(--blue)!important;font-weight:400!important;font-size:12px!important;padding:5px 14px!important;letter-spacing:.3px}
+.grp-hdr:hover td{background:var(--blue-light)!important}
+.grp-hdr .grp-ico{display:inline-block;width:14px;transition:transform .2s}
+.grp-hdr.collapsed .grp-ico{transform:rotate(-90deg)}
 .tag{display:inline-block;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600;background:var(--blue-light);color:var(--blue)}
 .sit{display:inline-block;padding:2px 9px;border-radius:12px;font-size:11px;font-weight:600;white-space:nowrap}
 .sit-act{background:#d4edda;color:#155724}
@@ -214,6 +219,7 @@ input[type=number]{-moz-appearance:textfield}
         </select>
         <button class="btn btn-secondary btn-sm" onclick="clearFilters()">✕ Netejar</button>
         <span id="f-count" style="margin-left:auto;font-size:12px;color:var(--muted)"></span>
+        <button class="btn btn-secondary btn-sm" id="btn-vista" onclick="toggleVista()" title="Canviar vista">☰ Agrupat</button>
       </div>
     </div>
 
@@ -454,6 +460,25 @@ async function sbDel(t,id){const r=await fetch(`${SB_URL}/rest/v1/${t}?id=eq.${i
 
 let allClients = [];
 let curId = null;
+let collapsedGroups = new Set(), vistaAgrupada = true;
+const CNCE_ORDER = ['PN','PE','EX',''];
+const CNCE_LABEL = {PN:'Nacional (PN)', PE:'Estranger (PE)', EX:'Extracomunitari (EX)', '':'Sense classificació'};
+
+function toggleVista(){
+  vistaAgrupada=!vistaAgrupada;
+  const btn=document.getElementById('btn-vista');
+  btn.textContent=vistaAgrupada?'☰ Agrupat':'☰ Pla';
+  renderTable(allClients);
+}
+function toggleGroup(g){
+  if(collapsedGroups.has(g)) collapsedGroups.delete(g);
+  else collapsedGroups.add(g);
+  document.querySelectorAll(`[data-grp='${CSS.escape(g)}']`).forEach(tr=>{
+    tr.style.display=collapsedGroups.has(g)?'none':'';
+  });
+  const hdr=document.querySelector(`[data-grp-hdr='${CSS.escape(g)}']`);
+  if(hdr) hdr.classList.toggle('collapsed',collapsedGroups.has(g));
+}
 
 async function init(){
   if(!requireAuth()) return;
@@ -526,18 +551,9 @@ function sitBadge(s){
   return `<span class="sit ${cls}">${lbl}</span>`;
 }
 
-function renderTable(rows){
-  document.getElementById('f-count').textContent = rows.length + ' clients';
-  const tbody = document.getElementById('tbl-body');
-  if(!rows.length){
-    tbody.innerHTML = `<tr><td colspan="10"><div class="empty">
-      <div class="eico">👥</div>
-      <p>Cap client trobat.</p>
-      <button class="btn btn-primary" onclick="openModal(null)">+ Nou client</button>
-    </div></td></tr>`;
-    return;
-  }
-  tbody.innerHTML = rows.map(c=>`<tr onclick="openModal(${c.id})">
+function rowHtml(c, grpKey, hidden){
+  const attrs=(grpKey!==undefined)?` data-grp="${grpKey}"${hidden?' style="display:none"':''}`:'';
+  return `<tr${attrs} onclick="openModal(${c.id})">
     <td>${sitBadge(c.situacio)}</td>
     <td><span class="tag">${c.codi||'—'}</span></td>
     <td><span class="client-nom">${c.rao_social}</span></td>
@@ -554,7 +570,43 @@ function renderTable(rows){
       <button class="btn btn-secondary btn-xs" onclick="openModal(${c.id})">✏️</button>
       <button class="btn btn-xs btn-danger" style="margin-left:4px" onclick="confirmDel(${c.id})" title="Eliminar">✕</button>
     </td>
-  </tr>`).join('');
+  </tr>`;
+}
+
+function renderTable(rows){
+  document.getElementById('f-count').textContent = rows.length + ' clients';
+  const tbody = document.getElementById('tbl-body');
+  if(!rows.length){
+    tbody.innerHTML = `<tr><td colspan="13"><div class="empty">
+      <div class="eico">👥</div>
+      <p>Cap client trobat.</p>
+      <button class="btn btn-primary" onclick="openModal(null)">+ Nou client</button>
+    </div></td></tr>`;
+    return;
+  }
+  if(!vistaAgrupada){
+    tbody.innerHTML=[...rows].sort((a,b)=>(a.codi||'').localeCompare(b.codi||'')).map(c=>rowHtml(c)).join('');
+    return;
+  }
+  const SENT='__';
+  const groups={};
+  rows.forEach(c=>{ const k=c.cnce||SENT; if(!groups[k]) groups[k]=[]; groups[k].push(c); });
+  let html='';
+  [...CNCE_ORDER.map(k=>k||SENT)].forEach(k=>{
+    if(!groups[k]||!groups[k].length) return;
+    const grp=groups[k];
+    const labelKey=k===SENT?'':k;
+    const collapsed=collapsedGroups.has(k);
+    html+=`<tr class="grp-hdr${collapsed?' collapsed':''}" data-grp-hdr="${k}" onclick="toggleGroup('${k}')">
+      <td colspan="13">
+        <span class="grp-ico">▼</span>
+        &nbsp;<strong>${CNCE_LABEL[labelKey]}</strong>
+        &nbsp;— ${grp.length} client${grp.length!==1?'s':''}
+      </td>
+    </tr>`;
+    grp.forEach(c=>{ html+=rowHtml(c,k,collapsed); });
+  });
+  tbody.innerHTML=html;
 }
 
 function applyFilters(){
@@ -704,7 +756,7 @@ async function loadClientFactures(){
   }
   el.innerHTML='<div style="text-align:center;padding:30px;color:var(--muted)">Carregant...</div>';
   try{
-    const fras = await sbGet('factures',`select=no_factura,data_fra,data_cob,n_ref,id_projecte,total_factura,import_cobrat,estat&id_client=eq.${curId}&order=no_factura.desc`);
+    const fras = await sbGet('factures',`select=no_factura,data_fra,data_cob,n_ref,id_projecte,total_factura,import_cobrat,estat&id_client=eq.${curId}&order=no_factura.desc,data_fra.desc`);
     if(!fras.length){
       el.innerHTML='<p style="padding:20px;color:var(--muted)">Cap factura emesa per aquest client.</p>';
       return;

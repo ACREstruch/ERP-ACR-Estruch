@@ -1005,7 +1005,7 @@ async function loadInvoices(demo){
   if(demo){ allInvoices = demoInvoices(); }
   else {
     try{
-      allInvoices = await sbGet('factures','select=*,clients(rao_social,sinonim),factura_lines(import_linia)&order=id_in.desc.nullslast,no_factura.desc');
+      allInvoices = await sbGet('factures','select=*,clients(rao_social,sinonim),factura_lines(import_linia)&order=no_factura.desc,data_fra.desc');
     }catch(e){
       console.error(e);
       toast('Error carregant factures: ' + e.message, 'err');

@@ -183,6 +183,7 @@ input[type=number]{-moz-appearance:textfield}
         </select>
         <button class="btn btn-secondary btn-sm" onclick="clearFilters()">✕ Netejar</button>
         <span id="f-count" style="margin-left:auto;font-size:12px;color:var(--muted)"></span>
+        <button class="btn btn-secondary btn-sm" id="btn-vista" onclick="toggleVista()" title="Canviar vista">☰ Agrupat</button>
       </div>
     </div>
 
@@ -403,10 +404,17 @@ async function sbPost(t,d){const r=await fetch(`${SB_URL}/rest/v1/${t}`,{method:
 async function sbPatch(t,id,d){const r=await fetch(`${SB_URL}/rest/v1/${t}?id=eq.${id}`,{method:'PATCH',headers:getHDR(),body:JSON.stringify(d)});if(!r.ok)throw new Error(await r.text());return r.json()}
 async function sbDel(t,id){const r=await fetch(`${SB_URL}/rest/v1/${t}?id=eq.${id}`,{method:'DELETE', headers:getHDR()});if(!r.ok)throw new Error(await r.text())}
 
-let allProv=[], curId=null, collapsedGroups=new Set();
+let allProv=[], curId=null, collapsedGroups=new Set(), vistaAgrupada=true;
 
 const CNCE_ORDER = ['PN','PE','EX',''];
 const CNCE_LABEL = {PN:'Nacional (PN)', PE:'Estranger (PE)', EX:'Extracomunitari (EX)', '':'Sense classificació'};
+
+function toggleVista(){
+  vistaAgrupada=!vistaAgrupada;
+  const btn=document.getElementById('btn-vista');
+  btn.textContent=vistaAgrupada?'☰ Agrupat':'☰ Pla';
+  renderTable(allProv);
+}
 
 function toggleGroup(g){
   if(collapsedGroups.has(g)) collapsedGroups.delete(g);
@@ -465,31 +473,9 @@ function populatePaisFilter(){
   paisos.forEach(p=>{const o=document.createElement('option');o.value=p;o.textContent=p;if(p===cur)o.selected=true;sel.appendChild(o);});
 }
 
-function renderTable(rows){
-  document.getElementById('f-count').textContent=rows.length+' proveïdors';
-  const tbody=document.getElementById('tbl-body');
-  if(!rows.length){
-    tbody.innerHTML=`<tr><td colspan="13"><div class="empty"><div class="eico">🏭</div><p>Cap proveïdor trobat.</p><button class="btn btn-primary" onclick="openModal(null)">+ Nou proveïdor</button></div></td></tr>`;
-    return;
-  }
-  // Agrupar per cnce
-  const groups={};
-  rows.forEach(p=>{ const k=p.cnce||''; if(!groups[k]) groups[k]=[]; groups[k].push(p); });
-
-  let html='';
-  CNCE_ORDER.forEach(k=>{
-    if(!groups[k]||!groups[k].length) return;
-    const grp=groups[k];
-    const collapsed=collapsedGroups.has(k);
-    html+=`<tr class="grp-hdr${collapsed?' collapsed':''}" data-grp-hdr="${k}" onclick="toggleGroup('${k}')">
-      <td colspan="13">
-        <span class="grp-ico">▼</span>
-        &nbsp;<strong>${CNCE_LABEL[k]}</strong>
-        &nbsp;— ${grp.length} proveïdor${grp.length!==1?'s':''}
-      </td>
-    </tr>`;
-    grp.forEach(p=>{
-      html+=`<tr data-grp="${k}" style="${collapsed?'display:none':''}" onclick="openModal(${p.id})">
+function rowHtml(p, grpKey, hidden){
+  const attrs=(grpKey!==undefined)?` data-grp="${grpKey}"${hidden?' style="display:none"':''}`:'';
+  return `<tr${attrs} onclick="openModal(${p.id})">
         <td><span class="tag">${p.codi||'—'}</span></td>
         <td><span class="prov-nom">${p.rao_social}</span></td>
         <td style="color:var(--muted)">${p.sinonim||'—'}</td>
@@ -507,7 +493,38 @@ function renderTable(rows){
           <button class="btn btn-xs btn-danger" style="margin-left:4px" onclick="confirmDel(${p.id})" title="Eliminar">✕</button>
         </td>
       </tr>`;
-    });
+}
+
+function renderTable(rows){
+  document.getElementById('f-count').textContent=rows.length+' proveïdors';
+  const tbody=document.getElementById('tbl-body');
+  if(!rows.length){
+    tbody.innerHTML=`<tr><td colspan="13"><div class="empty"><div class="eico">🏭</div><p>Cap proveïdor trobat.</p><button class="btn btn-primary" onclick="openModal(null)">+ Nou proveïdor</button></div></td></tr>`;
+    return;
+  }
+  if(!vistaAgrupada){
+    tbody.innerHTML=[...rows].sort((a,b)=>(a.codi||'').localeCompare(b.codi||'')).map(rowHtml).join('');
+    return;
+  }
+  // Vista agrupada per cnce
+  const SENT='__'; // sentinel for empty/null cnce
+  const groups={};
+  rows.forEach(p=>{ const k=p.cnce||SENT; if(!groups[k]) groups[k]=[]; groups[k].push(p); });
+
+  let html='';
+  [...CNCE_ORDER.map(k=>k||SENT)].forEach(k=>{
+    if(!groups[k]||!groups[k].length) return;
+    const grp=groups[k];
+    const labelKey=k===SENT?'':k;
+    const collapsed=collapsedGroups.has(k);
+    html+=`<tr class="grp-hdr${collapsed?' collapsed':''}" data-grp-hdr="${k}" onclick="toggleGroup('${k}')">
+      <td colspan="13">
+        <span class="grp-ico">▼</span>
+        &nbsp;<strong>${CNCE_LABEL[labelKey]}</strong>
+        &nbsp;— ${grp.length} proveïdor${grp.length!==1?'s':''}
+      </td>
+    </tr>`;
+    grp.forEach(p=>{ html+=rowHtml(p,k,collapsed); });
   });
   tbody.innerHTML=html;
 }

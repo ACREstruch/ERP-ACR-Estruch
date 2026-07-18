@@ -142,10 +142,8 @@
   </div>
 </div>
 
+<script src="js/neon-client.js"></script>
 <script>
-const SB_URL = 'https://ftuaeaghnnlusigqtoqv.supabase.co';
-const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ0dWFlYWdobm5sdXNpZ3F0b3F2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAxNjI0MjIsImV4cCI6MjA5NTczODQyMn0.9n1gWnq_QfrLIWU7sIBReXgQAGA-NPFOpsdDp-jbDW8';
-
 // ── TRADUCCIONS ──
 const T = {
   ca:{ factura:'FACTURA', data_fra:'Data factura', data_venc:'Data de venciment',
@@ -194,20 +192,13 @@ const fd  = d => d ? d.replace(/(\d{4})-(\d{2})-(\d{2})/, '$3.$2.$1') : '';
 const fN  = (v,d=2) => (+v||0).toLocaleString('ca-ES',{minimumFractionDigits:d,maximumFractionDigits:d});
 const esc = s => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 
-async function sbGet(table, qs=''){
-  const r = await fetch(`${SB_URL}/rest/v1/${table}?${qs}`,{
-    headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Accept':'application/json'}
-  });
-  if(!r.ok) throw new Error(await r.text());
-  return r.json();
-}
-
 function infoRow(k, v){
   if(!v && v !== 0) return '';
   return `<span class="ik">${esc(k)}</span><span class="iv">${esc(v)}</span>`;
 }
 
 async function load(){
+  if(!requireAuth()) return;
   const params = new URLSearchParams(location.search);
   const noFra  = params.get('no');
   const lang   = params.get('lang') || 'ca';

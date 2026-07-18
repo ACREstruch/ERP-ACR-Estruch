@@ -859,6 +859,7 @@ input[type=number]{-moz-appearance:textfield}
 <!-- Toast -->
 <div id="toast"></div>
 
+<script src="js/neon-client.js"></script>
 <script>
 
 function toggleYear(year){
@@ -871,49 +872,12 @@ function toggleYear(year){
   if(hdr) hdr.classList.toggle('collapsed', collapsedYears.has(year));
 }
 
-// ════════════════════════════════════════════════
-// CONFIGURACIÓ SUPABASE
-// ════════════════════════════════════════════════
-const SB_URL = 'https://ftuaeaghnnlusigqtoqv.supabase.co';
+// (helpers de Neon a js/neon-client.js)
 
 // Format number: 1.234,56 (ca-ES) — fN(v) or fN(v,0) for no decimals
 function fN(v,d=2){return(+v||0).toLocaleString('ca-ES',{minimumFractionDigits:d,maximumFractionDigits:d});}
 // Parse formatted ca-ES number back to float: "1.234,56" → 1234.56
 function pN(s){return parseFloat(String(s||0).replace(/\./g,'').replace(',','.'))||0;}
-
-const SB_KEY ='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ0dWFlYWdobm5sdXNpZ3F0b3F2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAxNjI0MjIsImV4cCI6MjA5NTczODQyMn0.9n1gWnq_QfrLIWU7sIBReXgQAGA-NPFOpsdDp-jbDW8';
-
-function getSession(){try{const s=localStorage.getItem('erp_session');if(!s)return null;const sess=JSON.parse(s);if(Date.now()/1000>sess.expires_at-60){localStorage.removeItem('erp_session');return null;}return sess;}catch(e){return null;}}
-function getHDR(){const s=getSession();const tok=s&&s.access_token?s.access_token:SB_KEY;return{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+tok,'Prefer':'return=representation'};}
-function requireAuth(){if(!getSession()){location.replace('login.html');return false;}const el=document.getElementById('user-email');if(el){const s=getSession();el.textContent=s&&s.user?s.user.email:'';}return true;}
-async function doLogout(){const s=getSession();if(s&&s.access_token)try{await fetch(`${SB_URL}/auth/v1/logout`,{method:'POST',headers:{'apikey':SB_KEY,'Authorization':'Bearer '+s.access_token}});}catch(e){}localStorage.removeItem('erp_session');location.href='login.html';}
-
-// ════════════════════════════════════════════════
-// HELPERS SUPABASE
-// ════════════════════════════════════════════════
-async function sbGet(table, qs=''){
-  const r = await fetch(`${SB_URL}/rest/v1/${table}?${qs}`, {headers:getHDR()});
-  if(!r.ok) throw new Error(await r.text());
-  return r.json();
-}
-async function sbPost(table, data){
-  const r = await fetch(`${SB_URL}/rest/v1/${table}`, {method:'POST', headers:getHDR(), body:JSON.stringify(data)});
-  if(!r.ok) throw new Error(await r.text());
-  return r.json();
-}
-async function sbPatch(table, id, data){
-  const r = await fetch(`${SB_URL}/rest/v1/${table}?id=eq.${id}`, {method:'PATCH', headers:getHDR(), body:JSON.stringify(data)});
-  if(!r.ok) throw new Error(await r.text());
-  return r.json();
-}
-async function sbDel(table, id){
-  const r = await fetch(`${SB_URL}/rest/v1/${table}?id=eq.${id}`, {method:'DELETE', headers:getHDR()});
-  if(!r.ok) throw new Error(await r.text());
-}
-async function sbDelWhere(table, col, val){
-  const r = await fetch(`${SB_URL}/rest/v1/${table}?${col}=eq.${encodeURIComponent(val)}`, {method:'DELETE', headers:getHDR()});
-  if(!r.ok) throw new Error(await r.text());
-}
 
 // ════════════════════════════════════════════════
 // ESTAT
@@ -932,7 +896,7 @@ let curBi       = 0;      // base imposable calculada
 // ════════════════════════════════════════════════
 async function init(){
   if(!requireAuth()) return;
-  const demo = SB_URL === 'TU_SUPABASE_URL';
+  const demo = false;
   if(demo) document.getElementById('demo-banner').classList.add('show');
 
   await loadClients(demo);
@@ -1018,7 +982,7 @@ async function loadInvoices(demo){
 
 async function refreshData(){
   toast('Actualitzant...','inf');
-  await loadInvoices(SB_URL==='TU_SUPABASE_URL');
+  await loadInvoices(false);
   toast('Dades actualitzades','ok');
 }
 
@@ -1366,7 +1330,7 @@ function updateBadge(){
 // ════════════════════════════════════════════════
 async function loadLines(noFra){
   try{
-    const demo = SB_URL==='TU_SUPABASE_URL';
+    const demo = false;
     if(demo){
       curLines = demoLines(noFra);
     } else {
@@ -1674,9 +1638,6 @@ async function saveInvoice(){
   // acr_pc
   data.acr_pc = curBi>0 ? data.acr_pnl/curBi*100 : 0;
 
-  if(SB_URL==='TU_SUPABASE_URL'){
-    toast('Mode demo — connecta Supabase per guardar','inf'); return;
-  }
 
   const btn = document.getElementById('btn-save');
   btn.disabled=true; btn.innerHTML='<span class="spin"></span> Guardant...';
@@ -1724,7 +1685,6 @@ async function confirmDel(id){
   const inv = allInvoices.find(i=>i.id===id);
   if(!inv) return;
   if(!confirm(`Eliminar la factura ${inv.no_factura}?\nAquesta acció no es pot desfer.`)) return;
-  if(SB_URL==='TU_SUPABASE_URL'){ toast('Mode demo','inf'); return; }
   try{
     await sbDel('factures', id);
     toast('Factura eliminada','ok');

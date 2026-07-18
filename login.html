@@ -55,10 +55,8 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:linear
   </div>
 </div>
 
+<script src="js/neon-client.js"></script>
 <script>
-const SB_URL='https://ftuaeaghnnlusigqtoqv.supabase.co';
-const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ0dWFlYWdobm5sdXNpZ3F0b3F2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAxNjI0MjIsImV4cCI6MjA5NTczODQyMn0.9n1gWnq_QfrLIWU7sIBReXgQAGA-NPFOpsdDp-jbDW8';
-
 // Redirigir si ja hi ha sessió
 (function(){
   try{
@@ -91,18 +89,10 @@ async function doLogin(){
   btn.innerHTML='<span class="spin"></span> Verificant...';
 
   try{
-    const r=await fetch(`${SB_URL}/auth/v1/token?grant_type=password`,{
-      method:'POST',
-      headers:{'Content-Type':'application/json','apikey':SB_KEY},
-      body:JSON.stringify({email,password})
-    });
-    const data=await r.json();
-    if(!r.ok) throw new Error(data.error_description||data.msg||'Credencials incorrectes');
-
-    localStorage.setItem('erp_session', JSON.stringify(data));
+    await authSignIn(email,password);
     location.replace('index.html');
   }catch(e){
-    showErr(e.message==='Invalid login credentials'?'Correu o contrasenya incorrectes.':e.message);
+    showErr(e.message);
     btn.disabled=false;
     btn.innerHTML='Entrar';
   }

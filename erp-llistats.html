@@ -197,6 +197,7 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;font-size:14px;ba
 
 <div id="toast"></div>
 
+<script src="js/neon-client.js"></script>
 <script>
 // ── DADES ──────────────────────────────────────────────────────────────────
 const GRUPS = {
@@ -424,14 +425,8 @@ function selectGrup(id, el) {
   renderBlocs(id);
 }
 
-// ── AUTH ───────────────────────────────────────────────────────────────────
-const SB_URL = 'https://ftuaeaghnnlusigqtoqv.supabase.co';
-const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ0dWFlYWdobm5sdXNpZ3F0b3F2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAxNjI0MjIsImV4cCI6MjA5NTczODQyMn0.9n1gWnq_QfrLIWU7sIBReXgQAGA-NPFOpsdDp-jbDW8';
-
-function doLogout(){
-  localStorage.removeItem('sb_token');
-  location.href = 'login.html';
-}
+// ── AUTH (helpers de Neon a js/neon-client.js) ──────────────────────────────
+requireAuth();
 
 function toast(msg, type='inf'){
   const d = document.createElement('div');
@@ -439,16 +434,6 @@ function toast(msg, type='inf'){
   d.textContent = msg;
   document.getElementById('toast').appendChild(d);
   setTimeout(()=>d.remove(), 3000);
-}
-
-// ── SUPABASE HELPER ────────────────────────────────────────────────────────
-async function sbGet(table, qs='') {
-  const tok = localStorage.getItem('sb_token');
-  const r = await fetch(`${SB_URL}/rest/v1/${table}?${qs}`, {
-    headers: { apikey: SB_KEY, Authorization: `Bearer ${tok||SB_KEY}`, Accept: 'application/json' }
-  });
-  if (!r.ok) throw new Error(await r.text());
-  return r.json();
 }
 
 // ── MODAL: IMPRIMIR FACTURA ────────────────────────────────────────────────

@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ca">
 <head>
 <meta charset="UTF-8">
@@ -47,9 +47,6 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;font-size:14px;ba
 .toast.ok{background:var(--green)}.toast.err{background:var(--red)}.toast.inf{background:var(--blue)}
 @keyframes tin{from{transform:translateX(110%);opacity:0}to{transform:translateX(0);opacity:1}}
 ::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:rgba(0,0,0,.2);border-radius:3px}
-/* sticky header */
-.tbl-wrap{overflow-x:auto;overflow-y:auto;max-height:calc(100vh - 280px)}
-.main-tbl thead th{position:sticky;top:0;z-index:3;background:#f0f4f8;box-shadow:0 2px 0 var(--border)}
 
 /* Layout tags */
 .tags-layout{display:grid;grid-template-columns:260px 1fr;gap:16px;height:calc(100vh - var(--topbar) - 36px)}
@@ -106,7 +103,6 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;font-size:14px;ba
     <div class="nav-section" style="margin-top:10px">Altres</div>
     <div class="nav-item" onclick="location.href='erp-despeses.html'"><span class="ico">✈️</span> Despeses</div>
     <div class="nav-item" onclick="location.href='erp-reports.html'"><span class="ico">📊</span> Reports</div>
-    <div class="nav-item" onclick="location.href='erp-llistats.html'"><span class="ico">📑</span> Llistats</div>
     <div class="nav-item active" onclick="location.href='erp-tags.html'"><span class="ico">🏷️</span> Tags</div>
   </div>
   <div class="nav-footer">ACR Estruch ERP v1.0</div>
@@ -131,14 +127,14 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;font-size:14px;ba
             <div class="cat-cnt" id="cnt-PROJECTES">carregant...</div>
           </div>
         </div>
-        <div class="tag-cat-item" onclick="selectCat('PROVEIDORS',this)" id="cat-PROVEIDORS">
+        <div class="tag-cat-item" onclick="selectCat('PROVEIDORS')" id="cat-PROVEIDORS">
           <span class="cat-ico">🏭</span>
           <div class="cat-info">
             <div class="cat-nom">Tag Proveïdors — Categoria</div>
             <div class="cat-cnt" id="cnt-PROVEIDORS">carregant...</div>
           </div>
         </div>
-        <div class="tag-cat-item" onclick="selectCat('CLIENTS',this)" id="cat-CLIENTS">
+        <div class="tag-cat-item" onclick="selectCat('CLIENTS')" id="cat-CLIENTS">
           <span class="cat-ico">👥</span>
           <div class="cat-info">
             <div class="cat-nom">Tag Clients — Grup</div>
@@ -168,21 +164,8 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;font-size:14px;ba
 </div>
 <div id="toast"></div>
 
+<script src="js/neon-client.js"></script>
 <script>
-const SB_URL='https://ftuaeaghnnlusigqtoqv.supabase.co';
-const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ0dWFlYWdobm5sdXNpZ3F0b3F2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAxNjI0MjIsImV4cCI6MjA5NTczODQyMn0.9n1gWnq_QfrLIWU7sIBReXgQAGA-NPFOpsdDp-jbDW8';
-const PIN='1234';
-
-function getSession(){try{const s=localStorage.getItem('erp_session');if(!s)return null;const sess=JSON.parse(s);if(Date.now()/1000>sess.expires_at-60){localStorage.removeItem('erp_session');return null;}return sess;}catch(e){return null;}}
-function getHDR(){const s=getSession();const tok=s&&s.access_token?s.access_token:SB_KEY;return{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+tok,'Prefer':'return=representation'};}
-function requireAuth(){if(!getSession()){location.replace('login.html');return false;}const el=document.getElementById('user-email');if(el){const s=getSession();el.textContent=s&&s.user?s.user.email:'';}return true;}
-async function doLogout(){const s=getSession();if(s&&s.access_token)try{await fetch(`${SB_URL}/auth/v1/logout`,{method:'POST',headers:{'apikey':SB_KEY,'Authorization':'Bearer '+s.access_token}});}catch(e){}localStorage.removeItem('erp_session');location.href='login.html';}
-
-async function sbGet(t,q=''){const r=await fetch(`${SB_URL}/rest/v1/${t}?${q}`,{headers:getHDR()});if(!r.ok)throw new Error(await r.text());return r.json()}
-async function sbPost(t,d){const r=await fetch(`${SB_URL}/rest/v1/${t}`,{method:'POST',headers:getHDR(),body:JSON.stringify(d)});if(!r.ok)throw new Error(await r.text());return r.json()}
-async function sbPatch(t,q,d){const r=await fetch(`${SB_URL}/rest/v1/${t}?${q}`,{method:'PATCH',headers:getHDR(),body:JSON.stringify(d)});if(!r.ok)throw new Error(await r.text());return r.json()}
-async function sbDel(t,q){const r=await fetch(`${SB_URL}/rest/v1/${t}?${q}`,{method:'DELETE',headers:getHDR()});if(!r.ok)throw new Error(await r.text())}
-
 const CAT_LABELS={
   'PROJECTES':'Tag Projectes',
   'PROVEIDORS':'Tag Proveïdors — Categoria',
@@ -262,11 +245,10 @@ function editTag(id, nomActual){
 }
 
 async function saveEdit(id){
-  const pin=prompt('🔒 PIN per guardar:');if(pin!==PIN){toast('PIN incorrecte','err');return;}
   const nom=document.getElementById('edit-'+id).value.trim().toUpperCase();
   if(!nom){toast('El nom no pot estar buit','err');return;}
   try{
-    await sbPatch('tags','id=eq.'+id,{nom});
+    await sbPatch('tags',id,{nom});
     toast('Tag actualitzat','ok');
     await loadTags();
     renderCat(curCat);
@@ -284,10 +266,9 @@ function cancelEdit(id, nomOriginal){
 }
 
 async function delTag(id, nom){
-  const pin=prompt('🔒 PIN per eliminar:');if(pin!==PIN){toast('PIN incorrecte','err');return;}
   if(!confirm(`Eliminar el tag "${nom}"?`))return;
   try{
-    await sbDel('tags','id=eq.'+id);
+    await sbDel('tags',id);
     toast('Tag eliminat','ok');
     await loadTags();
     renderCat(curCat);

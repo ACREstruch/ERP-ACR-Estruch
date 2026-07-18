@@ -64,7 +64,10 @@ async function doChange(){
       method:'POST',headers:{'Content-Type':'application/json'},credentials:'include',
       body:JSON.stringify({email,password:cur})
     });
-    if(!signIn.ok){ throw new Error('Contrasenya actual incorrecta.'); }
+    if(!signIn.ok){
+      const d=await signIn.json().catch(()=>({}));
+      throw new Error(d.message || `Error d'accés (${signIn.status}). Comprova que aquest domini és a la llista de dominis de confiança de Neon Auth.`);
+    }
 
     const change=await fetch(`${NEON_AUTH_URL}/change-password`,{
       method:'POST',headers:{'Content-Type':'application/json'},credentials:'include',
